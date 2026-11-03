@@ -1,0 +1,16 @@
+﻿Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+.vscode/
+Project/vendor/
+Project/node_modules/
+Project/.env
+Project/.env.backup
+Project/storage/logs/*
+Project/storage/framework/cache/*
+Project/storage/framework/sessions/
+Project/storage/framework/views/
+Project/bootstrap/cache/*.php
+Project/public/storage
+Project/public/hot
