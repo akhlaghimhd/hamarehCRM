@@ -26,9 +26,9 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->id('admin')
-            ->path('admin')
-            ->login(Login::class)
+            ->id('app')
+            ->path('app')
+            ->login(Login::class)   // آدرس واقعی فرم: /app/login
             ->brandName('هماره CRM')
             ->colors([
                 'primary' => Color::Amber,
