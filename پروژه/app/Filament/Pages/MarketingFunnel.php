@@ -19,7 +19,7 @@ class MarketingFunnel extends Page
 
     protected static ?string $slug = 'marketing-funnel';
 
-    protected static string|UnitEnum|null $navigationGroup = 'بازاریابی';
+    protected static string|UnitEnum|null $navigationGroup = 'بازاریابی (جدید)';
 
     protected static ?int $navigationSort = 5;
 

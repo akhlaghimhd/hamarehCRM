@@ -41,11 +41,11 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->navigationGroups([
-                'بازاریابی',
-                'فروش و مشتری',
+                'بازاریابی (جدید)',
+                'فروش (جدید)',
                 'نوتوپیا',
-                'تنظیمات کاتالوگ',
-                'محصولات',
+                'استخر کاتالوگ (پایه)',
+                'سیستم',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
