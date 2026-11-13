@@ -366,6 +366,7 @@ class OpportunityResource extends Resource
                             ]),
                         DatePicker::make('next_step_due')
                             ->label('مهلت گام')
+                            ->jalali()
                             ->native(false)
                             ->displayFormat('Y/m/d')
                             ->default(now()->addDays(3))
@@ -436,7 +437,7 @@ class OpportunityResource extends Resource
                     ->placeholder('—'),
                 TextColumn::make('next_step_due')
                     ->label('مهلت')
-                    ->formatStateUsing(fn ($state) => $state ? Fa::dateTime($state, 'Y/m/d') : '—')
+                    ->jalaliDate()
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('owner.name')
