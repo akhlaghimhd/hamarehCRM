@@ -17,9 +17,13 @@
   font-display: swap;
 }
 
-body, .fi-body, .fi-main, .fi-sidebar, .fi-topbar, .fi-modal, .fi-btn,
+html, body, .fi-body, .fi-main, .fi-sidebar, .fi-topbar, .fi-modal, .fi-btn,
 input, select, textarea, button, label {
   font-family: 'Vazirmatn', Tahoma, ui-sans-serif, system-ui, sans-serif !important;
+}
+
+html {
+  direction: rtl;
 }
 
 /* سایدبار */

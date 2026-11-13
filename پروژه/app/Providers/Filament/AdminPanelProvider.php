@@ -29,7 +29,6 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->rtl()
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('15rem')
             ->collapsedSidebarWidth('4.5rem')
@@ -69,6 +68,10 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">',
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn (): string => '<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.lang="fa";</script>',
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
