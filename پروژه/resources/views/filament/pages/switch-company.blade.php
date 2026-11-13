@@ -8,7 +8,7 @@
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <div class="text-base font-semibold text-gray-950 dark:text-white">{{ $userMeta['name'] }}</div>
-                        <div class="mt-1 text-sm text-gray-600 dark:text-gray-300">@{{ $userMeta['username'] }}</div>
+                        <div class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ '@' . $userMeta['username'] }}</div>
                     </div>
                     <div class="text-sm text-gray-600 dark:text-gray-300">
                         <div>{{ $userMeta['email'] }}</div>
