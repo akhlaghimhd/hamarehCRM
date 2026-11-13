@@ -23,13 +23,13 @@ class CreateOpportunity extends CreateRecord
         return Notification::make()
             ->success()
             ->title('آفرین! فرصت ثبت شد 🎯')
-            ->body('حالا نوبت پیگیری است. برو سراغ گام‌ها و فعالیت‌ها تا سرنخ سرد نشود.')
+            ->body('فرصت آماده است. برو سراغ میزکار برای گام و فعالیت تا سرنخ سرد نشود.')
             ->duration(8000);
     }
 
     protected function getRedirectUrl(): string
     {
-        return OpportunityResource::getUrl('edit', ['record' => $this->record]);
+        return OpportunityResource::getUrl('view', ['record' => $this->record]);
     }
 
     protected function getHeaderActions(): array
