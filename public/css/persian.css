@@ -1,0 +1,17 @@
+@import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+
+body,
+html,
+.btn,
+.form-control,
+.card,
+.nav,
+.navbar,
+.dropdown-menu,
+h1, h2, h3, h4, h5, h6,
+.page-title,
+.subheader,
+.form-label,
+.form-check-label {
+    font-family: Vazirmatn, Tahoma, sans-serif !important;
+}

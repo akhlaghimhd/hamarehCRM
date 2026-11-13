@@ -1,0 +1,33 @@
+# myoffice — زمینه پروژه برای ادامه کار
+
+مسیر: ~/projects/myoffice (WSL)
+پنل: http://localhost:8088/admin
+استک: Laravel 13 + Filament 4 + MariaDB + فارسی/RTL/وزیرمتن
+
+## معماری
+- چندشرکتی با company_id
+- نقش کاربر per company (جدول company_user)
+- Permission از Seed؛ Role توسط ادمین
+- منو/دکمه بر اساس مجوز؛ عدم دسترسی با Notification نه 404
+
+## ساخته‌شده
+- Company, User(username), Role, Permission, Customer
+- Resourceهای: کاربران، شرکت‌ها، نقش‌ها، مشتریان
+- کاربر تست: admin (همه) و sales/password (فقط مشتری)
+
+## فازبندی
+0 Foundation (تقریباً انجام شده)
+1 محصول نوتوپیا
+2 بازاریابی
+3 فروش/سفارش
+4 تولید
+5 انبار
+6 مالی
+
+## نباید
+- Filament 3 یا Tablar
+- Resource تکراری در پوشه‌های Customers/Companies
+- کار بدون company_id
+
+## بعد
+تست admin در برابر sales، بعد فاز محصول نوتوپیا

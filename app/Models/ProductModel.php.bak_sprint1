@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\BelongsToCompany;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class ProductModel extends Model
+{
+    use BelongsToCompany, SoftDeletes;
+
+    protected $fillable = [
+        'company_id', 'product_line_id', 'code', 'name', 'description',
+        'base_price', 'cost_price', 'attributes',
+        'has_special_paper', 'includes_erasable_pen', 'includes_cloth',
+        'is_active', 'sort',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'attributes' => 'array',
+            'base_price' => 'decimal:0',
+            'cost_price' => 'decimal:0',
+            'has_special_paper' => 'boolean',
+            'includes_erasable_pen' => 'boolean',
+            'includes_cloth' => 'boolean',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    public function productLine(): BelongsTo
+    {
+        return $this->belongsTo(ProductLine::class);
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function addonRules(): HasMany
+    {
+        return $this->hasMany(AddonModelRule::class);
+    }
+}

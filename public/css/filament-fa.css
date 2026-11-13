@@ -1,0 +1,107 @@
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+body, .fi-body, .fi-main, .fi-sidebar, .fi-topbar, .fi-modal, .fi-btn,
+input, select, textarea, button, label {
+  font-family: 'Vazirmatn', Tahoma, ui-sans-serif, system-ui, sans-serif !important;
+}
+
+/* سایدبار */
+.fi-sidebar.fi-sidebar-open {
+  width: 15rem !important;
+  max-width: 15rem !important;
+}
+.fi-sidebar:not(.fi-sidebar-open) {
+  width: 4.5rem !important;
+  max-width: 4.5rem !important;
+  min-width: 4.5rem !important;
+}
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-label,
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-group-label {
+  display: none !important;
+}
+.fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-button {
+  justify-content: center !important;
+}
+
+/* جدول */
+.fi-ta-header-cell {
+  padding: 0.4rem 0.65rem !important;
+  font-size: 0.875rem !important;
+}
+.fi-ta-cell {
+  padding: 0.35rem 0.65rem !important;
+  vertical-align: middle !important;
+  font-size: 0.875rem !important;
+}
+.fi-ta-text-description {
+  font-size: 0.72rem !important;
+  opacity: 0.65;
+  margin-top: 0.05rem !important;
+  line-height: 1.2 !important;
+}
+.fi-ta-header-toolbar {
+  padding: 0.45rem 0.75rem !important;
+}
+.fi-ta-actions {
+  gap: 0.25rem !important;
+}
+
+/* فرم */
+.fi-sc-has-gap {
+  gap: 0.75rem 1rem !important;
+}
+.fi-section-content,
+.fi-section-content-ctn {
+  padding: 0.75rem 1rem !important;
+}
+.fi-section-header {
+  padding: 0.55rem 1rem !important;
+}
+.fi-fo-field-wrp {
+  gap: 0.25rem !important;
+}
+.fi-fo-field-wrp-label {
+  line-height: 1.3 !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+}
+.fi-fo-field-wrp-hint {
+  margin-top: 0.15rem !important;
+  font-size: 0.75rem !important;
+  opacity: 0.7;
+}
+.fi-tabs {
+  margin-bottom: 0.5rem !important;
+}
+.fi-tabs-item {
+  padding: 0.35rem 0.7rem !important;
+  font-size: 0.875rem !important;
+}
+.fi-input,
+.fi-select-input {
+  min-height: 2.2rem !important;
+  font-size: 0.875rem !important;
+}
+
+/* هدر صفحه */
+.fi-header-heading {
+  font-size: 1.15rem !important;
+  line-height: 1.3 !important;
+}

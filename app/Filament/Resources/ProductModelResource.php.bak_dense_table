@@ -1,0 +1,298 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Concerns\ChecksResourcePermission;
+use App\Filament\Resources\ProductModelResource\Pages;
+use App\Models\ProductLine;
+use App\Models\ProductModel;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
+use App\Support\Fa;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\BulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use App\Models\CatalogSeason;
+use App\Models\CoverSku;
+use App\Models\ProductFamily;
+use App\Models\ProductOption;
+use App\Models\ProductSize;
+use Filament\Notifications\Notification;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Hidden;
+use Illuminate\Support\Str;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+
+class ProductModelResource extends Resource
+{
+public static function shouldRegisterNavigation(): bool
+    {
+        return true;
+    }
+
+
+    use ChecksResourcePermission;
+protected static ?string $permissionView = 'products.view';
+    protected static ?string $permissionManage = 'products.manage';
+    protected static ?string $model = ProductModel::class;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cube-transparent';
+    protected static ?string $modelLabel = 'مدل محصول';
+    protected static ?string $pluralModelLabel = 'مدل‌های محصول';
+    protected static ?string $navigationLabel = 'مدل‌ها';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static ?int $navigationSort = 2;
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery()
+            ->withCount(['sizes', 'coverSkus', 'options'])
+            ->with(['family', 'season']);
+
+        $notopiaId = \App\Models\ProductLine::query()->where('code', 'notopia')->value('id');
+        if ($notopiaId) {
+            $query->where('product_line_id', $notopiaId);
+        }
+
+        return $query;
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Hidden::make('product_line_id')
+                ->default(fn () => ProductLine::query()->where('code', 'notopia')->value('id'))
+                ->dehydrated(),
+
+            Tabs::make('model_tabs')
+                ->tabs([
+                    Tab::make('basic')
+                        ->label('۱. مشخصات مدل')
+                        ->icon('heroicon-o-identification')
+                        ->schema([
+                            Section::make()
+                                ->description('نوتوپیا · کد از خانواده + نام + سال پیشنهاد می‌شود')
+                                ->schema([
+                                    Select::make('product_family_id')
+                                        ->label('خانواده')
+                                        ->options(fn () => ProductFamily::query()->where('is_active', true)->orderBy('sort')->pluck('name', 'id'))
+                                        ->searchable()->preload()->required()
+                                        ->live()
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => static::suggestCode($get, $set)),
+                                    Select::make('catalog_season_id')
+                                        ->label('کالکشن / سال')
+                                        ->options(fn () => CatalogSeason::query()->where('is_active', true)->orderBy('sort')->pluck('name', 'id'))
+                                        ->searchable()->preload()->required()
+                                        ->live()
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => static::suggestCode($get, $set)),
+                                    TextInput::make('name')
+                                        ->label('نام مدل')
+                                        ->placeholder('مثلاً: زیبا')
+                                        ->required()->maxLength(100)
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => static::suggestCode($get, $set)),
+                                    TextInput::make('code')
+                                        ->label('کد سیستمی')
+                                        ->required()->maxLength(50)
+                                        ->unique(ignoreRecord: true)
+                                        ->helperText('پیشنهاد خودکار؛ قابل ویرایش'),
+                                    TextInput::make('base_price')
+                                        ->label('قیمت پایه (ریال)')
+                                        ->numeric()->minValue(0),
+                                    Select::make('status')
+                                        ->label('وضعیت')
+                                        ->options([
+                                            'draft' => 'پیش‌نویس',
+                                            'published' => 'منتشر (قابل سفارش)',
+                                            'archived' => 'بایگانی',
+                                        ])
+                                        ->required()->default('draft')->native(false),
+                                    TextInput::make('sort')
+                                        ->label('ترتیب نمایش')
+                                        ->numeric()->default(0),
+                                    Textarea::make('internal_note')
+                                        ->label('یادداشت داخلی')
+                                        ->rows(2)
+                                        ->columnSpanFull(),
+                                ])
+                                ->columns(2),
+                        ]),
+                    Tab::make('matrix')
+                        ->label('۲. مجازها')
+                        ->icon('heroicon-o-squares-2x2')
+                        ->schema([
+                            Section::make()
+                                ->description('در سفارش: یک سایز + یک جلد از این لیست‌ها')
+                                ->schema([
+                                    Select::make('sizes')
+                                        ->label('سایزهای مجاز')
+                                        ->multiple()->relationship('sizes', 'name')
+                                        ->preload()->searchable()->native(false)
+                                        ->columnSpanFull(),
+                                    Select::make('coverSkus')
+                                        ->label('جلد / رنگ‌های مجاز')
+                                        ->multiple()->relationship('coverSkus', 'name')
+                                        ->preload()->searchable()->native(false)
+                                        ->columnSpanFull(),
+                                    Select::make('options')
+                                        ->label('اقلام همراه مجاز')
+                                        ->multiple()->relationship('options', 'name')
+                                        ->preload()->searchable()->native(false)
+                                        ->helperText('خالی = بدون اقلام')
+                                        ->columnSpanFull(),
+                                ]),
+                        ]),
+                ])
+                ->columnSpanFull()
+                ->persistTabInQueryString(false),
+        ]);
+    }
+
+    public static function suggestCode(Get $get, Set $set): void
+    {
+        $familyId = $get('product_family_id');
+        $seasonId = $get('catalog_season_id');
+        $name = trim((string) $get('name'));
+        if (! $familyId || ! $seasonId || $name === '') {
+            return;
+        }
+        $family = ProductFamily::query()->find($familyId);
+        $season = CatalogSeason::query()->find($seasonId);
+        if (! $family || ! $season) {
+            return;
+        }
+        $familyPart = Str::upper(Str::slug((string) ($family->code ?: $family->name), '-'));
+        $namePart = Str::upper(Str::slug($name, '-'));
+        $yearPart = preg_replace('/[^0-9A-Za-z\-]/u', '', (string) ($season->year_label ?: $season->code)) ?: $season->code;
+        $set('code', "{$familyPart}-{$namePart}-{$yearPart}");
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->recordUrl(null)
+            ->recordAction(null)
+            ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('نام')->searchable()->sortable()->weight('normal')
+                    ->description(fn ($record) => $record?->code)
+                    ->url(fn ($record) => static::getUrl('edit', ['record' => $record]))
+                    ->color('primary'),
+                Tables\Columns\TextColumn::make('family.name')->label('خانواده')->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('season.name')->label('کالکشن')->sortable()->placeholder('—'),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('انتشار')->badge()
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'published' => 'منتشر',
+                        'archived' => 'بایگانی',
+                        default => 'پیش‌نویس',
+                    })
+                    ->color(fn ($state) => match ($state) {
+                        'published' => 'success',
+                        'archived' => 'gray',
+                        default => 'warning',
+                    }),
+                Tables\Columns\TextColumn::make('base_price')
+                    ->label('قیمت پایه')->alignCenter()
+                    ->formatStateUsing(fn ($state) => $state === null || $state === '' ? '—' : Fa::number($state, 0)),
+                Tables\Columns\TextColumn::make('cover_skus_count')
+                    ->counts('coverSkus')->label('رنگ/جلد')->alignCenter()
+                    ->formatStateUsing(fn ($state) => Fa::digits((string) ($state ?? 0))),
+                Tables\Columns\TextColumn::make('options_count')
+                    ->counts('options')->label('اقلام')->alignCenter()
+                    ->formatStateUsing(fn ($state) => Fa::digits((string) ($state ?? 0))),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('وضعیت')
+                    ->boolean()
+                    ->size('sm')
+                    ->alignCenter(),
+            ])
+            ->defaultSort('sort')
+            ->filters([
+                Tables\Filters\SelectFilter::make('product_family_id')
+                    ->label('خانواده')
+                    ->options(fn () => ProductFamily::query()->orderBy('sort')->pluck('name', 'id')),
+                Tables\Filters\SelectFilter::make('catalog_season_id')
+                    ->label('کالکشن')
+                    ->options(fn () => CatalogSeason::query()->orderBy('sort')->pluck('name', 'id')),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('انتشار')
+                    ->options(['draft' => 'پیش‌نویس', 'published' => 'منتشر', 'archived' => 'بایگانی']),
+                Tables\Filters\TrashedFilter::make(),
+            ])
+            ->recordActions([
+
+                \Filament\Actions\Action::make('duplicate')
+                    ->label('کپی')
+                    ->icon('heroicon-o-document-duplicate')
+                    ->form([
+                        \Filament\Forms\Components\Select::make('catalog_season_id')
+                            ->label('کالکشن مقصد')
+                            ->options(fn () => \App\Models\CatalogSeason::query()->where('is_active', true)->orderBy('sort')->pluck('name', 'id'))
+                            ->required(),
+                        \Filament\Forms\Components\TextInput::make('code')
+                            ->label('کد جدید')
+                            ->required(),
+                        \Filament\Forms\Components\TextInput::make('name')
+                            ->label('نام جدید')
+                            ->required(),
+                    ])
+                    ->fillForm(fn ($record) => [
+                        'catalog_season_id' => $record->catalog_season_id,
+                        'code' => $record->code . '-COPY',
+                        'name' => $record->name . ' (کپی)',
+                    ])
+                    ->action(function ($record, array $data) {
+                        $copy = $record->duplicateForCatalog(
+                            seasonId: (int) $data['catalog_season_id'],
+                            code: $data['code'],
+                            name: $data['name'],
+                        );
+                        \Filament\Notifications\Notification::make()
+                            ->title('مدل کپی شد')
+                            ->success()
+                            ->send();
+                        return redirect(static::getUrl('edit', ['record' => $copy]));
+                    }),
+
+                \Filament\Actions\EditAction::make()->label('ویرایش'),
+            ])
+            ->emptyStateHeading('مدلی ثبت نشده')
+            ->emptyStateDescription('اول خانواده و کالکشن، بعد مدل.')
+            ->emptyStateActions([
+                \Filament\Actions\CreateAction::make()->label('مدل جدید'),
+            ])
+            ->paginated([10, 15, 25, 50, 100]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListProductModels::route('/'),
+            'create' => Pages\CreateProductModel::route('/create'),
+            'edit' => Pages\EditProductModel::route('/{record}/edit'),
+        ];
+    }
+}
