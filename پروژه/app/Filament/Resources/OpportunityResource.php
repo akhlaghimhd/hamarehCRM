@@ -19,7 +19,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -54,6 +53,7 @@ class OpportunityResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 Section::make('۱. سازمان و تماس')
                     ->description('اطلاعات اصلی برای ثبت سریع فرصت')
@@ -107,7 +107,8 @@ class OpportunityResource extends Resource
                             ->tel()
                             ->maxLength(30),
                     ])
-                    ->columns(['default' => 1, 'md' => 2, 'xl' => 3]),
+                    ->columns(['default' => 1, 'md' => 2, 'xl' => 4])
+                    ->columnSpanFull(),
 
                 Section::make('۲. ایمیل و آدرس')
                     ->description('برای پیگیری بعدی مفید است؛ اگر ندارید خالی بگذارید.')
@@ -123,117 +124,106 @@ class OpportunityResource extends Resource
                             ->placeholder('شهر و آدرس تقریبی')
                             ->maxLength(255),
                     ])
-                    ->columns(['default' => 1, 'md' => 2]),
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->columnSpanFull(),
 
-                Grid::make(['default' => 1, 'lg' => 2])
+                Section::make('۳. نیاز، بودجه و ارزش')
+                    ->description('این‌ها کیفیت سرنخ را بهتر می‌کند؛ بعداً هم قابل تکمیل است.')
+                    ->collapsed()
                     ->schema([
-                        Section::make('۳. نیاز، بودجه و ارزش')
-                            ->description('این‌ها کیفیت سرنخ را بهتر می‌کند؛ بعداً هم قابل تکمیل است.')
-                            ->schema([
-                                TextInput::make('purchase_use')
-                                    ->label('کاربرد خرید / نیاز')
-                                    ->placeholder('هدیه سازمانی، برندینگ، نمایشگاه...')
-                                    ->maxLength(255),
-                                TextInput::make('qty_approx')
-                                    ->label('تیراژ تقریبی')
-                                    ->placeholder('مثلاً ۲۵۰۰ جلد')
-                                    ->maxLength(100),
-                                Select::make('budget_band')
-                                    ->label('بودجه تقریبی')
-                                    ->options(Opportunity::budgetOptions())
-                                    ->native(false)
-                                    ->placeholder('— انتخاب —'),
-                                TextInput::make('buy_timing')
-                                    ->label('زمان خرید احتمالی')
-                                    ->placeholder('فوری / تا پایان ماه / فصل بعد')
-                                    ->maxLength(100),
-                                Select::make('value_focus')
-                                    ->label('ارزش مورد توجه مشتری')
-                                    ->options(Opportunity::valueFocusOptions())
-                                    ->native(false)
-                                    ->live()
-                                    ->placeholder('— انتخاب —'),
-                                TextInput::make('value_other')
-                                    ->label('توضیح ارزش (سایر)')
-                                    ->visible(fn (Get $get) => $get('value_focus') === 'other')
-                                    ->maxLength(255),
-                                Textarea::make('main_objection')
-                                    ->label('نگرانی یا اعتراض اصلی')
-                                    ->placeholder('اگر مخالفت یا دغدغه‌ای مطرح شده بنویسید')
-                                    ->rows(2)
-                                    ->columnSpanFull(),
-                            ])
-                            ->columns(1),
+                        TextInput::make('purchase_use')
+                            ->label('کاربرد خرید / نیاز')
+                            ->placeholder('هدیه سازمانی، برندینگ، نمایشگاه...')
+                            ->maxLength(255),
+                        TextInput::make('qty_approx')
+                            ->label('تیراژ تقریبی')
+                            ->placeholder('مثلاً ۲۵۰۰ جلد')
+                            ->maxLength(100),
+                        Select::make('budget_band')
+                            ->label('بودجه تقریبی')
+                            ->options(Opportunity::budgetOptions())
+                            ->native(false)
+                            ->placeholder('— انتخاب —'),
+                        TextInput::make('buy_timing')
+                            ->label('زمان خرید احتمالی')
+                            ->placeholder('فوری / تا پایان ماه / فصل بعد')
+                            ->maxLength(100),
+                        Select::make('value_focus')
+                            ->label('ارزش مورد توجه مشتری')
+                            ->options(Opportunity::valueFocusOptions())
+                            ->native(false)
+                            ->live()
+                            ->placeholder('— انتخاب —'),
+                        TextInput::make('value_other')
+                            ->label('توضیح ارزش (سایر)')
+                            ->visible(fn (Get $get) => $get('value_focus') === 'other')
+                            ->maxLength(255),
+                        Textarea::make('main_objection')
+                            ->label('نگرانی یا اعتراض اصلی')
+                            ->placeholder('اگر مخالفت یا دغدغه‌ای مطرح شده بنویسید')
+                            ->rows(2)
+                            ->columnSpanFull(),
+                    ])
+                    ->columns(['default' => 1, 'md' => 2, 'xl' => 3])
+                    ->columnSpanFull(),
 
-                        Section::make('۴. مرحله قیف و وضعیت')
-                            ->description('مرحله قیف را حتماً مشخص کنید؛ برای فرصت تازه معمولاً «سرنخ اولیه» مناسب است.')
-                            ->schema([
-                                Placeholder::make('stage_guide')
-                                    ->label('')
-                                    ->content(new \Illuminate\Support\HtmlString(
-                                        '<div class="text-xs text-gray-600 dark:text-gray-300 space-y-0.5 leading-relaxed">'
-                                        . '<div><strong>سرنخ اولیه:</strong> اولین تماس یا معرفی.</div>'
-                                        . '<div><strong>واجد شرایط:</strong> بودجه و نقش تصمیم‌گیر نسبتاً روشن.</div>'
-                                        . '<div><strong>جلسه / نمایش:</strong> جلسه برگزار یا قطعی شده.</div>'
-                                        . '<div><strong>پیشنهاد ارسال‌شده:</strong> پیشنهاد رسمی ارسال شده.</div>'
-                                        . '<div><strong>مذاکره:</strong> چانه‌زنی روی قیمت یا شرایط.</div>'
-                                        . '<div><strong>بسته شدن موفق/ناموفق:</strong> سفارش قطعی یا از دست رفته.</div>'
-                                        . '</div>'
-                                    ))
-                                    ->columnSpanFull(),
-                                Select::make('stage_id')
-                                    ->label('مرحله قیف')
-                                    ->options(fn () => OpportunityStage::query()
-                                        ->where('is_active', true)
-                                        ->orderBy('sort_order')
-                                        ->pluck('name', 'id'))
-                                    ->required()
-                                    ->native(false)
-                                    ->default(fn () => OpportunityStage::query()
-                                        ->where('code', 'lead')
-                                        ->where('is_active', true)
-                                        ->value('id')),
-                                Select::make('status')
-                                    ->label('وضعیت فرصت')
-                                    ->options(Opportunity::statusOptions())
-                                    ->default(Opportunity::STATUS_ACTIVE)
-                                    ->required()
-                                    ->native(false)
-                                    ->live(),
-                                Select::make('lost_reason_code')
-                                    ->label('دلیل توقف یا باخت')
-                                    ->options(Opportunity::lostReasonOptions())
-                                    ->native(false)
-                                    ->placeholder('— فقط در صورت توقف/باخت —')
-                                    ->visible(fn (Get $get) => in_array($get('status'), [Opportunity::STATUS_LOST, Opportunity::STATUS_PAUSED], true)),
-                                TextInput::make('lost_reason')
-                                    ->label('توضیح دلیل (سایر)')
-                                    ->maxLength(255)
-                                    ->visible(fn (Get $get) => in_array($get('status'), [Opportunity::STATUS_LOST, Opportunity::STATUS_PAUSED], true)),
-                                Textarea::make('final_result')
-                                    ->label('نتیجه نهایی (اگر بسته شد)')
-                                    ->rows(2)
-                                    ->columnSpanFull()
-                                    ->visible(fn (Get $get) => in_array($get('status'), [Opportunity::STATUS_WON, Opportunity::STATUS_LOST], true)),
-                                TextInput::make('title')
-                                    ->label('عنوان فرصت')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->helperText('به‌صورت خودکار از نام سازمان پر می‌شود؛ قابل ویرایش است.')
-                                    ->columnSpanFull(),
-                                Select::make('owner_user_id')
-                                    ->label('مسئول فرصت')
-                                    ->options(fn () => User::query()->where('is_active', true)->pluck('name', 'id'))
-                                    ->default(fn () => auth()->id())
-                                    ->searchable()
-                                    ->required(),
-                                TextInput::make('amount')
-                                    ->label('مبلغ تخمینی (ریال)')
-                                    ->numeric()
-                                    ->minValue(0),
-                            ])
-                            ->columns(1),
-                    ]),
+                Section::make('۴. مرحله قیف و وضعیت')
+                    ->description('مرحله قیف را حتماً مشخص کنید؛ برای فرصت تازه معمولاً «سرنخ اولیه» مناسب است.')
+                    ->schema([
+                        Select::make('stage_id')
+                            ->label('مرحله قیف')
+                            ->options(fn () => OpportunityStage::query()
+                                ->where('is_active', true)
+                                ->orderBy('sort_order')
+                                ->pluck('name', 'id'))
+                            ->required()
+                            ->native(false)
+                            ->default(fn () => OpportunityStage::query()
+                                ->where('code', 'lead')
+                                ->where('is_active', true)
+                                ->value('id'))
+                            ->helperText('سرنخ اولیه → واجد شرایط → جلسه → پیشنهاد → مذاکره → بسته شدن'),
+                        Select::make('status')
+                            ->label('وضعیت فرصت')
+                            ->options(Opportunity::statusOptions())
+                            ->default(Opportunity::STATUS_ACTIVE)
+                            ->required()
+                            ->native(false)
+                            ->live(),
+                        Select::make('lost_reason_code')
+                            ->label('دلیل توقف یا باخت')
+                            ->options(Opportunity::lostReasonOptions())
+                            ->native(false)
+                            ->placeholder('— فقط در صورت توقف/باخت —')
+                            ->visible(fn (Get $get) => in_array($get('status'), [Opportunity::STATUS_LOST, Opportunity::STATUS_PAUSED], true)),
+                        TextInput::make('lost_reason')
+                            ->label('توضیح دلیل (سایر)')
+                            ->maxLength(255)
+                            ->visible(fn (Get $get) => in_array($get('status'), [Opportunity::STATUS_LOST, Opportunity::STATUS_PAUSED], true)),
+                        Textarea::make('final_result')
+                            ->label('نتیجه نهایی (اگر بسته شد)')
+                            ->rows(2)
+                            ->columnSpanFull()
+                            ->visible(fn (Get $get) => in_array($get('status'), [Opportunity::STATUS_WON, Opportunity::STATUS_LOST], true)),
+                        TextInput::make('title')
+                            ->label('عنوان فرصت')
+                            ->required()
+                            ->maxLength(255)
+                            ->helperText('به‌صورت خودکار از نام سازمان پر می‌شود؛ قابل ویرایش است.')
+                            ->columnSpanFull(),
+                        Select::make('owner_user_id')
+                            ->label('مسئول فرصت')
+                            ->options(fn () => User::query()->where('is_active', true)->pluck('name', 'id'))
+                            ->default(fn () => auth()->id())
+                            ->searchable()
+                            ->required(),
+                        TextInput::make('amount')
+                            ->label('مبلغ تخمینی (ریال)')
+                            ->numeric()
+                            ->minValue(0),
+                    ])
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->columnSpanFull(),
 
                 Section::make('۵. گام پیگیری')
                     ->description('گام بعدی و مهلت پیگیری را مشخص کنید.')
@@ -258,7 +248,8 @@ class OpportunityResource extends Resource
                             ->disabled(fn () => ! (auth()->user()?->isCompanyAdmin() ?? false))
                             ->dehydrated(),
                     ])
-                    ->columns(['default' => 1, 'md' => 2]),
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->columnSpanFull(),
 
                 Section::make('۶. یادداشت شروع')
                     ->description('اختیاری')
@@ -271,7 +262,9 @@ class OpportunityResource extends Resource
                         TextInput::make('source')
                             ->label('منبع / کمپین')
                             ->maxLength(255),
-                    ]),
+                    ])
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->columnSpanFull(),
             ]);
     }
 
