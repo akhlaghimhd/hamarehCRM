@@ -8,3 +8,5 @@
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 @source '../../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+/* Jalali DatePicker (mokhosh) — بدون این، تقویم به‌صورت فیلد دراز خراب دیده می‌شود */
+@source '../../../../vendor/mokhosh/filament-jalali/resources/**/*';
