@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        return $panel
+        $panel = $panel
             ->default()
             ->id('admin')
             ->path('admin')
@@ -88,7 +88,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
+            ]);
+
+        // Kinetics فقط اگر بسته نصب شده باشد (trial) — بدون composer require خطای class نمی‌دهد
+        if (class_exists(\Otatechie\Kinetics\KineticsPlugin::class)) {
+            $panel = $panel->plugin(\Otatechie\Kinetics\KineticsPlugin::make());
+            // فونت تم را بعد از پلاگین override کنید تا فارسی نشکند (در CSS هم Vazirmatn دارید)
+        }
+
+        return $panel
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">'
