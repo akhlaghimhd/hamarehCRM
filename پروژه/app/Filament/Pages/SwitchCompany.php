@@ -25,7 +25,7 @@ class SwitchCompany extends Page
 
     public ?int $company_id = null;
 
-    /** @var array<int, string> */
+    /** @var array<int, array{id:int,name:string}> */
     public array $companyOptions = [];
 
     public function mount(): void
@@ -37,12 +37,19 @@ class SwitchCompany extends Page
         }
 
         $this->companyOptions = $user->companies()
-            ->orderBy('name')
-            ->get()
-            ->mapWithKeys(fn ($c) => [$c->id => $c->name])
+            ->orderBy('companies.name')
+            ->get(['companies.id', 'companies.name'])
+            ->map(fn ($c) => ['id' => (int) $c->id, 'name' => (string) $c->name])
+            ->values()
             ->all();
 
-        $this->company_id = (int) (session('current_company_id') ?? $user->currentCompanyId());
+        $current = (int) (session('current_company_id') ?? $user->currentCompanyId());
+
+        $allowedIds = collect($this->companyOptions)->pluck('id')->all();
+
+        $this->company_id = in_array($current, $allowedIds, true)
+            ? $current
+            : ($allowedIds[0] ?? null);
     }
 
     public function switch(): void

@@ -1,20 +1,24 @@
 <x-filament-panels::page>
     <form wire:submit="switch" class="fi-section rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 space-y-4 max-w-lg">
-        <div>
-            <label class="fi-fo-field-wrp-label inline-flex items-center gap-x-3">
-                <span class="text-sm font-medium text-gray-950 dark:text-white">شرکت جاری</span>
-            </label>
-            <select
-                wire:model="company_id"
-                class="fi-select-input mt-2 block w-full rounded-lg border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-900"
-            >
-                @foreach ($companyOptions as $id => $name)
-                    <option value="{{ $id }}">{{ $name }}</option>
-                @endforeach
-            </select>
+        <div class="space-y-2">
+            <div class="text-sm font-medium text-gray-950 dark:text-white">شرکت جاری</div>
+
+            @forelse ($companyOptions as $option)
+                <label class="flex items-center gap-3 rounded-lg border border-gray-200 px-3 py-2 dark:border-gray-700 cursor-pointer">
+                    <input
+                        type="radio"
+                        wire:model="company_id"
+                        value="{{ $option['id'] }}"
+                        class="h-4 w-4"
+                    >
+                    <span>{{ $option['name'] }}</span>
+                </label>
+            @empty
+                <p class="text-sm text-danger-600">هیچ شرکتی به این کاربر وصل نیست.</p>
+            @endforelse
         </div>
 
-        <x-filament::button type="submit">
+        <x-filament::button type="submit" :disabled="empty($companyOptions)">
             اعمال شرکت جاری
         </x-filament::button>
     </form>
