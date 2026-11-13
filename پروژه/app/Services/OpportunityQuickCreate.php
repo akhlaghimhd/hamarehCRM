@@ -49,6 +49,15 @@ class OpportunityQuickCreate
 
             $due = $data['next_step_due'] ?? now()->addDays(3);
 
+            $products = $data['product_interest'] ?? [];
+            if (is_string($products)) {
+                $products = $products !== '' ? [$products] : [];
+            }
+            if (! is_array($products)) {
+                $products = [];
+            }
+            $products = array_values(array_filter($products));
+
             /** @var Opportunity $opportunity */
             $opportunity = Opportunity::query()->create([
                 'customer_id' => $customer->id,
@@ -62,7 +71,7 @@ class OpportunityQuickCreate
                 'mobile' => $this->normalizePhone($data['mobile'] ?? null) ?: ($data['mobile'] ?? null),
                 'phone' => $data['phone'] ?? null,
                 'email' => $data['email'] ?? null,
-                'product_interest' => $data['product_interest'] ?? null,
+                'product_interest' => $products ?: null,
                 'industry' => $data['industry'] ?? null,
                 'status' => Opportunity::STATUS_ACTIVE,
                 'amount' => $data['amount'] ?? null,
@@ -106,7 +115,6 @@ class OpportunityQuickCreate
                     if ($rawPhone && $rawPhone !== $phone) {
                         $q->orWhere('phone', $rawPhone);
                     }
-                    // ارقام فارسی/عربی نرمال‌شده در مقایسه ساده
                     $digits = preg_replace('/\D+/', '', (string) $phone);
                     if ($digits !== '') {
                         $q->orWhereRaw(
@@ -151,9 +159,22 @@ class OpportunityQuickCreate
     public function suggestNextStep(array $data): string
     {
         $contact = trim((string) ($data['contact_name'] ?? ''));
-        $product = $data['product_interest'] ?? null;
+        $products = $data['product_interest'] ?? [];
+        if (is_string($products)) {
+            $products = $products !== '' ? [$products] : [];
+        }
+        if (! is_array($products)) {
+            $products = [];
+        }
 
-        $productLabel = Opportunity::productInterestOptions()[$product] ?? null;
+        $map = Opportunity::productInterestOptions();
+        $labels = [];
+        foreach ($products as $code) {
+            if (isset($map[$code])) {
+                $labels[] = $map[$code];
+            }
+        }
+        $productLabel = $labels !== [] ? implode(' و ', $labels) : null;
 
         if ($contact !== '' && $productLabel) {
             return "تماس با {$contact} درباره {$productLabel}";

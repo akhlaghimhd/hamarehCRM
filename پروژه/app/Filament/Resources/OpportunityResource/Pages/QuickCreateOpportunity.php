@@ -88,14 +88,18 @@ class QuickCreateOpportunity extends CreateRecord
                 ->columns(['default' => 1, 'md' => 2]),
 
             Section::make('محصول و مرحله')
-                ->description('پیش‌فرض: سرنخ اولیه در قیف.')
+                ->description('می‌توانید چند خط محصول انتخاب کنید (مثلاً نوتوپیا و چلیوا).')
                 ->schema([
                     Select::make('product_interest')
-                        ->label('محصول')
+                        ->label('خطوط محصول')
                         ->options(Opportunity::productInterestOptions())
-                        ->default('notopia_yearbook')
+                        ->multiple()
+                        ->searchable()
                         ->native(false)
-                        ->required(),
+                        ->required()
+                        ->default(['notopia'])
+                        ->helperText('از فهرست محصولات اصلی شرکت — چندتایی مجاز است')
+                        ->columnSpanFull(),
                     Select::make('stage_id')
                         ->label('مرحله قیف')
                         ->options(fn () => OpportunityStage::query()
@@ -150,7 +154,6 @@ class QuickCreateOpportunity extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // منطق اصلی در handleRecordCreation با سرویس انجام می‌شود
         return $data;
     }
 
