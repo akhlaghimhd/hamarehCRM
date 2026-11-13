@@ -12,6 +12,7 @@ use App\Support\Fa;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -20,7 +21,8 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Tables;\nuse Filament\Tables\Table;
+use Filament\Tables;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
@@ -360,60 +362,18 @@ class OpportunityResource extends Resource
                             ->validationMessages([
                                 'required' => 'گام بعدی را بنویسید تا پیگیری از دست نرود.',
                             ]),
-                        TextInput::make('next_step_due')
-                            ->label('مهلت گام (شمسی)')
-                            ->placeholder('۱۴۰۴/۰۸/۲۵')
-                            ->maxLength(10)
-                            ->extraInputAttributes(['inputmode' => 'numeric', 'dir' => 'ltr', 'class' => 'text-left'])
-                            ->formatStateUsing(function ($state) {
-                                if ($state === null || $state === '') {
-                                    return null;
-                                }
-                                $en = Fa::toEnglishDigits((string) $state);
-                                if (preg_match('/^(\d{4})\//', $en, $m) && (int) $m[1] > 1500) {
-                                    return Fa::digits($en);
-                                }
-
-                                return Fa::dateTime($state, 'Y/m/d');
-                            })
-                            ->default(function () {
-                                if (class_exists(\Morilog\Jalali\Jalalian::class)) {
-                                    return Fa::digits(\Morilog\Jalali\Jalalian::now()->addDays(3)->format('Y/m/d'));
-                                }
-
-                                return Fa::digits(now()->addDays(3)->format('Y/m/d'));
-                            })
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state, Set $set) {
-                                if ($state === null || $state === '') {
-                                    return;
-                                }
-                                $en = Fa::toEnglishDigits((string) $state);
-                                $en = preg_replace('/[^\d\/]/', '', $en) ?: '';
-                                $set('next_step_due', Fa::digits($en));
-                            })
-                            ->rules([
-                                'required',
-                                function () {
-                                    return function (string $attribute, $value, \Closure $fail): void {
-                                        if ($value === null || trim((string) $value) === '') {
-                                            $fail('مهلت گام را مشخص کنید.');
-
-                                            return;
-                                        }
-                                        $en = Fa::toEnglishDigits((string) $value);
-                                        if (! preg_match('/^\d{4}\/\d{1,2}\/\d{1,2}$/', $en)) {
-                                            $fail('تاریخ را به‌صورت شمسی وارد کنید (مثال: ۱۴۰۴/۰۸/۲۵).');
-
-                                            return;
-                                        }
-                                        if (Fa::parseJalaliDate($en) === null) {
-                                            $fail('تاریخ شمسی معتبر نیست.');
-                                        }
-                                    };
-                                },
-                            ])
-                            ->markAsRequired(),
+                        DatePicker::make('next_step_due')
+                            ->label('مهلت گام')
+                            ->jalali()
+                            ->native(false)
+                            ->displayFormat('Y/m/d')
+                            ->default(now()->addDays(3))
+                            ->rules(['required', 'date'])
+                            ->markAsRequired()
+                            ->validationMessages([
+                                'required' => 'مهلت گام را مشخص کنید.',
+                                'date' => 'تاریخ معتبر وارد کنید.',
+                            ]),
                         Textarea::make('notes')
                             ->label('یادداشت شروع')
                             ->rows(2)
