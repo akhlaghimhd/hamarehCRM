@@ -2,11 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
 
 class SwitchCompany extends Page
@@ -21,8 +18,6 @@ class SwitchCompany extends Page
 
     protected static ?int $navigationSort = 100;
 
-    protected static bool $shouldRegisterNavigation = false;
-
     /**
      * @var view-string
      */
@@ -30,26 +25,24 @@ class SwitchCompany extends Page
 
     public ?int $company_id = null;
 
-    public function mount(): void
-    {
-        $this->company_id = (int) (session('current_company_id') ?? Auth::user()?->currentCompanyId());
-    }
+    /** @var array<int, string> */
+    public array $companyOptions = [];
 
-    public function form(Schema $schema): Schema
+    public function mount(): void
     {
         $user = Auth::user();
 
-        $options = $user
-            ? $user->companies()->orderBy('name')->pluck('name', 'companies.id')->all()
-            : [];
+        if (! $user) {
+            return;
+        }
 
-        return $schema->components([
-            Select::make('company_id')
-                ->label('شرکت جاری')
-                ->options($options)
-                ->required()
-                ->native(false),
-        ]);
+        $this->companyOptions = $user->companies()
+            ->orderBy('name')
+            ->get()
+            ->mapWithKeys(fn ($c) => [$c->id => $c->name])
+            ->all();
+
+        $this->company_id = (int) (session('current_company_id') ?? $user->currentCompanyId());
     }
 
     public function switch(): void
