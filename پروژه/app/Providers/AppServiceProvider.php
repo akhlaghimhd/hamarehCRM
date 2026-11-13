@@ -27,11 +27,26 @@ class AppServiceProvider extends ServiceProvider
 
         if (! app()->runningInConsole()) {
             $this->app->booted(function () {
-                if (Auth::check() && ! session()->has('current_company_id')) {
-                    $user = Auth::user();
+                if (! Auth::check()) {
+                    return;
+                }
+
+                $user = Auth::user();
+                $current = session('current_company_id');
+
+                // اگر شرکت نشست متعلق به کاربر نیست، پاک و پیش‌فرض بگذار
+                if ($current && method_exists($user, 'companies')) {
+                    $allowed = $user->companies()->where('companies.id', $current)->exists();
+                    if (! $allowed) {
+                        session()->forget('current_company_id');
+                        $current = null;
+                    }
+                }
+
+                if (! $current) {
                     $company = method_exists($user, 'defaultCompany')
                         ? $user->defaultCompany()
-                        : Company::query()->first();
+                        : null;
 
                     if ($company) {
                         session(['current_company_id' => $company->id]);
