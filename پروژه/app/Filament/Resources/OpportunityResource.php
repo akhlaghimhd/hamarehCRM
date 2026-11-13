@@ -374,11 +374,7 @@ class OpportunityResource extends Resource
                             ->validationMessages([
                                 'required' => 'مهلت گام را مشخص کنید.',
                                 'date' => 'تاریخ معتبر وارد کنید.',
-                            ])
-                            ->when(
-                                DatePicker::hasMacro('jalali'),
-                                fn (DatePicker $component) => $component->jalali(),
-                            ),
+                            ]),
                         Textarea::make('notes')
                             ->label('یادداشت شروع')
                             ->rows(2)
