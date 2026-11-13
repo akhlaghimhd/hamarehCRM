@@ -274,7 +274,7 @@ class OpportunityResource extends Resource
                             ->maxLength(80),
                         Textarea::make('main_objection')
                             ->label('نگرانی یا اعتراض اصلی')
-                            ->placeholder('اگر مخالفت یا دغدغه‌ای مطرح شده')
+ ->placeholder('اگر مخالفت یا دغدغه‌ای مطرح شده')
                             ->rows(2)
                             ->maxLength(500)
                             ->columnSpanFull(),
@@ -366,16 +366,18 @@ class OpportunityResource extends Resource
                             ]),
                         DatePicker::make('next_step_due')
                             ->label('مهلت گام')
-                            ->jalali()
+                            ->jalali(weekdaysShort: true)
+                            ->hasToday()
                             ->native(false)
-                            ->displayFormat('Y/m/d')
+                            ->closeOnDateSelection()
                             ->default(now()->addDays(3))
                             ->rules(['required', 'date'])
                             ->markAsRequired()
                             ->validationMessages([
                                 'required' => 'مهلت گام را مشخص کنید.',
                                 'date' => 'تاریخ معتبر وارد کنید.',
-                            ]),
+                            ])
+                            ->columnSpan(1),
                         Textarea::make('notes')
                             ->label('یادداشت شروع')
                             ->rows(2)
