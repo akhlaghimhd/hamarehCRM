@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             MasterProductsSeeder::class,
             NotopiaCatalogSeeder::class,
             CoverMasterSeeder::class,
+            MarketingSeeder::class,
         ]);
     }
 }
