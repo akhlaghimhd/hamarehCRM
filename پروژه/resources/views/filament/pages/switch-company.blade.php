@@ -12,7 +12,7 @@
                             <div class="sc-user-name">{{ $userMeta['name'] }}</div>
                             <div class="sc-user-sub">
                                 <span dir="ltr">{{ '@' . $userMeta['username'] }}</span>
-                                <span class="sc-dot">·</span>
+                                <span class="sc-dot" aria-hidden="true">·</span>
                                 <span dir="ltr">{{ $userMeta['email'] }}</span>
                             </div>
                         </div>
@@ -58,7 +58,7 @@
         <section class="sc-card">
             <div class="sc-card-head">
                 <h2 class="sc-card-title">انتخاب شرکت</h2>
-                <span class="sc-hint">{{ count($companyOptions) }} شرکت در دسترس</span>
+                <span class="sc-hint">{{ count($companyOptions) }} شرکت</span>
             </div>
             <div class="sc-card-body">
                 <form wire:submit="switch" class="sc-form">
@@ -91,11 +91,11 @@
                                     <div class="sc-option-sub">
                                         <span>نقش: {{ $option['role_label'] }}</span>
                                         @if ($option['slug'])
-                                            <span class="sc-dot">·</span>
+                                            <span class="sc-dot" aria-hidden="true">·</span>
                                             <span dir="ltr">{{ $option['slug'] }}</span>
                                         @endif
                                         @if ($option['phone'])
-                                            <span class="sc-dot">·</span>
+                                            <span class="sc-dot" aria-hidden="true">·</span>
                                             <span dir="ltr">{{ $option['phone'] }}</span>
                                         @endif
                                     </div>

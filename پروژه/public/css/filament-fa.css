@@ -110,19 +110,22 @@ html {
   line-height: 1.3 !important;
 }
 
-/* ========== صفحه تعویض شرکت ========== */
+/* ========== صفحه تعویض شرکت (موبایل‌اول) ========== */
 .sc-page {
-  max-width: 40rem;
+  width: 100%;
+  max-width: 28rem;
   margin-inline: auto;
+  padding-inline: 0.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
+  box-sizing: border-box;
 }
 
 .sc-card {
   background: #f9fafb;
   border: 1px solid rgba(10, 10, 10, 0.08);
-  border-radius: 0.85rem;
+  border-radius: 0.75rem;
   overflow: hidden;
 }
 
@@ -134,15 +137,15 @@ html.dark .sc-card {
 
 .sc-card--current {
   border-color: rgba(245, 158, 11, 0.45);
-  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.15);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12);
 }
 
 .sc-card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.7rem 1rem;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
   border-bottom: 1px solid rgba(10, 10, 10, 0.06);
 }
 
@@ -153,35 +156,39 @@ html.dark .sc-card-head {
 
 .sc-card-title {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: inherit;
+  line-height: 1.3;
 }
 
 .sc-hint {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   opacity: 0.65;
+  white-space: nowrap;
 }
 
 .sc-card-body {
-  padding: 1rem;
+  padding: 0.85rem;
 }
 
 .sc-user-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.75rem;
+  min-width: 0;
 }
 
 .sc-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.35rem;
+  height: 2.35rem;
   border-radius: 999px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   background: rgba(245, 158, 11, 0.18);
   color: #b45309;
   flex-shrink: 0;
@@ -192,68 +199,82 @@ html.dark .sc-avatar {
   color: #fbbf24;
 }
 
+.sc-user-meta {
+  min-width: 0;
+  flex: 1;
+}
+
 .sc-user-name {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
+  line-height: 1.3;
 }
 
 .sc-user-sub {
-  margin-top: 0.15rem;
-  font-size: 0.78rem;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
   opacity: 0.7;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem 0.35rem;
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 .sc-current-name {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
-  margin-bottom: 0.85rem;
+  margin-bottom: 0.7rem;
+  line-height: 1.35;
 }
 
 .sc-meta-grid {
   margin: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.65rem 1rem;
+  gap: 0.55rem 0.75rem;
 }
 
-@media (max-width: 520px) {
-  .sc-meta-grid {
-    grid-template-columns: 1fr;
-  }
+.sc-meta-item {
+  min-width: 0;
 }
 
 .sc-meta-item dt {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   opacity: 0.6;
+  line-height: 1.3;
 }
 
 .sc-meta-item dd {
-  margin: 0.15rem 0 0;
-  font-size: 0.875rem;
+  margin: 0.12rem 0 0;
+  font-size: 0.82rem;
   font-weight: 500;
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 .sc-options {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 0.5rem;
 }
 
 .sc-option {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.85rem 0.9rem;
-  border-radius: 0.7rem;
+  gap: 0.65rem;
+  padding: 0.75rem 0.8rem;
+  min-height: 3rem;
+  border-radius: 0.65rem;
   border: 1px solid rgba(10, 10, 10, 0.1);
   background: transparent;
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dark .sc-option,
@@ -269,7 +290,7 @@ html.dark .sc-option {
 .sc-option:has(.sc-radio:checked) {
   border-color: rgba(245, 158, 11, 0.55);
   background: rgba(245, 158, 11, 0.08);
-  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.18);
 }
 
 .sc-option.is-current:not(.is-selected):not(:has(.sc-radio:checked)) {
@@ -277,10 +298,10 @@ html.dark .sc-option {
 }
 
 .sc-radio {
-  margin-top: 0.2rem;
+  margin-top: 0.15rem;
   accent-color: #f59e0b;
-  width: 1rem;
-  height: 1rem;
+  width: 1.05rem;
+  height: 1.05rem;
   flex-shrink: 0;
 }
 
@@ -293,28 +314,30 @@ html.dark .sc-option {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.45rem 0.6rem;
+  gap: 0.35rem 0.5rem;
 }
 
 .sc-option-name {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
+  line-height: 1.35;
 }
 
 .sc-option-badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.25rem;
 }
 
 .sc-option-sub {
-  margin-top: 0.3rem;
-  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  font-size: 0.72rem;
   opacity: 0.7;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem 0.35rem;
+  line-height: 1.35;
 }
 
 .sc-dot {
@@ -325,11 +348,12 @@ html.dark .sc-option {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  padding: 0.1rem 0.5rem;
-  font-size: 0.68rem;
+  padding: 0.08rem 0.45rem;
+  font-size: 0.65rem;
   font-weight: 600;
   line-height: 1.4;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 
 .sc-pill--ok {
@@ -379,13 +403,134 @@ html.dark .sc-pill--danger {
 }
 
 .sc-actions {
-  margin-top: 1.1rem;
+  margin-top: 0.9rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: stretch;
+}
+
+.sc-actions .fi-btn,
+.sc-actions button {
+  width: 100%;
+  justify-content: center;
 }
 
 .sc-empty {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   color: #b91c1c;
+}
+
+/* تبلت */
+@media (min-width: 480px) {
+  .sc-page {
+    max-width: 34rem;
+    gap: 0.85rem;
+    padding-inline: 0.5rem;
+  }
+
+  .sc-card-body {
+    padding: 1rem;
+  }
+
+  .sc-card-head {
+    padding: 0.65rem 1rem;
+  }
+
+  .sc-option {
+    padding: 0.85rem 0.95rem;
+  }
+}
+
+/* دسکتاپ */
+@media (min-width: 768px) {
+  .sc-page {
+    max-width: 42rem;
+    gap: 1rem;
+    padding-inline: 0;
+  }
+
+  .sc-card {
+    border-radius: 0.85rem;
+  }
+
+  .sc-card-title {
+    font-size: 0.9rem;
+  }
+
+  .sc-hint {
+    font-size: 0.75rem;
+  }
+
+  .sc-card-head {
+    padding: 0.7rem 1.1rem;
+  }
+
+  .sc-card-body {
+    padding: 1.1rem 1.15rem;
+  }
+
+  .sc-avatar {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 1rem;
+  }
+
+  .sc-user-name {
+    font-size: 0.98rem;
+  }
+
+  .sc-user-sub {
+    font-size: 0.78rem;
+  }
+
+  .sc-current-name {
+    font-size: 1.08rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .sc-meta-grid {
+    gap: 0.7rem 1.25rem;
+  }
+
+  .sc-meta-item dt {
+    font-size: 0.72rem;
+  }
+
+  .sc-meta-item dd {
+    font-size: 0.88rem;
+  }
+
+  .sc-option {
+    padding: 0.9rem 1rem;
+    gap: 0.8rem;
+  }
+
+  .sc-option-name {
+    font-size: 0.92rem;
+  }
+
+  .sc-option-sub {
+    font-size: 0.75rem;
+  }
+
+  .sc-actions {
+    justify-content: flex-end;
+  }
+
+  .sc-actions .fi-btn,
+  .sc-actions button {
+    width: auto;
+    min-width: 12rem;
+  }
+}
+
+/* خیلی باریک: متا یک‌ستونه */
+@media (max-width: 360px) {
+  .sc-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sc-page {
+    padding-inline: 0;
+  }
 }
