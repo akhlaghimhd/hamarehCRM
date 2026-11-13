@@ -1,10 +1,10 @@
-/* Kinetics layers MUST come before Filament theme */
+@import 'tailwindcss';
+
+/* Kinetics: layers before Filament, kinetics after */
 @import '../../../../vendor/otatechie/filament-kinetics/resources/css/layers.css';
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 @import '../../../../vendor/otatechie/filament-kinetics/resources/css/kinetics.css';
 
-/* Tailwind v4 sources for Filament app code */
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
-
-/* Keep Persian UI overrides after Kinetics (loaded also via filament-fa.css hook) */
+@source '../../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
