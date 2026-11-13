@@ -44,10 +44,10 @@
                         </div>
                         <div class="opp-card__actions">
                             @if (filled($opportunity->next_step))
-                                {{ ($this->closeStepAction)() }}
-                                {{ ($this->clearStepAction)() }}
+                                {{ $this->closeStepAction }}
+                                {{ $this->clearStepAction }}
                             @else
-                                {{ ($this->setStepAction)() }}
+                                {{ $this->setStepAction }}
                             @endif
                         </div>
                     </div>
@@ -64,7 +64,7 @@
                     <div class="opp-activities">
                         <div class="opp-activities__head">
                             <span class="opp-kicker">فعالیت‌های این گام</span>
-                            {{ ($this->logActivityAction)() }}
+                            {{ $this->logActivityAction }}
                         </div>
 
                         @if ($activities->isEmpty())
@@ -161,4 +161,6 @@
             </aside>
         </div>
     </div>
+
+    <x-filament-actions::modals />
 </x-filament-panels::page>
