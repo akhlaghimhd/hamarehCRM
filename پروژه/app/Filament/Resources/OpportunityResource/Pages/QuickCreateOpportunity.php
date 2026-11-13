@@ -167,7 +167,7 @@ class QuickCreateOpportunity extends CreateRecord
 
     protected function getRedirectUrl(): string
     {
-        return OpportunityResource::getUrl('edit', ['record' => $this->record]);
+        return OpportunityResource::getUrl('view', ['record' => $this->record]);
     }
 
     protected function getCreateFormAction(): Action
