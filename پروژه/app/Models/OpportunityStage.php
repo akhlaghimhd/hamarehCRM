@@ -14,6 +14,7 @@ class OpportunityStage extends Model
         'company_id',
         'code',
         'name',
+        'description',
         'sort_order',
         'is_won',
         'is_lost',
