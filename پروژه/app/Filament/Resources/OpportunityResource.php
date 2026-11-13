@@ -230,13 +230,13 @@ class OpportunityResource extends Resource
                     ])
                     ->columns(['default' => 1, 'md' => 2]),
 
-                Section::make('۵. گام اول پیگیری')
-                    ->description('مشخص کنید بعد از ثبت، چه کاری باید انجام شود و تا کی.')
+                Section::make('۵. گام پیگیری')
+                    ->description('گام بعدی و مهلت پیگیری را مشخص کنید.')
                     ->schema([
                         Textarea::make('next_step')
                             ->label('گام بعدی')
                             ->placeholder('مثال: تماس سه‌شنبه برای هماهنگی جلسه با مدیر خرید')
-                            ->required()
+                            ->required(fn (string $operation): bool => $operation === 'create')
                             ->rows(2)
                             ->columnSpanFull(),
                         DatePicker::make('next_step_due')
@@ -339,6 +339,9 @@ class OpportunityResource extends Resource
             ])
             ->emptyStateHeading('فرصتی ثبت نشده')
             ->emptyStateDescription('اولین فرصت فروش را ایجاد کنید.')
+            ->emptyStateActions([
+                \Filament\Actions\CreateAction::make()->label('فرصت جدید'),
+            ])
             ->recordActions([
                 EditAction::make()->label('ویرایش')
                     ->visible(fn ($record) => static::canEdit($record)),
