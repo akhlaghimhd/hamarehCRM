@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ac58aadaaeff7497d00197798345cfb1",
+    "content-hash": "fd3fe3fd7f68cbf1aef63608d3c0f064",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -71,6 +71,78 @@
             },
             "time": "2026-09-13T06:25:37+00:00",
             "published-time": "2026-09-13T06:26:57+00:00"
+        },
+        {
+            "name": "ariaieboy/filament-jalali",
+            "version": "2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ariaieboy/filament-jalali.git",
+                "reference": "ee74bd03b67d6358da079ea0bb3ef653edd4c54e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ariaieboy/filament-jalali/zipball/ee74bd03b67d6358da079ea0bb3ef653edd4c54e",
+                "reference": "ee74bd03b67d6358da079ea0bb3ef653edd4c54e",
+                "shasum": ""
+            },
+            "require": {
+                "ariaieboy/jalali": "^1.0.1",
+                "filament/filament": "^4",
+                "php": "~8.2.0|~8.3|~8.4|~8.5",
+                "spatie/laravel-package-tools": "^1.13.5"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.11",
+                "larastan/larastan": "^3",
+                "nunomaduro/collision": "^8",
+                "orchestra/testbench": "^10",
+                "pestphp/pest": "^3",
+                "pestphp/pest-plugin-laravel": "^3",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan-deprecation-rules": "^2",
+                "phpstan/phpstan-phpunit": "^2"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Ariaieboy\\FilamentJalali\\FilamentJalaliServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Ariaieboy\\FilamentJalali\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "ariaieboy",
+                    "email": "ariaieboy.ir@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Add Jalali/Shamsi support for FilamentPHP",
+            "homepage": "https://github.com/ariaieboy/filament-jalali",
+            "keywords": [
+                "ariaieboy",
+                "filament-jalali-datetimepicker",
+                "filament-jalali-support",
+                "filament-shamsi-calendar",
+                "filament-shamsi-support",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/ariaieboy/filament-jalali/issues",
+                "source": "https://github.com/ariaieboy/filament-jalali/tree/2.2.0"
+            },
+            "time": "2026-01-05T15:41:21+00:00",
+            "published-time": "2026-01-05T15:41:34+00:00"
         },
         {
             "name": "ariaieboy/jalali",
