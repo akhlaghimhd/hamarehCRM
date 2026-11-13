@@ -21,7 +21,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
@@ -397,26 +399,26 @@ class OpportunityResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->label('عنوان')
                     ->searchable()
                     ->sortable()
                     ->limit(36)
                     ->description(fn ($record) => $record->organization_name ?: $record->customer?->name),
-                Tables\Columns\TextColumn::make('contact_name')
+                TextColumn::make('contact_name')
                     ->label('تماس')
                     ->toggleable()
                     ->placeholder('—'),
-                Tables\Columns\TextColumn::make('product_interest')
+                TextColumn::make('product_interest')
                     ->label('محصول')
                     ->formatStateUsing(fn ($record) => $record->productInterestLabel())
                     ->toggleable()
                     ->wrap(),
-                Tables\Columns\TextColumn::make('stage.name')
+                TextColumn::make('stage.name')
                     ->label('مرحله')
                     ->badge()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->label('وضعیت')
                     ->badge()
                     ->formatStateUsing(fn (?string $state): string => Opportunity::statusOptions()[$state] ?? ($state ?? '—'))
@@ -428,38 +430,38 @@ class OpportunityResource extends Resource
                         'lost' => 'danger',
                         default => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('next_step')
+                TextColumn::make('next_step')
                     ->label('گام بعدی')
                     ->limit(28)
                     ->toggleable()
                     ->placeholder('—'),
-                Tables\Columns\TextColumn::make('next_step_due')
+                TextColumn::make('next_step_due')
                     ->label('مهلت')
                     ->formatStateUsing(fn ($state) => $state ? Fa::dateTime($state, 'Y/m/d') : '—')
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('owner.name')
+                TextColumn::make('owner.name')
                     ->label('مالک')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('amount')
+                TextColumn::make('amount')
                     ->label('بودجه')
                     ->formatStateUsing(fn ($state) => $state !== null ? Fa::number($state) : '—')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label('به‌روزرسانی')
                     ->since()
                     ->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('stage_id')
+                SelectFilter::make('stage_id')
                     ->label('مرحله')
                     ->options(fn () => OpportunityStage::query()->orderBy('sort_order')->pluck('name', 'id')),
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->label('وضعیت')
                     ->options(Opportunity::statusOptions()),
-                Tables\Filters\Filter::make('mine')
+                Filter::make('mine')
                     ->label('مال من')
                     ->query(fn (Builder $query) => $query->where('owner_user_id', auth()->id()))
                     ->toggle(),
