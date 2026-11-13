@@ -16,7 +16,7 @@ class ListOpportunities extends ListRecords
     {
         return [
             CreateAction::make()
-                ->label('ایجاد فرصت')
+                ->label('فرصت جدید')
                 ->visible(fn () => OpportunityResource::canCreate()),
         ];
     }
