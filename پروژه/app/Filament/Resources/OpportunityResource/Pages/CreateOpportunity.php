@@ -89,9 +89,15 @@ class CreateOpportunity extends CreateRecord
             }
         }
 
+        // DatePicker::jalali() normally dehydrates Gregorian Y-m-d; keep fallback for typed Jalali.
         if (isset($data['next_step_due']) && is_string($data['next_step_due'])) {
-            $parsed = Fa::parseJalaliDate($data['next_step_due']);
-            $data['next_step_due'] = $parsed?->toDateString();
+            $raw = Fa::toEnglishDigits($data['next_step_due']);
+            if (preg_match('/^(\d{4})\//', $raw, $m) && (int) $m[1] > 1500) {
+                $parsed = Fa::parseJalaliDate($raw);
+                if ($parsed) {
+                    $data['next_step_due'] = $parsed->toDateString();
+                }
+            }
         }
 
         return $data;
