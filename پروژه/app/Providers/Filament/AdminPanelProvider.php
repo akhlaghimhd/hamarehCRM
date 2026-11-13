@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->rtl()
             ->sidebarCollapsibleOnDesktop()
             ->sidebarWidth('15rem')
             ->collapsedSidebarWidth('4.5rem')
@@ -36,7 +37,6 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            
             ->navigationGroups([
                 'نوتوپیا',
                 'تنظیمات کاتالوگ',
