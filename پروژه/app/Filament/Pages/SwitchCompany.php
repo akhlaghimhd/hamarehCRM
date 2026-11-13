@@ -50,17 +50,26 @@ class SwitchCompany extends Page
         $user = Auth::user();
 
         if (! $user) {
-            return ['companyOptions' => [], 'optionsCount' => 0];
+            return [
+                'companyOptions' => [],
+                'optionsCount' => 0,
+                'authUserId' => null,
+                'authUsername' => null,
+                'pivotCount' => 0,
+            ];
         }
 
-        $options = DB::table('company_user')
-            ->join('companies', 'companies.id', '=', 'company_user.company_id')
-            ->where('company_user.user_id', $user->id)
-            ->whereNull('companies.deleted_at')
-            ->orderBy('companies.name')
+        $pivotCount = (int) DB::table('company_user')
+            ->where('user_id', $user->id)
+            ->count();
+
+        $options = DB::table('company_user as cu')
+            ->join('companies as c', 'c.id', '=', 'cu.company_id')
+            ->where('cu.user_id', $user->id)
+            ->orderBy('c.name')
             ->get([
-                'companies.id as id',
-                'companies.name as name',
+                'c.id as id',
+                'c.name as name',
             ])
             ->map(fn ($row) => [
                 'id' => (int) $row->id,
@@ -72,6 +81,9 @@ class SwitchCompany extends Page
         return [
             'companyOptions' => $options,
             'optionsCount' => count($options),
+            'authUserId' => (int) $user->id,
+            'authUsername' => (string) ($user->username ?? $user->email),
+            'pivotCount' => $pivotCount,
         ];
     }
 

@@ -1,5 +1,8 @@
 <x-filament-panels::page>
-    <div class="mb-3 text-sm text-gray-500">تعداد شرکت‌های قابل انتخاب: {{ $optionsCount ?? 0 }}</div>
+    <div class="mb-3 space-y-1 text-sm text-gray-500">
+        <div>user_id={{ $authUserId ?? '-' }} username={{ $authUsername ?? '-' }}</div>
+        <div>pivot_rows={{ $pivotCount ?? 0 }} | options={{ $optionsCount ?? 0 }}</div>
+    </div>
 
     <form wire:submit="switch" class="fi-section rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10 space-y-4 max-w-lg">
         <div class="space-y-2">
