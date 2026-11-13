@@ -366,7 +366,6 @@ class OpportunityResource extends Resource
                             ]),
                         DatePicker::make('next_step_due')
                             ->label('مهلت گام')
-                            ->jalali()
                             ->native(false)
                             ->displayFormat('Y/m/d')
                             ->default(now()->addDays(3))
@@ -375,7 +374,11 @@ class OpportunityResource extends Resource
                             ->validationMessages([
                                 'required' => 'مهلت گام را مشخص کنید.',
                                 'date' => 'تاریخ معتبر وارد کنید.',
-                            ]),
+                            ])
+                            ->when(
+                                DatePicker::hasMacro('jalali'),
+                                fn (DatePicker $component) => $component->jalali(),
+                            ),
                         Textarea::make('notes')
                             ->label('یادداشت شروع')
                             ->rows(2)
