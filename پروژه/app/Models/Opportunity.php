@@ -64,6 +64,7 @@ class Opportunity extends Model
             'next_step_due' => 'date',
             'won_at' => 'datetime',
             'lost_at' => 'datetime',
+            'product_interest' => 'array',
         ];
     }
 
@@ -138,14 +139,58 @@ class Opportunity extends Model
         ];
     }
 
+    /**
+     * گزینه‌های محصول از خط‌های محصول فعال شرکت + سایر.
+     *
+     * @return array<string, string> code => name
+     */
     public static function productInterestOptions(): array
     {
-        return [
-            'notopia_yearbook' => 'سالنامه نوتوپیا',
-            'notopia_notebook' => 'دفتر / نوت‌بوک',
-            'corporate_gift' => 'هدیه سازمانی',
-            'other' => 'سایر',
-        ];
+        $lines = ProductLine::query()
+            ->where('is_active', true)
+            ->orderBy('sort')
+            ->orderBy('name')
+            ->get(['code', 'name']);
+
+        $options = [];
+        foreach ($lines as $line) {
+            $code = trim((string) $line->code);
+            if ($code === '') {
+                continue;
+            }
+            $options[$code] = $line->name ?: $code;
+        }
+
+        // اگر هنوز seed نشده، حداقل نوتوپیا / چلیوا
+        if ($options === []) {
+            $options = [
+                'notopia' => 'نوتوپیا',
+                'cheleva' => 'چلیوا',
+            ];
+        }
+
+        $options['other'] = 'سایر / متفرقه';
+
+        return $options;
+    }
+
+    /**
+     * برچسب خوانا برای لیست/کارت.
+     */
+    public function productInterestLabel(): string
+    {
+        $codes = $this->product_interest;
+        if (! is_array($codes) || $codes === []) {
+            return '—';
+        }
+
+        $map = static::productInterestOptions();
+        $labels = [];
+        foreach ($codes as $code) {
+            $labels[] = $map[$code] ?? (string) $code;
+        }
+
+        return implode('، ', $labels);
     }
 
     public function customer(): BelongsTo
