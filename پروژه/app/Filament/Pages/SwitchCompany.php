@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use Filament\Notifications\Notification;
+use Filament\Pages\Dashboard;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

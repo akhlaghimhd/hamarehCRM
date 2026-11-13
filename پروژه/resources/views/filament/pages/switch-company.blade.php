@@ -1,111 +1,118 @@
 <x-filament-panels::page>
-    <div class="fi-sc fi-sc-has-gap gap-6" style="max-width: 42rem; margin-inline: auto;">
-
+    <div class="sc-page">
         @if ($userMeta)
-            <x-filament::section>
-                <x-slot name="heading">کاربر جاری</x-slot>
-
-                <dl class="fi-sc-has-gap gap-3" style="display: grid; grid-template-columns: 7rem 1fr; align-items: baseline;">
-                    <dt class="text-sm text-gray-500 dark:text-gray-400">نام</dt>
-                    <dd class="text-sm font-medium text-gray-950 dark:text-white">{{ $userMeta['name'] }}</dd>
-
-                    <dt class="text-sm text-gray-500 dark:text-gray-400">نام کاربری</dt>
-                    <dd class="text-sm text-gray-950 dark:text-white" dir="ltr" style="text-align: right;">{{ '@' . $userMeta['username'] }}</dd>
-
-                    <dt class="text-sm text-gray-500 dark:text-gray-400">ایمیل</dt>
-                    <dd class="text-sm text-gray-950 dark:text-white" dir="ltr" style="text-align: right;">{{ $userMeta['email'] }}</dd>
-                </dl>
-            </x-filament::section>
+            <section class="sc-card">
+                <div class="sc-card-head">
+                    <h2 class="sc-card-title">کاربر جاری</h2>
+                </div>
+                <div class="sc-card-body">
+                    <div class="sc-user-row">
+                        <div class="sc-avatar" aria-hidden="true">{{ mb_substr($userMeta['name'], 0, 1) }}</div>
+                        <div class="sc-user-meta">
+                            <div class="sc-user-name">{{ $userMeta['name'] }}</div>
+                            <div class="sc-user-sub">
+                                <span dir="ltr">{{ '@' . $userMeta['username'] }}</span>
+                                <span class="sc-dot">·</span>
+                                <span dir="ltr">{{ $userMeta['email'] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         @endif
 
         @if ($currentCompany)
-            <x-filament::section>
-                <x-slot name="heading">شرکت فعال</x-slot>
-                <x-slot name="description">{{ $currentCompany['is_active'] ? 'وضعیت: فعال' : 'وضعیت: غیرفعال' }}</x-slot>
-
-                <div class="text-base font-semibold text-gray-950 dark:text-white" style="margin-bottom: 0.75rem;">
-                    {{ $currentCompany['name'] }}
+            <section class="sc-card sc-card--current">
+                <div class="sc-card-head">
+                    <h2 class="sc-card-title">شرکت فعال</h2>
+                    @if ($currentCompany['is_active'])
+                        <span class="sc-pill sc-pill--ok">فعال</span>
+                    @else
+                        <span class="sc-pill sc-pill--danger">غیرفعال</span>
+                    @endif
                 </div>
-
-                <dl class="fi-sc-has-gap gap-3" style="display: grid; grid-template-columns: 7rem 1fr; align-items: baseline;">
-                    <dt class="text-sm text-gray-500 dark:text-gray-400">نقش شما</dt>
-                    <dd class="text-sm text-gray-950 dark:text-white">{{ $currentCompany['role_label'] }}</dd>
-
-                    <dt class="text-sm text-gray-500 dark:text-gray-400">شناسه یکتا</dt>
-                    <dd class="text-sm text-gray-950 dark:text-white" dir="ltr" style="text-align: right;">{{ $currentCompany['slug'] }}</dd>
-
-                    <dt class="text-sm text-gray-500 dark:text-gray-400">شناسه ملی</dt>
-                    <dd class="text-sm text-gray-950 dark:text-white">{{ $currentCompany['national_id'] }}</dd>
-
-                    <dt class="text-sm text-gray-500 dark:text-gray-400">تلفن</dt>
-                    <dd class="text-sm text-gray-950 dark:text-white" dir="ltr" style="text-align: right;">{{ $currentCompany['phone'] }}</dd>
-
-                    <dt class="text-sm text-gray-500 dark:text-gray-400">ایمیل</dt>
-                    <dd class="text-sm text-gray-950 dark:text-white" dir="ltr" style="text-align: right;">{{ $currentCompany['email'] }}</dd>
-                </dl>
-            </x-filament::section>
+                <div class="sc-card-body">
+                    <div class="sc-current-name">{{ $currentCompany['name'] }}</div>
+                    <dl class="sc-meta-grid">
+                        <div class="sc-meta-item">
+                            <dt>نقش شما</dt>
+                            <dd>{{ $currentCompany['role_label'] }}</dd>
+                        </div>
+                        <div class="sc-meta-item">
+                            <dt>شناسه</dt>
+                            <dd dir="ltr">{{ $currentCompany['slug'] }}</dd>
+                        </div>
+                        <div class="sc-meta-item">
+                            <dt>شناسه ملی</dt>
+                            <dd>{{ $currentCompany['national_id'] }}</dd>
+                        </div>
+                        <div class="sc-meta-item">
+                            <dt>تلفن</dt>
+                            <dd dir="ltr">{{ $currentCompany['phone'] }}</dd>
+                        </div>
+                    </dl>
+                </div>
+            </section>
         @endif
 
-        <x-filament::section>
-            <x-slot name="heading">انتخاب شرکت</x-slot>
-            <x-slot name="description">فقط شرکت‌هایی که به حساب شما وصل شده‌اند.</x-slot>
-
-            <form wire:submit="switch">
-                <div class="fi-sc fi-sc-has-gap gap-3">
-                    @forelse (($companyOptions ?? []) as $option)
-                        <label
-                            style="
-                                display: flex;
-                                align-items: flex-start;
-                                gap: 0.75rem;
-                                padding: 0.875rem 1rem;
-                                border-radius: 0.75rem;
-                                border: 1px solid {{ $option['is_current'] ? 'rgba(245, 158, 11, 0.55)' : 'rgba(0,0,0,0.08)' }};
-                                background: {{ $option['is_current'] ? 'rgba(245, 158, 11, 0.08)' : 'transparent' }};
-                                cursor: pointer;
-                            "
-                        >
-                            <input
-                                type="radio"
-                                wire:model.live="company_id"
-                                value="{{ $option['id'] }}"
-                                style="margin-top: 0.2rem;"
+        <section class="sc-card">
+            <div class="sc-card-head">
+                <h2 class="sc-card-title">انتخاب شرکت</h2>
+                <span class="sc-hint">{{ count($companyOptions) }} شرکت در دسترس</span>
+            </div>
+            <div class="sc-card-body">
+                <form wire:submit="switch" class="sc-form">
+                    <div class="sc-options" role="radiogroup" aria-label="شرکت‌ها">
+                        @forelse ($companyOptions as $option)
+                            <label
+                                class="sc-option {{ $option['is_current'] ? 'is-current' : '' }} {{ (int) $company_id === (int) $option['id'] ? 'is-selected' : '' }}"
                             >
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;">
-                                    <span class="text-sm font-semibold text-gray-950 dark:text-white">{{ $option['name'] }}</span>
-                                    @if ($option['is_current'])
-                                        <x-filament::badge color="warning" size="sm">جاری</x-filament::badge>
-                                    @endif
-                                    @if ($option['is_default'])
-                                        <x-filament::badge color="gray" size="sm">پیش‌فرض</x-filament::badge>
-                                    @endif
-                                    @unless ($option['is_active'])
-                                        <x-filament::badge color="danger" size="sm">غیرفعال</x-filament::badge>
-                                    @endunless
+                                <input
+                                    class="sc-radio"
+                                    type="radio"
+                                    wire:model.live="company_id"
+                                    value="{{ $option['id'] }}"
+                                >
+                                <div class="sc-option-body">
+                                    <div class="sc-option-top">
+                                        <span class="sc-option-name">{{ $option['name'] }}</span>
+                                        <div class="sc-option-badges">
+                                            @if ($option['is_current'])
+                                                <span class="sc-pill sc-pill--warn">جاری</span>
+                                            @endif
+                                            @if ($option['is_default'])
+                                                <span class="sc-pill sc-pill--muted">پیش‌فرض</span>
+                                            @endif
+                                            @unless ($option['is_active'])
+                                                <span class="sc-pill sc-pill--danger">غیرفعال</span>
+                                            @endunless
+                                        </div>
+                                    </div>
+                                    <div class="sc-option-sub">
+                                        <span>نقش: {{ $option['role_label'] }}</span>
+                                        @if ($option['slug'])
+                                            <span class="sc-dot">·</span>
+                                            <span dir="ltr">{{ $option['slug'] }}</span>
+                                        @endif
+                                        @if ($option['phone'])
+                                            <span class="sc-dot">·</span>
+                                            <span dir="ltr">{{ $option['phone'] }}</span>
+                                        @endif
+                                    </div>
                                 </div>
-                                <div class="text-xs text-gray-500 dark:text-gray-400" style="margin-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.75rem;">
-                                    <span>نقش: {{ $option['role_label'] }}</span>
-                                    @if ($option['slug'])
-                                        <span dir="ltr">{{ $option['slug'] }}</span>
-                                    @endif
-                                    @if ($option['phone'])
-                                        <span dir="ltr">{{ $option['phone'] }}</span>
-                                    @endif
-                                </div>
-                            </div>
-                        </label>
-                    @empty
-                        <p class="text-sm text-danger-600">شرکت قابل‌انتخابی یافت نشد.</p>
-                    @endforelse
-                </div>
+                            </label>
+                        @empty
+                            <p class="sc-empty">شرکت قابل‌انتخابی یافت نشد.</p>
+                        @endforelse
+                    </div>
 
-                <div style="margin-top: 1.25rem; display: flex; justify-content: flex-end;">
-                    <x-filament::button type="submit" color="warning">
-                        اعمال شرکت انتخاب‌شده
-                    </x-filament::button>
-                </div>
-            </form>
-        </x-filament::section>
+                    <div class="sc-actions">
+                        <x-filament::button type="submit" color="warning" size="md">
+                            اعمال شرکت انتخاب‌شده
+                        </x-filament::button>
+                    </div>
+                </form>
+            </div>
+        </section>
     </div>
 </x-filament-panels::page>
