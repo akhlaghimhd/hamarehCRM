@@ -138,6 +138,7 @@ class MarketingFunnel extends Page
                 'due_soon' => $dueSoon,
             ],
             'createUrl' => OpportunityResource::getUrl('create'),
+            'quickCreateUrl' => OpportunityResource::getUrl('quick-create'),
             'listUrl' => OpportunityResource::getUrl('index'),
         ];
     }

@@ -21,7 +21,8 @@
             </div>
             <div class="mf-actions">
                 <a href="{{ $listUrl }}" class="mf-btn mf-btn--ghost">لیست فرصت‌ها</a>
-                <a href="{{ $createUrl }}" class="mf-btn mf-btn--primary">فرصت جدید</a>
+                <a href="{{ $createUrl }}" class="mf-btn mf-btn--ghost">فرم کامل</a>
+                <a href="{{ $quickCreateUrl }}" class="mf-btn mf-btn--primary">ثبت سریع</a>
             </div>
         </div>
 
