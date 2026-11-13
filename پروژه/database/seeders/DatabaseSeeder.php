@@ -12,6 +12,9 @@ class DatabaseSeeder extends Seeder
             FoundationSeeder::class,
             DemoAccessSeeder::class,
             CatalogArchitectureSeeder::class,
+            MasterProductsSeeder::class,
+            NotopiaCatalogSeeder::class,
+            CoverMasterSeeder::class,
         ]);
     }
 }
