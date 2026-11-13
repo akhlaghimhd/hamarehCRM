@@ -1,0 +1,279 @@
+/* ========== قیف فروش ========== */
+.mf-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mf-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.mf-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mf-stat {
+  background: #f9fafb;
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  border-radius: 0.75rem;
+  padding: 0.55rem 0.85rem;
+  min-width: 6.5rem;
+}
+
+.dark .mf-stat,
+html.dark .mf-stat {
+  background: #111827;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mf-stat--warn {
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.mf-stat-label {
+  display: block;
+  font-size: 0.72rem;
+  opacity: 0.65;
+}
+
+.mf-stat-value {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.mf-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.55rem;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.mf-btn--primary {
+  background: #f59e0b;
+  color: #1c1917;
+}
+
+.mf-btn--ghost {
+  background: transparent;
+  border-color: rgba(10, 10, 10, 0.12);
+  color: inherit;
+}
+
+.dark .mf-btn--ghost,
+html.dark .mf-btn--ghost {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.mf-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.mf-col {
+  background: #f3f4f6;
+  border: 1px solid rgba(10, 10, 10, 0.06);
+  border-radius: 0.85rem;
+  min-height: 12rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dark .mf-col,
+html.dark .mf-col {
+  background: #0f172a;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mf-col.is-won {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.mf-col.is-lost {
+  border-color: rgba(239, 68, 68, 0.3);
+  opacity: 0.92;
+}
+
+.mf-col-head {
+  padding: 0.7rem 0.8rem;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.06);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dark .mf-col-head,
+html.dark .mf-col-head {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.mf-col-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.mf-col-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.68rem;
+  opacity: 0.6;
+  line-height: 1.35;
+}
+
+.mf-col-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+}
+
+.mf-pill {
+  display: inline-flex;
+  min-width: 1.5rem;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(245, 158, 11, 0.18);
+  color: #b45309;
+}
+
+.dark .mf-pill,
+html.dark .mf-pill {
+  color: #fbbf24;
+}
+
+.mf-amount {
+  font-size: 0.65rem;
+  opacity: 0.65;
+}
+
+.mf-cards {
+  padding: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 28rem;
+  overflow: auto;
+}
+
+.mf-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: #fff;
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.7rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dark .mf-card,
+html.dark .mf-card {
+  background: #111827;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.mf-card:hover {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12);
+}
+
+.mf-card-title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.mf-card-org {
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.mf-card-row {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.6rem;
+  font-size: 0.72rem;
+}
+
+.mf-muted {
+  opacity: 0.65;
+}
+
+.mf-card-next {
+  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  opacity: 0.8;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.mf-due {
+  font-weight: 600;
+  color: #b45309;
+}
+
+.dark .mf-due,
+html.dark .mf-due {
+  color: #fbbf24;
+}
+
+.mf-card-amount {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.mf-empty {
+  margin: 0.5rem 0.25rem;
+  font-size: 0.78rem;
+  opacity: 0.55;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .mf-board {
+    grid-template-columns: 1fr;
+  }
+
+  .mf-cards {
+    max-height: none;
+  }
+
+  .mf-actions {
+    width: 100%;
+  }
+
+  .mf-actions .mf-btn {
+    flex: 1;
+  }
+}

@@ -41,6 +41,8 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->navigationGroups([
+                'بازاریابی',
+                'فروش و مشتری',
                 'نوتوپیا',
                 'تنظیمات کاتالوگ',
                 'محصولات',
@@ -72,7 +74,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -90,7 +91,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
-                fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">',
+                fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">'
+                    . '<link rel="stylesheet" href="' . asset('css/mf-funnel.css') . '?v=' . @filemtime(public_path('css/mf-funnel.css')) . '">',
             )
             ->renderHook(
                 PanelsRenderHook::BODY_START,
