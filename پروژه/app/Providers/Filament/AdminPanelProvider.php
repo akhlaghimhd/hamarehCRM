@@ -88,14 +88,15 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            // تم Vite مخصوص پنل (لازم برای Kinetics)
+            ->viteTheme('resources/css/filament/admin/theme.css');
 
-        // Kinetics فقط اگر بسته نصب شده باشد (trial) — بدون composer require خطای class نمی‌دهد
         if (class_exists(\Otatechie\Kinetics\KineticsPlugin::class)) {
             $panel = $panel->plugin(\Otatechie\Kinetics\KineticsPlugin::make());
-            // فونت تم را بعد از پلاگین override کنید تا فارسی نشکند (در CSS هم Vazirmatn دارید)
         }
 
+        // فارسی / RTL بعد از پلاگین می‌مانند و اولویت بصری دارند
         return $panel
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
