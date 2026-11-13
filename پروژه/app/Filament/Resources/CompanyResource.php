@@ -37,7 +37,7 @@ class CompanyResource extends Resource
 
     protected static ?string $navigationLabel = 'شرکت‌ها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'مدیریت سیستم';
+    protected static string|UnitEnum|null $navigationGroup = 'سیستم';
 
     protected static ?int $navigationSort = 2;
 
@@ -113,7 +113,6 @@ class CompanyResource extends Resource
                 ]),
             ]);
     }
-
 
     public static function getPages(): array
     {
