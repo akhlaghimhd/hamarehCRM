@@ -44,7 +44,7 @@ class CatalogSeasonResource extends Resource
 
     protected static ?string $navigationLabel = 'نسخه‌های کاتالوگ';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'تنظیمات کاتالوگ';
+    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
 
     protected static ?int $navigationSort = 21;
 
