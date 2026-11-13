@@ -22,6 +22,10 @@ class FoundationSeeder extends Seeder
             ['name' => 'roles.manage', 'label' => 'مدیریت نقش‌ها', 'group' => 'سیستم'],
             ['name' => 'products.view', 'label' => 'مشاهده محصولات', 'group' => 'محصولات'],
             ['name' => 'products.manage', 'label' => 'مدیریت محصولات', 'group' => 'محصولات'],
+            ['name' => 'opportunities.view', 'label' => 'مشاهده فرصت‌ها', 'group' => 'بازاریابی'],
+            ['name' => 'opportunities.manage', 'label' => 'مدیریت فرصت‌ها', 'group' => 'بازاریابی'],
+            ['name' => 'activities.view', 'label' => 'مشاهده فعالیت‌ها', 'group' => 'بازاریابی'],
+            ['name' => 'activities.manage', 'label' => 'مدیریت فعالیت‌ها', 'group' => 'بازاریابی'],
         ];
 
         foreach ($permissions as $permission) {
@@ -70,6 +74,10 @@ class FoundationSeeder extends Seeder
                     'customers.view',
                     'customers.manage',
                     'products.view',
+                    'opportunities.view',
+                    'opportunities.manage',
+                    'activities.view',
+                    'activities.manage',
                 ])->pluck('id')
             );
         }
@@ -98,13 +106,11 @@ class FoundationSeeder extends Seeder
         $adminRoleB = Role::query()->where('company_id', $companyB->id)->where('name', 'admin')->first();
         $salesRoleA = Role::query()->where('company_id', $companyA->id)->where('name', 'sales')->first();
 
-        // admin به هر دو شرکت دسترسی دارد
         $admin->companies()->sync([
             $companyA->id => ['role_id' => $adminRoleA->id, 'is_default' => true],
             $companyB->id => ['role_id' => $adminRoleB->id, 'is_default' => false],
         ]);
 
-        // sales فقط شرکت اول
         $sales->companies()->sync([
             $companyA->id => ['role_id' => $salesRoleA->id, 'is_default' => true],
         ]);
