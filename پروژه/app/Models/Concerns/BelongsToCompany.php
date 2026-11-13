@@ -30,11 +30,22 @@ trait BelongsToCompany
         });
 
         static::addGlobalScope('company', function (Builder $builder) {
-            if (app()->runningInConsole() && ! session()->has('current_company_id')) {
+            if (app()->runningInConsole() && ! auth()->check() && ! session()->has('current_company_id')) {
                 return;
             }
 
             $companyId = session('current_company_id');
+
+            // اگر نشست خالی است، از شرکت پیش‌فرض کاربر لاگین‌شده استفاده کن و نشست را پر کن
+            if (! $companyId && auth()->check()) {
+                $user = auth()->user();
+                if (method_exists($user, 'currentCompanyId')) {
+                    $companyId = $user->currentCompanyId();
+                }
+                if ($companyId) {
+                    session(['current_company_id' => (int) $companyId]);
+                }
+            }
 
             if ($companyId) {
                 $builder->where(
