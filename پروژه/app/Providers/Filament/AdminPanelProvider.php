@@ -98,6 +98,10 @@ class AdminPanelProvider extends PanelProvider
 
         // فارسی / RTL بعد از پلاگین می‌مانند و اولویت بصری دارند
         return $panel
+                        ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => '<script src="' . asset('js/fa-digits.js') . '?v=' . @filemtime(public_path('js/fa-digits.js')) . '" defer></script>',
+            )
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">'

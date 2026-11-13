@@ -366,8 +366,10 @@ class OpportunityResource extends Resource
                             ]),
                         DatePicker::make('next_step_due')
                             ->label('مهلت گام')
+                            ->jalali(weekdaysShort: false)
                             ->native(false)
                             ->displayFormat('Y/m/d')
+                            ->closeOnDateSelection()
                             ->default(now()->addDays(3))
                             ->rules(['required', 'date'])
                             ->markAsRequired()
@@ -397,6 +399,7 @@ class OpportunityResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(fn ($record) => static::getUrl('view', ['record' => $record]))
             ->columns([
                 TextColumn::make('title')
                     ->label('عنوان')
@@ -493,6 +496,7 @@ class OpportunityResource extends Resource
             'index' => Pages\ListOpportunities::route('/'),
             'create' => Pages\CreateOpportunity::route('/create'),
             'quick-create' => Pages\QuickCreateOpportunity::route('/quick-create'),
+            'view' => Pages\ManageOpportunity::route('/{record}'),
             'edit' => Pages\EditOpportunity::route('/{record}/edit'),
         ];
     }
