@@ -12,7 +12,9 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\DB;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -54,6 +56,17 @@ class AdminPanelProvider extends PanelProvider
                     ->label('تعویض شرکت')
                     ->icon('heroicon-o-building-office-2')
                     ->url(fn (): string => SwitchCompany::getUrl())
+                    ->visible(function (): bool {
+                        $user = Auth::user();
+
+                        if (! $user) {
+                            return false;
+                        }
+
+                        return DB::table('company_user')
+                            ->where('user_id', $user->id)
+                            ->count() > 1;
+                    })
                     ->sort(10),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')

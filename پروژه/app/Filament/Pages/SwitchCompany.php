@@ -13,7 +13,7 @@ class SwitchCompany extends Page
 
     protected static ?string $navigationLabel = 'تعویض شرکت';
 
-    protected static ?string $title = 'تعویض شرکت جاری';
+    protected static ?string $title = 'تعویض شرکت';
 
     protected static ?string $slug = 'switch-company';
 
@@ -34,6 +34,13 @@ class SwitchCompany extends Page
             return;
         }
 
+        // تک‌شرکتی: اصلاً این صفحه معنا ندارد
+        if ($this->membershipCount((int) $user->id) < 2) {
+            $this->redirect(Dashboard::getUrl());
+
+            return;
+        }
+
         $allowedIds = $this->allowedCompanyIds((int) $user->id);
         $current = (int) (session('current_company_id') ?? 0);
 
@@ -50,40 +57,57 @@ class SwitchCompany extends Page
         $user = Auth::user();
 
         if (! $user) {
-            return [
-                'companyOptions' => [],
-                'optionsCount' => 0,
-                'authUserId' => null,
-                'authUsername' => null,
-                'pivotCount' => 0,
-            ];
+            return $this->emptyViewData();
         }
 
-        $pivotCount = (int) DB::table('company_user')
-            ->where('user_id', $user->id)
-            ->count();
-
-        $options = DB::table('company_user as cu')
+        $memberships = DB::table('company_user as cu')
             ->join('companies as c', 'c.id', '=', 'cu.company_id')
+            ->leftJoin('roles as r', 'r.id', '=', 'cu.role_id')
             ->where('cu.user_id', $user->id)
             ->orderBy('c.name')
             ->get([
-                'c.id as id',
-                'c.name as name',
-            ])
-            ->map(fn ($row) => [
-                'id' => (int) $row->id,
-                'name' => (string) $row->name,
-            ])
-            ->values()
-            ->all();
+                'c.id',
+                'c.name',
+                'c.slug',
+                'c.national_id',
+                'c.phone',
+                'c.email',
+                'c.is_active',
+                'cu.is_default',
+                'r.label as role_label',
+                'r.name as role_name',
+            ]);
+
+        $currentId = (int) (session('current_company_id') ?? $this->company_id ?? 0);
+        $current = $memberships->firstWhere('id', $currentId) ?? $memberships->first();
 
         return [
-            'companyOptions' => $options,
-            'optionsCount' => count($options),
-            'authUserId' => (int) $user->id,
-            'authUsername' => (string) ($user->username ?? $user->email),
-            'pivotCount' => $pivotCount,
+            'userMeta' => [
+                'id' => (int) $user->id,
+                'name' => (string) $user->name,
+                'username' => (string) ($user->username ?? '—'),
+                'email' => (string) ($user->email ?? '—'),
+            ],
+            'currentCompany' => $current ? [
+                'id' => (int) $current->id,
+                'name' => (string) $current->name,
+                'slug' => (string) ($current->slug ?? '—'),
+                'national_id' => (string) ($current->national_id ?: '—'),
+                'phone' => (string) ($current->phone ?: '—'),
+                'email' => (string) ($current->email ?: '—'),
+                'is_active' => (bool) $current->is_active,
+                'role_label' => (string) ($current->role_label ?: $current->role_name ?: '—'),
+            ] : null,
+            'companyOptions' => $memberships->map(fn ($row) => [
+                'id' => (int) $row->id,
+                'name' => (string) $row->name,
+                'slug' => (string) ($row->slug ?? ''),
+                'phone' => (string) ($row->phone ?: ''),
+                'role_label' => (string) ($row->role_label ?: $row->role_name ?: '—'),
+                'is_default' => (bool) $row->is_default,
+                'is_active' => (bool) $row->is_active,
+                'is_current' => (int) $row->id === $currentId,
+            ])->values()->all(),
         ];
     }
 
@@ -110,9 +134,11 @@ class SwitchCompany extends Page
 
         session(['current_company_id' => $companyId]);
 
+        $name = DB::table('companies')->where('id', $companyId)->value('name') ?? 'شرکت';
+
         Notification::make()
-            ->title('شرکت تغییر کرد')
-            ->body('شرکت جاری به‌روز شد.')
+            ->title('شرکت جاری تغییر کرد')
+            ->body($name)
             ->success()
             ->send();
 
@@ -132,8 +158,36 @@ class SwitchCompany extends Page
             ->all();
     }
 
+    private function membershipCount(int $userId): int
+    {
+        return (int) DB::table('company_user')->where('user_id', $userId)->count();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function emptyViewData(): array
+    {
+        return [
+            'userMeta' => null,
+            'currentCompany' => null,
+            'companyOptions' => [],
+        ];
+    }
+
     public static function shouldRegisterNavigation(): bool
     {
         return false;
+    }
+
+    public static function canAccess(): bool
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return false;
+        }
+
+        return DB::table('company_user')->where('user_id', $user->id)->count() > 1;
     }
 }
