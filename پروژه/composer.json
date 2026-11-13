@@ -12,6 +12,7 @@
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "morilog/jalali": "^3.5",
+        "otatechie/filament-kinetics": "^1.7",
         "phpoffice/phpspreadsheet": "^5.11"
     },
     "require-dev": {

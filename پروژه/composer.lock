@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8bf59969250d2d731069baedaba2e3bd",
+    "content-hash": "ac58aadaaeff7497d00197798345cfb1",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3746,6 +3746,67 @@
             "published-time": "2026-04-11T18:40:08+00:00"
         },
         {
+            "name": "mallardduck/blade-lucide-icons",
+            "version": "2.0.45",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mallardduck/blade-lucide-icons.git",
+                "reference": "99542d933b4c704ab1045930cb63b91dff602cb9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mallardduck/blade-lucide-icons/zipball/99542d933b4c704ab1045930cb63b91dff602cb9",
+                "reference": "99542d933b4c704ab1045930cb63b91dff602cb9",
+                "shasum": ""
+            },
+            "require": {
+                "blade-ui-kit/blade-icons": "^1.8",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "ext-dom": "*",
+                "ext-fileinfo": "*",
+                "orchestra/testbench": "^6.0|^7.0|^8.0|^9.0|^10.0",
+                "phpunit/phpunit": "^9.0|^10.0|^11.0",
+                "spatie/phpunit-snapshot-assertions": "^4.2.14|^5.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "MallardDuck\\LucideIcons\\BladeLucideIconsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "MallardDuck\\LucideIcons\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Dan Pock"
+                }
+            ],
+            "description": "A package to easily make use of Lucide icons in your Laravel Blade views.",
+            "homepage": "https://github.com/mallardduck/blade-lucide-icons",
+            "keywords": [
+                "LucideIcons",
+                "blade",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/mallardduck/blade-lucide-icons/issues",
+                "source": "https://github.com/mallardduck/blade-lucide-icons/tree/2.0.45"
+            },
+            "time": "2026-11-13T04:51:56+00:00",
+            "published-time": "2026-11-13T04:52:00+00:00"
+        },
+        {
             "name": "markbaker/complex",
             "version": "3.0.2",
             "source": {
@@ -4604,6 +4665,70 @@
             ],
             "time": "2025-09-03T16:03:54+00:00",
             "published-time": "2025-09-03T16:17:36+00:00"
+        },
+        {
+            "name": "otatechie/filament-kinetics",
+            "version": "v1.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/otatechie/filament-kinetics.git",
+                "reference": "57f3fdf5cc20df418f362137bd4c22d8feaef1e7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/otatechie/filament-kinetics/zipball/57f3fdf5cc20df418f362137bd4c22d8feaef1e7",
+                "reference": "57f3fdf5cc20df418f362137bd4c22d8feaef1e7",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.13.3 || ^5.8.3",
+                "mallardduck/blade-lucide-icons": "^2.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.14",
+                "orchestra/testbench": "^10.0||^11.0",
+                "pestphp/pest": "^4.0||^5.0",
+                "pestphp/pest-plugin-laravel": "^4.0||^5.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Otatechie\\Kinetics\\KineticsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Otatechie\\Kinetics\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "otatechie"
+                }
+            ],
+            "description": "A minimal theme for Filament 4 and 5.",
+            "homepage": "https://github.com/otatechie/filament-kinetics",
+            "keywords": [
+                "filament",
+                "filament-plugin",
+                "filament-theme",
+                "filamentphp",
+                "laravel",
+                "theme"
+            ],
+            "support": {
+                "issues": "https://github.com/otatechie/filament-kinetics/issues",
+                "source": "https://github.com/otatechie/filament-kinetics"
+            },
+            "time": "2026-10-26T15:37:07+00:00",
+            "published-time": "2026-10-26T15:40:51+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
