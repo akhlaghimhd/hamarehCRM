@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SwitchCompany extends Page
 {
@@ -25,9 +26,6 @@ class SwitchCompany extends Page
 
     public ?int $company_id = null;
 
-    /** @var array<int, array{id:int,name:string}> */
-    public array $companyOptions = [];
-
     public function mount(): void
     {
         $user = Auth::user();
@@ -36,20 +34,45 @@ class SwitchCompany extends Page
             return;
         }
 
-        $this->companyOptions = $user->companies()
-            ->orderBy('companies.name')
-            ->get(['companies.id', 'companies.name'])
-            ->map(fn ($c) => ['id' => (int) $c->id, 'name' => (string) $c->name])
-            ->values()
-            ->all();
-
-        $current = (int) (session('current_company_id') ?? $user->currentCompanyId());
-
-        $allowedIds = collect($this->companyOptions)->pluck('id')->all();
+        $allowedIds = $this->allowedCompanyIds((int) $user->id);
+        $current = (int) (session('current_company_id') ?? 0);
 
         $this->company_id = in_array($current, $allowedIds, true)
             ? $current
             : ($allowedIds[0] ?? null);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function getViewData(): array
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return ['companyOptions' => [], 'optionsCount' => 0];
+        }
+
+        $options = DB::table('company_user')
+            ->join('companies', 'companies.id', '=', 'company_user.company_id')
+            ->where('company_user.user_id', $user->id)
+            ->whereNull('companies.deleted_at')
+            ->orderBy('companies.name')
+            ->get([
+                'companies.id as id',
+                'companies.name as name',
+            ])
+            ->map(fn ($row) => [
+                'id' => (int) $row->id,
+                'name' => (string) $row->name,
+            ])
+            ->values()
+            ->all();
+
+        return [
+            'companyOptions' => $options,
+            'optionsCount' => count($options),
+        ];
     }
 
     public function switch(): void
@@ -61,10 +84,9 @@ class SwitchCompany extends Page
         }
 
         $companyId = (int) $this->company_id;
+        $allowedIds = $this->allowedCompanyIds((int) $user->id);
 
-        $allowed = $user->companies()->where('companies.id', $companyId)->exists();
-
-        if (! $allowed) {
+        if (! in_array($companyId, $allowedIds, true)) {
             Notification::make()
                 ->title('عدم دسترسی')
                 ->body('شما به این شرکت دسترسی ندارید.')
@@ -83,6 +105,19 @@ class SwitchCompany extends Page
             ->send();
 
         $this->redirect(Dashboard::getUrl());
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function allowedCompanyIds(int $userId): array
+    {
+        return DB::table('company_user')
+            ->where('user_id', $userId)
+            ->pluck('company_id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
     }
 
     public static function shouldRegisterNavigation(): bool
