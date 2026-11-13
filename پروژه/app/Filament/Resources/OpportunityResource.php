@@ -68,15 +68,16 @@ class OpportunityResource extends Resource
                                 if (blank($get('title')) && filled($state)) {
                                     $set('title', 'فرصت ' . $state);
                                 }
-                            }),
+                            })
+                            ->columnSpan(['default' => 1, 'md' => 2]),
                         Select::make('product_interest')
                             ->label('خطوط محصول')
                             ->options(Opportunity::productInterestOptions())
                             ->multiple()
                             ->searchable()
                             ->native(false)
-                            ->helperText('مثلاً نوتوپیا و چلیوا با هم — از فهرست محصولات اصلی شرکت')
-                            ->placeholder('— انتخاب یک یا چند محصول —'),
+                            ->placeholder('یک یا چند محصول')
+                            ->columnSpan(['default' => 1, 'md' => 2]),
                         Select::make('industry')
                             ->label('صنعت')
                             ->options(Opportunity::industryOptions())
@@ -89,7 +90,7 @@ class OpportunityResource extends Resource
                             ->maxLength(255),
                         TextInput::make('contact_name')
                             ->label('نام فرد تماس')
-                            ->placeholder('کسی که با او در ارتباطید')
+                            ->placeholder('نام شخص تماس')
                             ->maxLength(255),
                         Select::make('contact_role')
                             ->label('نقش در تصمیم خرید')
@@ -111,7 +112,7 @@ class OpportunityResource extends Resource
                     ->columnSpanFull(),
 
                 Section::make('۲. ایمیل و آدرس')
-                    ->description('برای پیگیری بعدی مفید است؛ اگر ندارید خالی بگذارید.')
+                    ->description('اختیاری — برای پیگیری بعدی')
                     ->collapsed()
                     ->schema([
                         TextInput::make('email')
@@ -128,7 +129,7 @@ class OpportunityResource extends Resource
                     ->columnSpanFull(),
 
                 Section::make('۳. نیاز، بودجه و ارزش')
-                    ->description('این‌ها کیفیت سرنخ را بهتر می‌کند؛ بعداً هم قابل تکمیل است.')
+                    ->description('اختیاری — کیفیت سرنخ را بهتر می‌کند')
                     ->collapsed()
                     ->schema([
                         TextInput::make('purchase_use')
@@ -160,7 +161,7 @@ class OpportunityResource extends Resource
                             ->maxLength(255),
                         Textarea::make('main_objection')
                             ->label('نگرانی یا اعتراض اصلی')
-                            ->placeholder('اگر مخالفت یا دغدغه‌ای مطرح شده بنویسید')
+                            ->placeholder('اگر مخالفت یا دغدغه‌ای مطرح شده')
                             ->rows(2)
                             ->columnSpanFull(),
                     ])
@@ -168,7 +169,7 @@ class OpportunityResource extends Resource
                     ->columnSpanFull(),
 
                 Section::make('۴. مرحله قیف و وضعیت')
-                    ->description('مرحله قیف را حتماً مشخص کنید؛ برای فرصت تازه معمولاً «سرنخ اولیه» مناسب است.')
+                    ->description('برای فرصت تازه معمولاً «سرنخ اولیه» مناسب است')
                     ->schema([
                         Select::make('stage_id')
                             ->label('مرحله قیف')
@@ -209,7 +210,7 @@ class OpportunityResource extends Resource
                             ->label('عنوان فرصت')
                             ->required()
                             ->maxLength(255)
-                            ->helperText('به‌صورت خودکار از نام سازمان پر می‌شود؛ قابل ویرایش است.')
+                            ->helperText('خودکار از نام سازمان پر می‌شود؛ قابل ویرایش')
                             ->columnSpanFull(),
                         Select::make('owner_user_id')
                             ->label('مسئول فرصت')
@@ -220,13 +221,14 @@ class OpportunityResource extends Resource
                         TextInput::make('amount')
                             ->label('مبلغ تخمینی (ریال)')
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->placeholder('۰'),
                     ])
                     ->columns(['default' => 1, 'md' => 2])
                     ->columnSpanFull(),
 
                 Section::make('۵. گام پیگیری')
-                    ->description('گام بعدی و مهلت پیگیری را مشخص کنید.')
+                    ->description('گام بعدی و مهلت را مشخص کنید')
                     ->schema([
                         Textarea::make('next_step')
                             ->label('گام بعدی')
@@ -244,7 +246,7 @@ class OpportunityResource extends Resource
                             ->options(fn () => User::query()->where('is_active', true)->pluck('name', 'id'))
                             ->default(fn () => auth()->id())
                             ->searchable()
-                            ->helperText('فقط ادمین می‌تواند از ابتدا فرصت را به کاربر دیگری بسپارد.')
+                            ->helperText('فقط ادمین می‌تواند به دیگری بسپارد')
                             ->disabled(fn () => ! (auth()->user()?->isCompanyAdmin() ?? false))
                             ->dehydrated(),
                     ])
@@ -261,6 +263,7 @@ class OpportunityResource extends Resource
                             ->columnSpanFull(),
                         TextInput::make('source')
                             ->label('منبع / کمپین')
+                            ->placeholder('تماس ورودی، نمایشگاه، معرفی...')
                             ->maxLength(255),
                     ])
                     ->columns(['default' => 1, 'md' => 2])
