@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\OpportunityResource\Pages;
 
 use App\Filament\Resources\OpportunityResource;
+use App\Filament\Resources\QuoteResource;
 use App\Models\Opportunity;
 use App\Models\OpportunityStage;
+use App\Models\Quote;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Select;
@@ -21,6 +23,27 @@ class EditOpportunity extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('toQuote')
+                ->label('ساخت پیش‌فاکتور')
+                ->icon('heroicon-o-document-text')
+                ->color('primary')
+                ->requiresConfirmation()
+                ->modalHeading('ساخت پیش‌فاکتور از این فرصت')
+                ->modalDescription('یک پیش‌فاکتور پیش‌نویس با مبلغ و عنوان فرصت ساخته می‌شود.')
+                ->visible(fn () => OpportunityResource::canEdit($this->record)
+                    && filled($this->record->customer_id))
+                ->action(function () {
+                    $quote = Quote::fromOpportunity($this->record);
+
+                    Notification::make()
+                        ->title('پیش‌فاکتور ساخته شد')
+                        ->body($quote->number)
+                        ->success()
+                        ->send();
+
+                    return redirect(QuoteResource::getUrl('edit', ['record' => $quote]));
+                }),
+
             Action::make('moveStage')
                 ->label('تغییر مرحله')
                 ->icon('heroicon-o-arrows-right-left')
