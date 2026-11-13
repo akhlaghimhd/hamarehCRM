@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "ariaieboy/filament-jalali": "^2.0",
         "ariaieboy/jalali": "^1.2",
         "filament/filament": "^4.0",
         "laravel/framework": "^13.17",
