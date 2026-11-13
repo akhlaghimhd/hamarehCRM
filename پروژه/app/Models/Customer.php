@@ -41,6 +41,11 @@ class Customer extends Model
         return $this->hasMany(CustomerContact::class);
     }
 
+    public function opportunities(): HasMany
+    {
+        return $this->hasMany(Opportunity::class);
+    }
+
     public function isOrganization(): bool
     {
         return $this->type === self::TYPE_ORGANIZATION;
