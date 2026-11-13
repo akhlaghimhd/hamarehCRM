@@ -37,7 +37,7 @@ class CustomerResource extends Resource
 
     protected static ?string $navigationLabel = 'مشتریان';
 
-    protected static string|UnitEnum|null $navigationGroup = 'فروش و مشتری';
+    protected static string|UnitEnum|null $navigationGroup = 'فروش (جدید)';
 
     protected static ?int $navigationSort = 1;
 
@@ -147,7 +147,6 @@ class CustomerResource extends Resource
                 ]),
             ]);
     }
-
 
     public static function getPages(): array
     {
