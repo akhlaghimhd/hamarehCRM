@@ -340,7 +340,8 @@ class OpportunityResource extends Resource
             ->emptyStateHeading('فرصتی ثبت نشده')
             ->emptyStateDescription('اولین فرصت فروش را ایجاد کنید.')
             ->emptyStateActions([
-                \Filament\Actions\CreateAction::make()->label('فرصت جدید'),
+                \Filament\Actions\Action::make('quick')->label('ثبت سریع')->url(static::getUrl('quick-create'))->icon('heroicon-o-bolt'),
+                \Filament\Actions\CreateAction::make()->label('فرم کامل'),
             ])
             ->recordActions([
                 EditAction::make()->label('ویرایش')
@@ -395,6 +396,7 @@ class OpportunityResource extends Resource
         return [
             'index' => Pages\ListOpportunities::route('/'),
             'create' => Pages\CreateOpportunity::route('/create'),
+            'quick-create' => Pages\QuickCreateOpportunity::route('/quick-create'),
             'edit' => Pages\EditOpportunity::route('/{record}/edit'),
         ];
     }
