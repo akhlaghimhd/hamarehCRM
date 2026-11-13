@@ -6,6 +6,7 @@ use App\Filament\Resources\OpportunityResource;
 use App\Models\Activity;
 use App\Models\Opportunity;
 use App\Services\OpportunityQuickCreate;
+use App\Support\Fa;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
@@ -38,8 +39,7 @@ class CreateOpportunity extends CreateRecord
                 ->label('ثبت سریع')
                 ->icon('heroicon-o-bolt')
                 ->url(OpportunityResource::getUrl('quick-create'))
-                ->color('gray')
-                ->tooltip('اگر فقط حداقل‌ها را داری، از ثبت سریع استفاده کن'),
+                ->color('gray'),
         ];
     }
 
@@ -75,14 +75,23 @@ class CreateOpportunity extends CreateRecord
         $data['customer_id'] = $customer->id;
 
         if (filled($data['mobile'] ?? null)) {
-            $normalized = app(OpportunityQuickCreate::class)->normalizePhone($data['mobile']);
+            $normalized = app(OpportunityQuickCreate::class)->normalizePhone(
+                Fa::toEnglishDigits((string) $data['mobile'])
+            );
             if ($normalized) {
                 $data['mobile'] = $normalized;
             }
         }
 
         if (isset($data['amount']) && $data['amount'] !== null && $data['amount'] !== '') {
-            $data['amount'] = (int) preg_replace('/[^\d]/', '', (string) $data['amount']);
+            if (! is_int($data['amount']) && ! is_float($data['amount'])) {
+                $data['amount'] = (int) preg_replace('/\D+/', '', Fa::toEnglishDigits((string) $data['amount']));
+            }
+        }
+
+        if (isset($data['next_step_due']) && is_string($data['next_step_due'])) {
+            $parsed = Fa::parseJalaliDate($data['next_step_due']);
+            $data['next_step_due'] = $parsed?->toDateString();
         }
 
         return $data;
