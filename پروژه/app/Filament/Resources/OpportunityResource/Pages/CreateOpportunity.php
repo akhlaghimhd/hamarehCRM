@@ -4,8 +4,9 @@ namespace App\Filament\Resources\OpportunityResource\Pages;
 
 use App\Filament\Resources\OpportunityResource;
 use App\Models\Activity;
-use App\Models\Customer;
 use App\Models\Opportunity;
+use App\Services\OpportunityQuickCreate;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,11 +14,22 @@ class CreateOpportunity extends CreateRecord
 {
     protected static string $resource = OpportunityResource::class;
 
-    protected static ?string $title = 'فرصت جدید';
+    protected static ?string $title = 'فرصت جدید (فرم کامل)';
 
     protected function getCreatedNotificationTitle(): ?string
     {
         return 'فرصت ثبت شد';
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('quick')
+                ->label('ثبت سریع')
+                ->icon('heroicon-o-bolt')
+                ->url(OpportunityResource::getUrl('quick-create'))
+                ->color('gray'),
+        ];
     }
 
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -30,9 +42,19 @@ class CreateOpportunity extends CreateRecord
             $data['title'] = 'فرصت ' . $data['organization_name'];
         }
 
-        // مشتری را هوشمند پیدا/بساز
-        $customer = $this->resolveCustomer($data);
+        if (blank($data['next_step'] ?? null)) {
+            $data['next_step'] = app(OpportunityQuickCreate::class)->suggestNextStep($data);
+        }
+
+        $customer = app(OpportunityQuickCreate::class)->resolveCustomer($data);
         $data['customer_id'] = $customer->id;
+
+        if (filled($data['mobile'] ?? null)) {
+            $normalized = app(OpportunityQuickCreate::class)->normalizePhone($data['mobile']);
+            if ($normalized) {
+                $data['mobile'] = $normalized;
+            }
+        }
 
         return $data;
     }
@@ -45,46 +67,6 @@ class CreateOpportunity extends CreateRecord
         $this->createFirstFollowUp($opportunity, $data);
 
         return $opportunity;
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    private function resolveCustomer(array $data): Customer
-    {
-        $name = trim((string) ($data['organization_name'] ?? ''));
-        $phone = $data['mobile'] ?: ($data['phone'] ?? null);
-
-        $query = Customer::query()->where('name', $name);
-
-        if ($phone) {
-            $query->where(function ($q) use ($phone) {
-                $q->where('phone', $phone);
-            });
-        }
-
-        $existing = $query->first();
-
-        if ($existing) {
-            $existing->fill(array_filter([
-                'phone' => $phone ?: $existing->phone,
-                'email' => $data['email'] ?? $existing->email,
-                'address' => $data['address'] ?? $existing->address,
-            ]));
-            $existing->save();
-
-            return $existing;
-        }
-
-        return Customer::query()->create([
-            'type' => Customer::TYPE_ORGANIZATION,
-            'name' => $name !== '' ? $name : 'مشتری بدون نام',
-            'phone' => $phone,
-            'email' => $data['email'] ?? null,
-            'address' => $data['address'] ?? null,
-            'is_active' => true,
-            'notes' => 'ساخته‌شده از ثبت سریع فرصت',
-        ]);
     }
 
     /**
