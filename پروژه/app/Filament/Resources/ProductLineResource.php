@@ -35,9 +35,15 @@ class ProductLineResource extends Resource
 
     protected static ?string $pluralModelLabel = 'محصولات';
 
-    protected static string|UnitEnum|null $navigationGroup = 'محصولات';
+    protected static string|UnitEnum|null $navigationGroup = 'استخر کاتالوگ (پایه)';
 
     protected static ?int $navigationSort = 0;
+
+    /** مخفی از منوی اصلی — هنوز از URL و لینک‌های داخلی در دسترس است */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

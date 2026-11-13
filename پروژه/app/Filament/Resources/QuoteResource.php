@@ -41,7 +41,7 @@ class QuoteResource extends Resource
 
     protected static ?string $navigationLabel = 'پیش‌فاکتورها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'فروش و مشتری';
+    protected static string|UnitEnum|null $navigationGroup = 'فروش (جدید)';
 
     protected static ?int $navigationSort = 20;
 
