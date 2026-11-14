@@ -50,7 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Pages\\Dashboard::class,
                 SwitchCompany::class,
             ])
             ->userMenuItems([
@@ -73,7 +73,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                Widgets\\AccountWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -92,11 +92,12 @@ class AdminPanelProvider extends PanelProvider
             // تم Vite مخصوص پنل (لازم برای Kinetics)
             ->viteTheme('resources/css/filament/admin/theme.css');
 
-        if (class_exists(\Otatechie\Kinetics\KineticsPlugin::class)) {
-            $panel = $panel->plugin(\Otatechie\Kinetics\KineticsPlugin::make());
+        if (class_exists(\\Otatechie\\Kinetics\\KineticsPlugin::class)) {
+            $panel = $panel->plugin(\\Otatechie\\Kinetics\\KineticsPlugin::make());
         }
 
         // فارسی / RTL بعد از پلاگین می‌مانند و اولویت بصری دارند
+        // استایل صفحه فقط از theme Tailwind + filament-fa.css (بدون CSS اختصاصی صفحه)
         return $panel
             ->renderHook(
                 PanelsRenderHook::BODY_END,
@@ -105,8 +106,7 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">'
-                    . '<link rel="stylesheet" href="' . asset('css/mf-funnel.css') . '?v=' . @filemtime(public_path('css/mf-funnel.css')) . '">'
-                    . '<link rel="stylesheet" href="' . asset('css/opp-workspace.css') . '?v=' . @filemtime(public_path('css/opp-workspace.css')) . '">',
+                    . '<link rel="stylesheet" href="' . asset('css/mf-funnel.css') . '?v=' . @filemtime(public_path('css/mf-funnel.css')) . '">',
             )
             ->renderHook(
                 PanelsRenderHook::BODY_START,
