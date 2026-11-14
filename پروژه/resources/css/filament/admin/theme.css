@@ -1,12 +1,14 @@
 @import 'tailwindcss';
 
-/* Kinetics: layers before Filament, kinetics after */
-@import '../../../../vendor/otatechie/filament-kinetics/resources/css/layers.css';
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+/* Kinetics موقتاً غیرفعال — در صورت نیاز بعدی:
+@import '../../../../vendor/otatechie/filament-kinetics/resources/css/layers.css';
 @import '../../../../vendor/otatechie/filament-kinetics/resources/css/kinetics.css';
+*/
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 @source '../../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-/* Jalali DatePicker (mokhosh) — بدون این، تقویم به‌صورت فیلد دراز خراب دیده می‌شود */
-@source '../../../../vendor/mokhosh/filament-jalali/resources/**/*';
+/* Jalali DatePicker — ariaieboy/filament-jalali v3 */
+@source '../../../../vendor/ariaieboy/filament-jalali/resources/**/*';
