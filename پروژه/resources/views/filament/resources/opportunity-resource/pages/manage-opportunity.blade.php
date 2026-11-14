@@ -1,12 +1,30 @@
 <x-filament-panels::page>
     @php
         /** @var \App\Models\Opportunity $opportunity */
-        // متغیرها از getViewData(): $opportunity, $activities, $isOverdue, $dueLabel,
-        // $statusLabel, $stageLabel, $productLabel, $ownerLabel, $codeLabel, $roleLabel
+        // getViewData: $opportunity, $activities, $isOverdue, $dueLabel, $statusLabel, $stageLabel,
+        // $productLabel, $ownerLabel, $codeLabel, $roleLabel, $listUrl, $listLabel, $pageTitle
         $dash = '—';
     @endphp
 
     <div class="space-y-6" dir="rtl">
+        {{-- Breadcrumb — مسیر استاندارد، نه دکمهٔ بازگشت در هدر --}}
+        <nav aria-label="مسیر صفحه" class="text-sm">
+            <ol class="flex flex-wrap items-center gap-1.5 text-gray-500 dark:text-gray-400">
+                <li>
+                    <a
+                        href="{{ $listUrl }}"
+                        class="font-medium text-gray-600 transition hover:text-primary-600 dark:text-gray-300 dark:hover:text-primary-400"
+                    >
+                        {{ $listLabel }}
+                    </a>
+                </li>
+                <li aria-hidden="true" class="select-none text-gray-300 dark:text-gray-600">/</li>
+                <li class="font-medium text-gray-900 dark:text-white" aria-current="page">
+                    {{ \Illuminate\Support\Str::limit($pageTitle, 48) }}
+                </li>
+            </ol>
+        </nav>
+
         {{-- نوار وضعیت فشرده --}}
         <div class="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm dark:border-white/10 dark:bg-gray-900">
             <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-200">
@@ -40,7 +58,6 @@
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
             {{-- ستون اصلی: کار --}}
             <div class="space-y-6 lg:col-span-8">
-                {{-- گام جاری --}}
                 <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
                     <header class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 dark:border-white/10">
                         <div class="flex items-center gap-2">
@@ -84,7 +101,6 @@
                     </div>
                 </section>
 
-                {{-- فعالیت‌ها --}}
                 <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
                     <header class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 dark:border-white/10">
                         <div class="flex items-center gap-2">
@@ -135,7 +151,6 @@
                 </section>
             </div>
 
-            {{-- سایدبار خلاصه --}}
             <aside class="space-y-6 lg:col-span-4">
                 <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
                     <header class="border-b border-gray-100 px-4 py-3 dark:border-white/10">
