@@ -1,52 +1,39 @@
-# myoffice — زمینه پروژه برای ادامه کار
+# hamarehCRM — زمینه پروژه
 
-مسیر: ~/projects/myoffice (WSL)  
-پنل: http://localhost:8088/admin  
-استک: Laravel 13 + Filament 4 + MariaDB + فارسی/RTL/وزیرمتن  
+| فیلد | مقدار |
+|---|---|
+| مخزن | akhlaghimhd/hamarehCRM |
+| شاخه توسعه | feature/filament5-upgrade |
+| پنل محلی اعلام‌شده | http://localhost:8088/admin |
+| خط مبنای تأییدشده 2026-11-14 | PHP 8.4.27، Laravel 13.42.0، Filament 5.11.3، Livewire 4.4.8، MariaDB 10.4 |
 
-**نسخه زمینه:** 1.1.0 — 2026-11-09  
+این سند خلاصه راه‌یابی است؛ وضعیت واقعی کد، Migration و پیشرفت از آخرین Commit همین شاخه بررسی می‌شود.
 
-## معماری پایه
-- چندشرکتی با `company_id`
-- نقش کاربر per company (`company_user`)
-- Permission از Seed؛ Role توسط ادمین
-- منو/دکمه بر اساس مجوز؛ عدم دسترسی با Notification نه 404
-- کار بدون `company_id` ممنوع
+## معماری
+- سیستم عملیاتی یکپارچه چندشرکتی؛ جداسازی با company_id.
+- ماژول‌های M00 تا M11 طبق [معماری کلان](./system/01_ARCHITECTURE.md).
+- موتور محصول داده‌محور: [04_DYNAMIC_PRODUCT_CONFIGURATION](./system/04_DYNAMIC_PRODUCT_CONFIGURATION.md).
+- Workflow، سفارش و تولید داده‌محور: [05_WORKFLOW_ORDER_PRODUCTION](./system/05_WORKFLOW_ORDER_PRODUCTION.md).
+- زیرساخت عملیاتی: [06_PLATFORM_INFRASTRUCTURE](./system/06_PLATFORM_INFRASTRUCTURE.md).
 
-## معماری دامنه محصول (الزامی)
-سند کامل: `docs/CATALOG_ARCHITECTURE.md` **v1.0.0**
+## محصول و کاتالوگ
+استخر امکانات، Family/Season/Model، ماتریس مجاز و CatalogRule حفظ می‌شوند. نوتوپیا اولین نمونه موتور عمومی است؛ محصول، Attribute، Option یا Routing جدید نباید به شرط hardcode در PHP نیاز داشته باشد.
 
-خلاصه تصمیم:
-- استخر امکانات → مدل فقط زیرمجموعه مجاز
-- خانواده (`ProductFamily`) + کالکشن/سال عرضه (`CatalogSeason`) + `ProductModel`
-- اقلام فقط از `ProductOption`؛ تیک ثابت روی مدل ممنوع
-- سفارش فقط گزینه‌های مجاز + قوانین + snapshot قیمت
-- موجودی روی SKU/variant با رزرو و کسر از سفارش
-- هیچ سناریوی ماتریس A–G در وضعیت جزئی/خیر به‌عنوان وضعیت نهایی پذیرفته نیست
+## اصول اجرایی
+- Laravel 13 + Filament 5 + Livewire 4.
+- UI فارسی، RTL، Vazirmatn و اعداد از App\Support\Fa.
+- اولویت با قابلیت‌های بومی Filament.
+- Migration تنها روش تغییر Schema.
+- منطق کسب‌وکار در Action/Service و مستقل از UI.
+- تغییرات محلی کاربر بدون اجازه پاک نشوند.
+- فقط شاخه feature/filament5-upgrade مبنای توسعه است.
 
-## فازبندی
-0 Foundation (~انجام)  
-1 محصول نوتوپیا — **اسپرینت ۱ کاتالوگ سخت در جریان**  
-2 بازاریابی  
-3 فروش/سفارش (ویزارد، قوانین، snapshot)  
-4 تولید  
-5 انبار  
-6 مالی  
+## اسناد مرجع
+- [AGENT_RULES](./AGENT_RULES.md)
+- [فهرست معماری](./system/00_INDEX.md)
+- [قواعد حاکمیتی](./system/02_RULES_AND_GOVERNANCE.md)
+- [ماژول‌ها](./system/modules/)
+- [استاندارد جدول](./TABLE_STANDARDS.md)
 
-## ساخته‌شده (فاز ۰ / پایه ۱)
-- Company, User(username), Role, Permission, Customer
-- ProductLine/Model/Size/Option، Cover*، Packaging، CatalogRule، NotopiaCluster
-- استاندارد جدول: `docs/TABLE_STANDARDS.md`
-- `App\Support\Fa` (+ dateTime شمسی در مسیر اعمال)
-
-## نباید
-- Filament 3 یا Tablar
-- Resource تکراری Customers/Companies
-- کار بدون company_id
-- رها کردن pivot مدل↔SKU/اقلام
-- paginated با کلید فارسی؛ strtr پراکنده
-
-## بعد (اجرایی)
-1. پیاده‌سازی اسپرینت ۱ طبق CATALOG_ARCHITECTURE §7  
-2. سپس اسپرینت ۲ (کپی و ماتریس)  
-3. فاز ۳ سفارش هوشمند  
+## هشدار
+PROJECT_STATUS و SPRINT1_SCHEMA گزارش/قراردادهای تاریخی‌اند. تاریخ و وضعیت آن‌ها را قبل از اتکا بررسی کنید؛ تیک قدیمی جای بررسی کد و تست فعلی را نمی‌گیرد.
