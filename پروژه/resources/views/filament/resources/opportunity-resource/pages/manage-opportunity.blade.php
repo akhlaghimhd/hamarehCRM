@@ -7,101 +7,106 @@
     @endphp
 
     <div class="fi-opp-workspace space-y-4" dir="rtl">
-        {{-- Header: title + status pills --}}
-        <header class="rounded-xl border border-gray-200 bg-white px-4 py-3.5 shadow-sm dark:border-white/10 dark:bg-gray-900">
-            <div class="flex flex-wrap items-start justify-between gap-3">
-                <div class="min-w-0 flex-1">
-                    <h1 class="text-lg font-bold tracking-tight text-gray-950 dark:text-white sm:text-xl">
-                        {{ $pageTitle }}
-                    </h1>
-                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-200">
-                            {{ \App\Support\Fa::digits($codeLabel) }}
+        {{-- Title + status --}}
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0">
+                <h1 class="text-xl font-bold tracking-tight text-gray-950 dark:text-white">
+                    {{ $pageTitle }}
+                </h1>
+                <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                    <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-white/10 dark:text-gray-200">
+                        {{ \App\Support\Fa::digits($codeLabel) }}
+                    </span>
+                    <span class="inline-flex items-center rounded-md bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-400/10 dark:text-primary-300">
+                        {{ $statusLabel }}
+                    </span>
+                    <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-400/10 dark:text-amber-300">
+                        {{ $stageLabel }}
+                    </span>
+                    @if ($productLabel && $productLabel !== '—')
+                        <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs text-gray-600 dark:bg-white/5 dark:text-gray-300">
+                            {{ $productLabel }}
                         </span>
-                        <span class="inline-flex items-center rounded-md bg-primary-50 px-2 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-400/10 dark:text-primary-300">
-                            {{ $statusLabel }}
+                    @endif
+                    @if ($dueLabel)
+                        <span @class([
+                            'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium',
+                            'bg-danger-50 text-danger-700 dark:bg-danger-400/10 dark:text-danger-300' => $isOverdue,
+                            'bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-gray-300' => ! $isOverdue,
+                        ])>
+                            @if ($isOverdue)
+                                <x-filament::icon icon="heroicon-m-exclamation-triangle" class="h-3.5 w-3.5" />
+                            @else
+                                <x-filament::icon icon="heroicon-m-calendar" class="h-3.5 w-3.5" />
+                            @endif
+                            مهلت {{ \App\Support\Fa::digits($dueLabel) }}
+                            @if ($isOverdue)
+                                · عقب‌افتاده
+                            @endif
                         </span>
-                        <span class="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-400/10 dark:text-amber-300">
-                            {{ $stageLabel }}
-                        </span>
-                        @if ($productLabel && $productLabel !== '—')
-                            <span class="inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs text-gray-600 dark:bg-white/5 dark:text-gray-300">
-                                {{ $productLabel }}
-                            </span>
-                        @endif
-                        @if ($dueLabel)
-                            <span @class([
-                                'inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium',
-                                'bg-danger-50 text-danger-700 dark:bg-danger-400/10 dark:text-danger-300' => $isOverdue,
-                                'bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-gray-300' => ! $isOverdue,
-                            ])>
-                                @if ($isOverdue)
-                                    <x-filament::icon icon="heroicon-m-exclamation-triangle" class="h-3.5 w-3.5" />
-                                @else
-                                    <x-filament::icon icon="heroicon-m-calendar" class="h-3.5 w-3.5" />
-                                @endif
-                                مهلت {{ \App\Support\Fa::digits($dueLabel) }}
-                                @if ($isOverdue)
-                                    · عقب‌افتاده
-                                @endif
-                            </span>
-                        @endif
-                    </div>
+                    @endif
                 </div>
             </div>
-        </header>
+        </div>
 
-        <div class="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-5">
-            {{-- MAIN --}}
+        <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-12 lg:gap-5">
+            {{-- MAIN (در RTL سمت راست) --}}
             <div class="flex flex-col gap-4 lg:col-span-8">
-                {{-- Current step (hero work area) --}}
+                {{-- گام جاری --}}
                 <section @class([
-                    'overflow-hidden rounded-xl border shadow-sm',
-                    'border-primary-200 bg-primary-50/50 dark:border-primary-500/25 dark:bg-primary-500/10' => $hasOpen && ! $isOverdue,
-                    'border-danger-200 bg-danger-50/40 dark:border-danger-500/25 dark:bg-danger-500/10' => $hasOpen && $isOverdue,
-                    'border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900' => ! $hasOpen,
+                    'overflow-hidden rounded-xl border bg-white shadow-sm dark:bg-gray-900',
+                    'border-primary-300 dark:border-primary-500/40' => $hasOpen && ! $isOverdue,
+                    'border-danger-300 dark:border-danger-500/40' => $hasOpen && $isOverdue,
+                    'border-gray-200 dark:border-white/10' => ! $hasOpen,
                 ])>
                     @if ($hasOpen)
-                        <div class="flex flex-col gap-3 border-b border-black/5 px-4 py-3.5 sm:flex-row sm:items-start sm:justify-between dark:border-white/10">
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-2">
-                                    <span @class([
-                                        'inline-flex h-6 items-center rounded-full px-2 text-[11px] font-semibold',
-                                        'bg-primary-600 text-white dark:bg-primary-500' => ! $isOverdue,
-                                        'bg-danger-600 text-white dark:bg-danger-500' => $isOverdue,
-                                    ])>
-                                        گام جاری
+                        {{-- نوار بالای کارت --}}
+                        <div @class([
+                            'flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5',
+                            'border-primary-100 bg-primary-50 dark:border-primary-500/20 dark:bg-primary-500/10' => ! $isOverdue,
+                            'border-danger-100 bg-danger-50 dark:border-danger-500/20 dark:bg-danger-500/10' => $isOverdue,
+                        ])>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span @class([
+                                    'inline-flex h-6 items-center rounded-full px-2.5 text-[11px] font-semibold text-white',
+                                    'bg-primary-600 dark:bg-primary-500' => ! $isOverdue,
+                                    'bg-danger-600 dark:bg-danger-500' => $isOverdue,
+                                ])>
+                                    گام جاری
+                                </span>
+                                @if ($assigneeLabel && $assigneeLabel !== '—')
+                                    <span class="text-xs text-gray-600 dark:text-gray-300">
+                                        مسئول: <span class="font-medium">{{ $assigneeLabel }}</span>
                                     </span>
-                                    @if ($assigneeLabel && $assigneeLabel !== '—')
-                                        <span class="text-xs text-gray-500 dark:text-gray-400">
-                                            مسئول: {{ $assigneeLabel }}
-                                        </span>
-                                    @endif
-                                </div>
-                                <h2 class="mt-1.5 text-base font-bold leading-snug text-gray-950 dark:text-white sm:text-lg">
-                                    {{ $openStep->title }}
-                                </h2>
-                                @if ($dueLabel)
-                                    <p @class([
-                                        'mt-1 text-sm',
-                                        'font-semibold text-danger-700 dark:text-danger-300' => $isOverdue,
-                                        'text-gray-600 dark:text-gray-300' => ! $isOverdue,
-                                    ])>
-                                        مهلت {{ \App\Support\Fa::digits($dueLabel) }}
-                                        @if ($isOverdue)
-                                            — عقب‌افتاده
-                                        @endif
-                                    </p>
                                 @endif
                             </div>
-
-                            <div class="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+                            <div class="flex flex-wrap items-center gap-2">
                                 {{ $this->closeStepAction }}
                                 {{ $this->clearStepAction }}
                             </div>
                         </div>
 
-                        <div class="px-4 py-3.5">
+                        {{-- عنوان و مهلت --}}
+                        <div class="border-b border-gray-100 px-4 py-3 dark:border-white/10">
+                            <h2 class="text-base font-bold leading-snug text-gray-950 dark:text-white sm:text-lg">
+                                {{ $openStep->title }}
+                            </h2>
+                            @if ($dueLabel)
+                                <p @class([
+                                    'mt-1 text-sm',
+                                    'font-semibold text-danger-700 dark:text-danger-300' => $isOverdue,
+                                    'text-gray-500 dark:text-gray-400' => ! $isOverdue,
+                                ])>
+                                    مهلت {{ \App\Support\Fa::digits($dueLabel) }}
+                                    @if ($isOverdue)
+                                        — عقب‌افتاده
+                                    @endif
+                                </p>
+                            @endif
+                        </div>
+
+                        {{-- فعالیت‌ها --}}
+                        <div class="px-4 py-3">
                             <div class="mb-2.5 flex flex-wrap items-center justify-between gap-2">
                                 <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100">
                                     فعالیت‌های این گام
@@ -115,23 +120,23 @@
                             </div>
 
                             @if ($stepActivities->isEmpty())
-                                <div class="rounded-lg border border-dashed border-gray-200 bg-white/80 px-3 py-5 text-center text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400">
-                                    هنوز فعالیتی ثبت نشده.
-                                    <span class="block mt-0.5 text-xs text-gray-400">از «ثبت فعالیت» برای تماس، جلسه یا یادداشت استفاده کنید.</span>
+                                <div class="rounded-lg border border-dashed border-gray-200 bg-gray-50/80 px-3 py-6 text-center dark:border-white/10 dark:bg-white/5">
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">هنوز فعالیتی ثبت نشده.</p>
+                                    <p class="mt-0.5 text-xs text-gray-400">از دکمه «ثبت فعالیت» برای تماس، جلسه یا یادداشت استفاده کنید.</p>
                                 </div>
                             @else
-                                <ul class="space-y-2">
+                                <ul class="divide-y divide-gray-100 overflow-hidden rounded-lg border border-gray-100 dark:divide-white/5 dark:border-white/10">
                                     @foreach ($stepActivities as $activity)
-                                        <li class="rounded-lg border border-gray-100 bg-white px-3 py-2.5 dark:border-white/10 dark:bg-gray-900/50">
+                                        <li class="bg-white px-3 py-2.5 dark:bg-gray-900/40">
                                             <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
                                                 <span class="inline-flex items-center gap-1.5">
                                                     <span class="font-medium text-gray-700 dark:text-gray-200">
                                                         {{ \App\Models\Activity::typeOptions()[$activity->type] ?? $activity->type }}
                                                     </span>
-                                                    <span class="text-gray-300">·</span>
+                                                    <span class="text-gray-300 dark:text-gray-600">·</span>
                                                     <span>{{ $activity->due_at ? \App\Support\Fa::dateTime($activity->due_at, 'Y/m/d') : $dash }}</span>
                                                 </span>
-                                                <span class="text-gray-400">{{ $activity->user?->name ?? $dash }}</span>
+                                                <span>{{ $activity->user?->name ?? $dash }}</span>
                                             </div>
                                             <p class="mt-1 text-sm font-medium text-gray-900 dark:text-white">
                                                 {{ $activity->subject }}
@@ -162,7 +167,7 @@
                     @endif
                 </section>
 
-                {{-- Closed steps history --}}
+                {{-- گام‌های قبلی --}}
                 <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
                     <div class="flex items-center justify-between border-b border-gray-100 px-4 py-2.5 dark:border-white/10">
                         <h2 class="text-sm font-semibold text-gray-800 dark:text-gray-100">گام‌های قبلی</h2>
@@ -176,29 +181,29 @@
                     @forelse ($closedSteps as $step)
                         @php $stepActs = $step->activities->sortByDesc('id'); @endphp
                         <details class="group border-b border-gray-50 last:border-b-0 dark:border-white/5">
-                            <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm transition hover:bg-gray-50 dark:hover:bg-white/5">
+                            <summary class="flex cursor-pointer list-none items-center gap-3 px-4 py-3 text-sm transition hover:bg-gray-50 dark:hover:bg-white/5">
                                 <div class="min-w-0 flex-1">
-                                    <span class="font-medium text-gray-900 dark:text-white">{{ $step->title }}</span>
+                                    <div class="font-medium text-gray-900 dark:text-white">{{ $step->title }}</div>
                                     @if (filled($step->result))
                                         <p class="mt-0.5 truncate text-xs text-gray-500">
-                                            {{ \Illuminate\Support\Str::limit($step->result, 80) }}
+                                            {{ \Illuminate\Support\Str::limit($step->result, 90) }}
                                         </p>
                                     @endif
                                 </div>
                                 <div class="flex shrink-0 items-center gap-2 text-xs text-gray-400">
                                     <span>{{ $step->closed_at ? \App\Support\Fa::dateTime($step->closed_at, 'Y/m/d') : $dash }}</span>
                                     @if ($stepActs->isNotEmpty())
-                                        <span class="rounded-full bg-gray-100 px-1.5 py-0.5 dark:bg-white/10">
+                                        <span class="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-100 px-1.5 text-[11px] font-medium text-gray-600 dark:bg-white/10 dark:text-gray-300">
                                             {{ \App\Support\Fa::digits((string) $stepActs->count()) }}
                                         </span>
                                     @endif
                                     <x-filament::icon
                                         icon="heroicon-m-chevron-down"
-                                        class="h-4 w-4 transition group-open:rotate-180"
+                                        class="h-4 w-4 shrink-0 transition group-open:rotate-180"
                                     />
                                 </div>
                             </summary>
-                            <div class="space-y-2 border-t border-gray-50 bg-gray-50/50 px-4 py-3 dark:border-white/5 dark:bg-white/[0.02]">
+                            <div class="space-y-2 border-t border-gray-50 bg-gray-50/60 px-4 py-3 dark:border-white/5 dark:bg-white/[0.02]">
                                 @if (filled($step->result))
                                     <p class="text-sm leading-6 text-gray-700 dark:text-gray-300">
                                         <span class="font-medium text-gray-900 dark:text-white">نتیجه:</span>
@@ -235,11 +240,10 @@
                 </section>
             </div>
 
-            {{-- SIDEBAR --}}
+            {{-- SIDEBAR (در RTL سمت چپ) --}}
             <aside class="flex flex-col gap-3 lg:col-span-4">
-                {{-- Contact card --}}
                 <section class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                    <div class="text-[11px] font-medium uppercase tracking-wide text-gray-400">مخاطب</div>
+                    <div class="text-[11px] font-medium tracking-wide text-gray-400">مخاطب</div>
                     <div class="mt-1 text-base font-bold text-gray-950 dark:text-white">
                         {{ $opportunity->contact_name ?: $dash }}
                     </div>
@@ -247,7 +251,7 @@
                         <div class="mt-0.5 text-xs text-gray-500">{{ $roleLabel }}</div>
                     @endif
                     @if ($opportunity->organization_name)
-                        <div class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                        <div class="mt-1.5 text-sm text-gray-600 dark:text-gray-300">
                             {{ $opportunity->organization_name }}
                         </div>
                     @endif
@@ -259,8 +263,8 @@
                                 class="flex items-center gap-2 rounded-lg bg-primary-50 px-3 py-2 text-sm font-medium text-primary-700 transition hover:bg-primary-100 dark:bg-primary-400/10 dark:text-primary-300 dark:hover:bg-primary-400/20"
                                 dir="ltr"
                             >
-                                <x-filament::icon icon="heroicon-m-phone" class="h-4 w-4" />
-                                {{ \App\Support\Fa::digits($opportunity->mobile) }}
+                                <x-filament::icon icon="heroicon-m-phone" class="h-4 w-4 shrink-0" />
+                                <span class="truncate">{{ \App\Support\Fa::digits($opportunity->mobile) }}</span>
                             </a>
                         @endif
                         @if ($opportunity->phone)
@@ -269,8 +273,8 @@
                                 class="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-100 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
                                 dir="ltr"
                             >
-                                <x-filament::icon icon="heroicon-m-phone" class="h-4 w-4" />
-                                {{ \App\Support\Fa::digits($opportunity->phone) }}
+                                <x-filament::icon icon="heroicon-m-phone" class="h-4 w-4 shrink-0" />
+                                <span class="truncate">{{ \App\Support\Fa::digits($opportunity->phone) }}</span>
                             </a>
                         @endif
                         @if ($opportunity->email)
@@ -279,37 +283,36 @@
                                 class="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-100 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
                                 dir="ltr"
                             >
-                                <x-filament::icon icon="heroicon-m-envelope" class="h-4 w-4" />
-                                {{ $opportunity->email }}
+                                <x-filament::icon icon="heroicon-m-envelope" class="h-4 w-4 shrink-0" />
+                                <span class="truncate">{{ $opportunity->email }}</span>
                             </a>
                         @endif
                     </div>
                 </section>
 
-                {{-- Opportunity meta --}}
                 <section class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
-                    <div class="border-b border-gray-100 px-4 py-2.5 text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:border-white/10">
+                    <div class="border-b border-gray-100 px-4 py-2.5 text-[11px] font-medium tracking-wide text-gray-400 dark:border-white/10">
                         جزئیات فرصت
                     </div>
                     <dl class="divide-y divide-gray-50 text-sm dark:divide-white/5">
                         <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                            <dt class="text-gray-400">محصول</dt>
+                            <dt class="shrink-0 text-gray-400">محصول</dt>
                             <dd class="text-left font-medium text-gray-900 dark:text-white">{{ $productLabel ?: $dash }}</dd>
                         </div>
                         <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                            <dt class="text-gray-400">مرحله قیف</dt>
+                            <dt class="shrink-0 text-gray-400">مرحله قیف</dt>
                             <dd class="text-left font-medium text-gray-900 dark:text-white">{{ $stageLabel }}</dd>
                         </div>
                         <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                            <dt class="text-gray-400">وضعیت</dt>
+                            <dt class="shrink-0 text-gray-400">وضعیت</dt>
                             <dd class="text-left font-medium text-gray-900 dark:text-white">{{ $statusLabel }}</dd>
                         </div>
                         <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                            <dt class="text-gray-400">مالک</dt>
+                            <dt class="shrink-0 text-gray-400">مالک</dt>
                             <dd class="text-left font-medium text-gray-900 dark:text-white">{{ $ownerLabel }}</dd>
                         </div>
                         <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                            <dt class="text-gray-400">پیگیری</dt>
+                            <dt class="shrink-0 text-gray-400">پیگیری</dt>
                             <dd class="text-left font-medium text-gray-900 dark:text-white">{{ $followupLabel }}</dd>
                         </div>
                     </dl>
