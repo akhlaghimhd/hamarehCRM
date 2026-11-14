@@ -1,11 +1,12 @@
 <x-filament-panels::page>
     @php
         /** @var \App\Models\Opportunity $opportunity */
+        /** @var \App\Models\OpportunityStep|null $openStep */
         $dash = '—';
+        $hasOpen = $openStep !== null;
     @endphp
 
     <div class="space-y-5" dir="rtl">
-        {{-- Breadcrumb --}}
         <nav aria-label="مسیر صفحه" class="text-sm">
             <ol class="flex flex-wrap items-center gap-1.5 text-gray-500 dark:text-gray-400">
                 <li>
@@ -23,7 +24,6 @@
             </ol>
         </nav>
 
-        {{-- عنوان + آیکن + متا --}}
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2.5">
@@ -71,9 +71,9 @@
                     <div class="flex flex-wrap items-start justify-between gap-3 border-b border-emerald-100/80 px-4 py-3 dark:border-emerald-500/15">
                         <div class="min-w-0">
                             <div class="text-xs font-medium text-emerald-800/80 dark:text-emerald-300/80">گام جاری</div>
-                            @if (filled($opportunity->next_step))
+                            @if ($hasOpen)
                                 <h2 class="mt-0.5 text-base font-bold text-gray-950 dark:text-white">
-                                    {{ $opportunity->next_step }}
+                                    {{ $openStep->title }}
                                 </h2>
                                 @if ($dueLabel)
                                     <p @class([
@@ -90,7 +90,7 @@
                             @endif
                         </div>
                         <div class="flex flex-wrap items-center gap-2">
-                            @if (filled($opportunity->next_step))
+                            @if ($hasOpen)
                                 {{ $this->closeStepAction }}
                                 {{ $this->clearStepAction }}
                             @else
@@ -99,19 +99,25 @@
                         </div>
                     </div>
 
-                    @if (filled($opportunity->next_step))
+                    @if ($hasOpen)
                         <p class="px-4 pt-3 text-xs leading-5 text-gray-500 dark:text-gray-400">
-                            گام را با نتیجه ببندید؛ فعالیت جداگانه از دکمهٔ زیر است.
+                            فعالیت‌ها فقط زیر همین گام ثبت می‌شوند؛ با بستن گام، همهٔ آن‌ها همراه گام به باکس پایین می‌روند.
                         </p>
                     @endif
 
                     <div class="px-4 py-3">
                         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                             <span class="text-sm font-semibold text-gray-800 dark:text-gray-100">فعالیت‌های زیر این گام</span>
-                            {{ $this->logActivityAction }}
+                            @if ($hasOpen)
+                                {{ $this->logActivityAction }}
+                            @endif
                         </div>
 
-                        @if ($stepActivities->isEmpty())
+                        @if (! $hasOpen)
+                            <div class="rounded-xl border border-dashed border-gray-200 bg-white/70 px-3 py-4 text-center text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400">
+                                ابتدا یک گام تعریف کنید تا بتوانید فعالیت ثبت کنید.
+                            </div>
+                        @elseif ($stepActivities->isEmpty())
                             <div class="rounded-xl border border-dashed border-gray-200 bg-white/70 px-3 py-4 text-center text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400">
                                 فعالیتی ثبت نشده. از «ثبت فعالیت» برای تماس/جلسه استفاده کنید.
                             </div>
@@ -149,21 +155,50 @@
                     </header>
                     <div class="divide-y divide-gray-100 dark:divide-white/5">
                         @forelse ($closedSteps as $step)
+                            @php
+                                $stepActs = $step->activities->sortByDesc('id');
+                            @endphp
                             <details class="group px-4 py-3">
                                 <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 text-sm">
-                                    <span class="font-medium text-gray-900 dark:text-white">{{ $step->subject }}</span>
+                                    <span class="font-medium text-gray-900 dark:text-white">{{ $step->title }}</span>
                                     <span class="text-xs text-gray-400">
-                                        {{ $step->due_at ? \App\Support\Fa::dateTime($step->due_at, 'Y/m/d') : $dash }}
-                                        · {{ $step->user?->name ?? $dash }}
+                                        {{ $step->closed_at ? \App\Support\Fa::dateTime($step->closed_at, 'Y/m/d') : $dash }}
+                                        · {{ \App\Support\Fa::digits((string) $stepActs->count()) }} فعالیت
+                                        @if ($step->assignedUser)
+                                            · {{ $step->assignedUser->name }}
+                                        @endif
                                     </span>
                                 </summary>
-                                @if (filled($step->body))
-                                    <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-600 dark:text-gray-300">{{ $step->body }}</p>
+                                @if (filled($step->result))
+                                    <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                                        <span class="font-medium text-gray-800 dark:text-gray-200">نتیجه:</span>
+                                        {{ $step->result }}
+                                    </p>
+                                @endif
+                                @if ($stepActs->isNotEmpty())
+                                    <ul class="mt-3 space-y-2 border-t border-gray-100 pt-3 dark:border-white/10">
+                                        @foreach ($stepActs as $activity)
+                                            <li class="rounded-lg bg-gray-50 px-3 py-2 text-sm dark:bg-white/5">
+                                                <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
+                                                    <span>
+                                                        {{ \App\Models\Activity::typeOptions()[$activity->type] ?? $activity->type }}
+                                                        ·
+                                                        {{ $activity->due_at ? \App\Support\Fa::dateTime($activity->due_at, 'Y/m/d') : $dash }}
+                                                    </span>
+                                                    <span>{{ $activity->user?->name ?? $dash }}</span>
+                                                </div>
+                                                <p class="mt-1 font-medium text-gray-900 dark:text-white">{{ $activity->subject }}</p>
+                                                @if (filled($activity->body))
+                                                    <p class="mt-0.5 text-xs text-gray-500">{{ $activity->body }}</p>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 @endif
                             </details>
                         @empty
                             <div class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                                هنوز گام بسته‌شده یا ارجاعی ثبت نشده.
+                                هنوز گام بسته‌شده‌ای نیست.
                             </div>
                         @endforelse
                     </div>
