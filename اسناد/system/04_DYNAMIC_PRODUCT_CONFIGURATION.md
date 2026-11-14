@@ -20,8 +20,8 @@
 رکورد داده‌ای متعلق به شرکت: code، name، description، capabilities، configuration mode، inventory/pricing/production policies و active status. Seed اولیه مجاز است، اما ایجاد و مدیریت انواع جدید باید از پنل ممکن باشد.
 
 ### Product Definition
-ساختار عمومی: ProductType، تعریف/مدل محصول، Revision، Attribute Schema، Option Pool، Allowed Matrix، Catalog Rules، Price Rules و اتصال Routing Template.
-Family/Season/Model ساختار مفید نوتوپیاست؛ همه انواع محصول مجبور به داشتن آن نیستند.
+ساختار عمومی: ProductType، ProductLine (اختیاری)، ProductFamily (اختیاری)، CatalogSeason (اختیاری)، ProductModel/Definition، Revision، Attribute Schema، Option Pool، Allowed Matrix، Catalog Rules، Price Rules و اتصال Routing Template.
+ProductLine/Family/Season/Model لایه‌های اختیاری‌اند؛ ساختار دقیق نوتوپیا حفظ می‌شود، اما همه انواع محصول مجبور به داشتن آن نیستند.
 
 ### Attribute Schema
 Attribute شامل code، عنوان، data_type، واحد، required/default، min/max/precision، اعتبارسنجی محدود، منبع گزینه، searchable/filterable، scope نمایش و ترتیب است.

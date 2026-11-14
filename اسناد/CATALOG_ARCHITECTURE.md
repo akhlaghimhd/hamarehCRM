@@ -19,12 +19,12 @@
 7. داده دامنه company-scoped است.
 
 ## ۲. مدل مفهومی
-ProductType → (اختیاری) Family / Season / Model → Attribute Schema + Option Pool → Allowed Matrix + Catalog Rules → Configurator → QuoteLine/OrderLine Snapshot.
+ProductType → (اختیاری) ProductLine → ProductFamily → CatalogSeason → ProductModel → Attribute Schema + Option Pool → Allowed Matrix + Catalog Rules → Configurator → QuoteLine/OrderLine Snapshot.
 
 ProductType رکورد داده‌ای با کد پایدار، عنوان، قابلیت‌ها و تنظیمات است؛ کد نباید مبنای شرط اختصاصی PHP باشد.
 
 ### نوتوپیا
-ProductFamily → CatalogSeason → ProductModel؛ هر مدل می‌تواند Size، CoverSku، ProductOption و Packaging مجاز داشته باشد. این ساختار برای نوتوپیا است؛ انواع دیگر می‌توانند مدل ساده یا ساختار متفاوت داشته باشند.
+ProductLine → ProductFamily → CatalogSeason → ProductModel؛ هر مدل می‌تواند Size، CoverSku، ProductOption و Packaging مجاز داشته باشد. این لایه‌ها برای کاتالوگ نوتوپیا تعریف شده‌اند. این ساختار برای نوتوپیا است؛ انواع دیگر می‌توانند مدل ساده یا ساختار متفاوت داشته باشند.
 
 ### Attribute
 Attribute شامل code، نام فارسی، data_type، واحد، required، default، validation، منبع گزینه، ترتیب و تنظیمات نمایش است. انواع پایه: text، integer، decimal، boolean، date، single_select، multi_select، measurement و reference.

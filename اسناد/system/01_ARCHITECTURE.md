@@ -88,7 +88,7 @@
 | **M04** | Marketing CRM | Lead (اختیاری)، Opportunity، Stage، Activity |
 | **M05** | Catalog / Product | ProductType، کاتالوگ نوتوپیا، آپشن، قوانین مجاز |
 | **M06** | Sales Quote & Order | Quote، Order، خطوط با snapshot پیکربندی/قیمت |
-| **M07** | Outsource Production | WorkPackage، پیمانکار، وضعیت مراحل، پیوست |
+| **M07** | Production & Outsource | Routing، Operation، WorkPackage، پیمانکار و تاریخچه اجرا |
 | **M08** | Workspace Tasks | Task عمومی، ارجاع، سررسید؛ لینک به موجودیت‌ها |
 | **M09** | Finance Operational | پیش‌فاکتور، فاکتور، پرداخت/تسویه، مانده |
 | **M10** | Inventory Light | موجودی SKU/اقلام کلیدی، حرکت ساده |
@@ -114,8 +114,8 @@ Marketing (M04) → Quote/Order (M06) → Outsource (M07)
 - **User** ↔ **Company** (pivot: role_id, is_default)
 - **Customer** + **CustomerContact**
 - **Opportunity** + **OpportunityStage** + **Activity**
-- **ProductType** — notopia | cheleva | service | …
-- **ProductFamily / CatalogSeason / ProductModel** (نوتوپیا)
+- **ProductType** — تعریف داده‌محور در سطح شرکت؛ کدهایی مانند notopia و cheleva صرفاً نمونه شناسه‌اند
+- **ProductLine / ProductFamily / CatalogSeason / ProductModel** (لایه‌های اختیاری کاتالوگ نوتوپیا)
 - **ProductOption / CoverSku / ProductSize** + pivotهای مجاز
 - **Quote** + **QuoteLine** (config snapshot JSON + price)
 - **Order** + **OrderLine** (snapshot قفل‌شده)

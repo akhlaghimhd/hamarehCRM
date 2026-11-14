@@ -24,7 +24,7 @@
 
 ## مفاهیم داده‌ای پیشنهادی
 - ProductType: کد، نام، قابلیت‌ها و سیاست‌ها
-- ProductFamily / CatalogSeason / ProductModel: لایه‌های اختیاری تجاری
+- ProductLine / ProductFamily / CatalogSeason / ProductModel: لایه‌های اختیاری تجاری؛ در نوتوپیا سلسله‌مراتب موجود حفظ می‌شود
 - AttributeGroup / ProductAttribute: نوع داده، واحد، ترجمه، الزام، حدود و اعتبارسنجی
 - AttributeOption: گزینه‌های مجاز
 - ProductTypeAttribute / ProductModelAttribute: اتصال Attribute با تنظیمات اختصاصی
