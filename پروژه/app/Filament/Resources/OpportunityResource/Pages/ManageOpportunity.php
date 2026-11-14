@@ -6,6 +6,7 @@ use App\Filament\Resources\OpportunityResource;
 use App\Models\Activity;
 use App\Models\Opportunity;
 use App\Models\OpportunityStage;
+use App\Models\OpportunityStep;
 use App\Models\User;
 use App\Support\Fa;
 use Filament\Actions\Action;
@@ -16,7 +17,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 
 class ManageOpportunity extends ViewRecord
 {
@@ -31,7 +31,6 @@ class ManageOpportunity extends ViewRecord
         return $this->record->title ?: ($this->record->organization_name ?: 'فرصت');
     }
 
-    /** عنوان را در blade می‌سازیم تا با هدر Filament دوبل نشود */
     public function getHeading(): string
     {
         return '';
@@ -65,9 +64,9 @@ class ManageOpportunity extends ViewRecord
                 ->label('ارجاع')
                 ->icon('heroicon-o-arrow-path-rounded-square')
                 ->color('gray')
-                ->visible(fn () => OpportunityResource::canEdit($this->record) && filled($this->record->next_step))
+                ->visible(fn () => OpportunityResource::canEdit($this->record) && $this->currentOpenStep() !== null)
                 ->modalHeading('ارجاع گام جاری')
-                ->modalDescription('گام فعلی بسته می‌شود و برای نفر مقصد یک گام جدید باز می‌شود.')
+                ->modalDescription('گام فعلی با فعالیت‌هایش بسته می‌شود و برای نفر مقصد گام جدید باز می‌شود.')
                 ->form([
                     Select::make('to_user_id')
                         ->label('ارجاع به')
@@ -98,45 +97,30 @@ class ManageOpportunity extends ViewRecord
                         return;
                     }
 
-                    $closedSubject = (string) $this->record->next_step;
+                    $open = $this->currentOpenStep();
+                    if ($open) {
+                        $this->closeOpenStep($open, trim((string) $data['close_result']), from: $from?->id);
 
-                    Activity::query()->create([
-                        'company_id' => $this->record->company_id,
-                        'opportunity_id' => $this->record->id,
-                        'user_id' => $from?->id,
-                        'type' => Activity::TYPE_NOTE,
-                        'subject' => 'بستن گام: ' . Str::limit($closedSubject, 80),
-                        'body' => trim((string) $data['close_result']),
-                        'due_at' => now(),
-                        'is_done' => true,
-                        'completed_at' => now(),
-                    ]);
+                        Activity::query()->create([
+                            'company_id' => $this->record->company_id,
+                            'opportunity_id' => $this->record->id,
+                            'opportunity_step_id' => $open->id,
+                            'user_id' => $from?->id,
+                            'type' => Activity::TYPE_NOTE,
+                            'subject' => 'ارجاع: از ' . ($from?->name ?? '—') . ' به ' . $to->name,
+                            'body' => 'گام برای «' . $to->name . '» باز شد.',
+                            'due_at' => now(),
+                            'is_done' => true,
+                            'completed_at' => now(),
+                        ]);
+                    }
 
-                    Activity::query()->create([
-                        'company_id' => $this->record->company_id,
-                        'opportunity_id' => $this->record->id,
-                        'user_id' => $from?->id,
-                        'type' => Activity::TYPE_NOTE,
-                        'subject' => 'ارجاع: از ' . ($from?->name ?? '—') . ' به ' . $to->name,
-                        'body' => 'گام بسته شد و برای «' . $to->name . '» گام جدید تعریف شد.\n' . trim((string) $data['new_step']),
-                        'due_at' => now(),
-                        'is_done' => true,
-                        'completed_at' => now(),
-                    ]);
+                    $this->openNewStep(
+                        title: (string) $data['new_step'],
+                        dueAt: $data['new_step_due'],
+                        assignedUserId: $to->id,
+                    );
 
-                    Activity::query()->create([
-                        'company_id' => $this->record->company_id,
-                        'opportunity_id' => $this->record->id,
-                        'user_id' => $to->id,
-                        'type' => Activity::TYPE_TASK,
-                        'subject' => $data['new_step'],
-                        'body' => 'گام ارجاع‌شده از طرف ' . ($from?->name ?? 'سیستم'),
-                        'due_at' => $data['new_step_due'],
-                        'is_done' => false,
-                    ]);
-
-                    $this->record->next_step = $data['new_step'];
-                    $this->record->next_step_due = $data['new_step_due'];
                     $this->record->followup_user_id = $to->id;
                     $this->record->save();
 
@@ -152,40 +136,42 @@ class ManageOpportunity extends ViewRecord
     protected function getViewData(): array
     {
         /** @var Opportunity $record */
-        $record = $this->record->loadMissing(['stage', 'owner', 'followupUser', 'customer', 'activities.user']);
+        $record = $this->record->loadMissing([
+            'stage',
+            'owner',
+            'followupUser',
+            'customer',
+            'steps.activities.user',
+            'steps.assignedUser',
+        ]);
 
-        $activities = $record->activities()
-            ->with('user')
-            ->orderByDesc('due_at')
-            ->orderByDesc('id')
-            ->get();
+        $this->ensureStepSyncedFromLegacy($record);
 
-        $due = $record->next_step_due;
-        $isOverdue = $due && Carbon::parse($due)->startOfDay()->lt(now()->startOfDay())
-            && filled($record->next_step);
+        $openStep = $record->steps->firstWhere('is_open', true);
+        $closedSteps = $record->steps->where('is_open', false)->values();
+
+        $due = $openStep?->due_at ?? $record->next_step_due;
+        $isOverdue = $openStep
+            && $due
+            && Carbon::parse($due)->startOfDay()->lt(now()->startOfDay());
 
         $roleKey = $record->decision_role ?: $record->contact_role;
         $roleMap = Opportunity::decisionRoleOptions();
         $roleLabel = $roleMap[$roleKey ?? ''] ?? null;
 
-        $isClosure = static function (Activity $a): bool {
-            $s = (string) $a->subject;
-
-            return str_starts_with($s, 'بستن گام:') || str_starts_with($s, 'ارجاع:');
-        };
-
-        $closedSteps = $activities->filter($isClosure)->values();
-        $stepActivities = $activities->reject($isClosure)->values();
-
         $listLabel = OpportunityResource::getNavigationLabel()
             ?: OpportunityResource::getBreadcrumb()
             ?: 'فرصت‌ها';
 
+        $openActivities = $openStep
+            ? $openStep->activities->sortByDesc('id')->values()
+            : collect();
+
         return [
             'opportunity' => $record,
-            'activities' => $activities,
-            'stepActivities' => $stepActivities,
+            'openStep' => $openStep,
             'closedSteps' => $closedSteps,
+            'stepActivities' => $openActivities,
             'isOverdue' => $isOverdue,
             'dueLabel' => $due ? Fa::dateTime($due, 'Y/m/d') : null,
             'statusLabel' => Opportunity::statusOptions()[$record->status] ?? ($record->status ?: '—'),
@@ -202,6 +188,79 @@ class ManageOpportunity extends ViewRecord
         ];
     }
 
+    /** سازگاری با فرصت‌هایی که فقط next_step دارند و هنوز ردیف step ندارند */
+    protected function ensureStepSyncedFromLegacy(Opportunity $record): void
+    {
+        if ($record->steps->firstWhere('is_open', true)) {
+            return;
+        }
+
+        if (! filled($record->next_step)) {
+            return;
+        }
+
+        $step = OpportunityStep::query()->create([
+            'company_id' => $record->company_id,
+            'opportunity_id' => $record->id,
+            'assigned_user_id' => $record->followup_user_id ?: $record->owner_user_id,
+            'title' => $record->next_step,
+            'due_at' => $record->next_step_due,
+            'is_open' => true,
+            'sort_order' => ($record->steps->max('sort_order') ?? 0) + 1,
+        ]);
+
+        $record->setRelation(
+            'steps',
+            $record->steps()->with(['activities.user', 'assignedUser'])->orderByDesc('id')->get()
+        );
+    }
+
+    protected function currentOpenStep(): ?OpportunityStep
+    {
+        return OpportunityStep::query()
+            ->where('opportunity_id', $this->record->id)
+            ->where('is_open', true)
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    protected function closeOpenStep(OpportunityStep $step, string $result, ?int $from = null): void
+    {
+        $step->close($result);
+
+        Activity::query()->create([
+            'company_id' => $this->record->company_id,
+            'opportunity_id' => $this->record->id,
+            'opportunity_step_id' => $step->id,
+            'user_id' => $from ?? auth()->id(),
+            'type' => Activity::TYPE_NOTE,
+            'subject' => 'نتیجه گام',
+            'body' => $result,
+            'due_at' => now(),
+            'is_done' => true,
+            'completed_at' => now(),
+        ]);
+    }
+
+    protected function openNewStep(string $title, mixed $dueAt, ?int $assignedUserId = null): OpportunityStep
+    {
+        $step = OpportunityStep::query()->create([
+            'company_id' => $this->record->company_id,
+            'opportunity_id' => $this->record->id,
+            'assigned_user_id' => $assignedUserId ?? auth()->id(),
+            'title' => $title,
+            'due_at' => $dueAt,
+            'is_open' => true,
+            'sort_order' => (int) OpportunityStep::query()->where('opportunity_id', $this->record->id)->max('sort_order') + 1,
+        ]);
+
+        $this->record->next_step = $title;
+        $this->record->next_step_due = $dueAt;
+        $this->record->save();
+
+        return $step;
+    }
+
     public function logActivityAction(): Action
     {
         return Action::make('logActivity')
@@ -209,6 +268,7 @@ class ManageOpportunity extends ViewRecord
             ->icon('heroicon-o-plus')
             ->color('primary')
             ->link()
+            ->visible(fn () => $this->currentOpenStep() !== null)
             ->modalHeading('ثبت فعالیت')
             ->form([
                 Select::make('type')->label('نوع')->options(Activity::typeOptions())->required()->native(false),
@@ -217,9 +277,17 @@ class ManageOpportunity extends ViewRecord
                 Textarea::make('body')->label('نتیجه / واکنش (اختیاری)')->rows(2),
             ])
             ->action(function (array $data): void {
+                $open = $this->currentOpenStep();
+                if (! $open) {
+                    Notification::make()->title('ابتدا یک گام باز تعریف کنید')->warning()->send();
+
+                    return;
+                }
+
                 Activity::query()->create([
                     'company_id' => $this->record->company_id,
                     'opportunity_id' => $this->record->id,
+                    'opportunity_step_id' => $open->id,
                     'user_id' => auth()->id(),
                     'type' => $data['type'],
                     'subject' => $data['subject'],
@@ -228,6 +296,7 @@ class ManageOpportunity extends ViewRecord
                     'is_done' => true,
                     'completed_at' => now(),
                 ]);
+
                 $this->record->touch();
                 Notification::make()->title('فعالیت ثبت شد')->success()->send();
             });
@@ -248,39 +317,31 @@ class ManageOpportunity extends ViewRecord
                 Select::make('status')->label('وضعیت')->options(Opportunity::statusOptions())->default(fn () => $this->record->status)->native(false),
             ])
             ->action(function (array $data): void {
-                Activity::query()->create([
-                    'company_id' => $this->record->company_id,
-                    'opportunity_id' => $this->record->id,
-                    'user_id' => auth()->id(),
-                    'type' => Activity::TYPE_NOTE,
-                    'subject' => 'بستن گام: ' . Str::limit((string) $this->record->next_step, 80),
-                    'body' => trim((string) ($data['result'] ?? '')),
-                    'due_at' => now(),
-                    'is_done' => true,
-                    'completed_at' => now(),
-                ]);
-                $next = trim((string) ($data['next_step'] ?? ''));
-                $this->record->next_step = $next !== '' ? $next : null;
-                $this->record->next_step_due = $next !== '' ? ($data['next_step_due'] ?? now()->addDays(3)) : null;
+                $open = $this->currentOpenStep();
+                if (! $open) {
+                    Notification::make()->title('گام بازی وجود ندارد')->warning()->send();
+
+                    return;
+                }
+
+                $this->closeOpenStep($open, trim((string) ($data['result'] ?? '')));
+
                 if (! empty($data['stage_id'])) {
                     $this->record->stage_id = $data['stage_id'];
                 }
                 if (! empty($data['status'])) {
                     $this->record->status = $data['status'];
                 }
-                $this->record->save();
+
+                $next = trim((string) ($data['next_step'] ?? ''));
                 if ($next !== '') {
-                    Activity::query()->create([
-                        'company_id' => $this->record->company_id,
-                        'opportunity_id' => $this->record->id,
-                        'user_id' => auth()->id(),
-                        'type' => Activity::TYPE_TASK,
-                        'subject' => $next,
-                        'body' => 'گام جدید پس از بستن گام قبلی',
-                        'due_at' => $this->record->next_step_due,
-                        'is_done' => false,
-                    ]);
+                    $this->openNewStep($next, $data['next_step_due'] ?? now()->addDays(3));
+                } else {
+                    $this->record->next_step = null;
+                    $this->record->next_step_due = null;
+                    $this->record->save();
                 }
+
                 Notification::make()->title('گام بسته شد')->success()->send();
             });
     }
@@ -292,7 +353,13 @@ class ManageOpportunity extends ViewRecord
             ->icon('heroicon-o-trash')
             ->color('gray')
             ->requiresConfirmation()
+            ->modalHeading('حذف گام جاری؟')
+            ->modalDescription('گام باز حذف می‌شود؛ فعالیت‌های ثبت‌شده زیر آن می‌مانند ولی گام بسته محسوب نمی‌شود.')
             ->action(function (): void {
+                $open = $this->currentOpenStep();
+                if ($open) {
+                    $open->delete();
+                }
                 $this->record->next_step = null;
                 $this->record->next_step_due = null;
                 $this->record->save();
@@ -311,19 +378,13 @@ class ManageOpportunity extends ViewRecord
                 DatePicker::make('next_step_due')->label('مهلت')->native(false)->default(now()->addDays(3))->required(),
             ])
             ->action(function (array $data): void {
-                $this->record->next_step = $data['next_step'];
-                $this->record->next_step_due = $data['next_step_due'];
-                $this->record->save();
-                Activity::query()->create([
-                    'company_id' => $this->record->company_id,
-                    'opportunity_id' => $this->record->id,
-                    'user_id' => auth()->id(),
-                    'type' => Activity::TYPE_TASK,
-                    'subject' => $data['next_step'],
-                    'body' => 'گام جدید روی فرصت تعریف شد',
-                    'due_at' => $data['next_step_due'],
-                    'is_done' => false,
-                ]);
+                if ($this->currentOpenStep()) {
+                    Notification::make()->title('ابتدا گام جاری را ببندید')->warning()->send();
+
+                    return;
+                }
+
+                $this->openNewStep((string) $data['next_step'], $data['next_step_due']);
                 Notification::make()->title('گام تعریف شد')->success()->send();
             });
     }
