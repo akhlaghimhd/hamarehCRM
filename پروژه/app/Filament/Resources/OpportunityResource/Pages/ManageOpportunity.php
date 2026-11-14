@@ -36,12 +36,18 @@ class ManageOpportunity extends ViewRecord
         return $this->getTitle();
     }
 
+    public function hasBreadcrumbs(): bool
+    {
+        return true;
+    }
+
     public function getBreadcrumbs(): array
     {
         $listLabel = OpportunityResource::getNavigationLabel()
             ?: OpportunityResource::getBreadcrumb()
             ?: 'فرصت‌ها';
 
+        // فقط والدین؛ عنوان فعلی را layout صفحه اضافه می‌کند
         return [
             OpportunityResource::getUrl() => $listLabel,
         ];
@@ -59,12 +65,6 @@ class ManageOpportunity extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('backToList')
-                ->label('فهرست فرصت‌ها')
-                ->icon('heroicon-o-arrow-right')
-                ->color('gray')
-                ->url(OpportunityResource::getUrl()),
-
             Action::make('editInfo')
                 ->label('ویرایش اطلاعات')
                 ->icon('heroicon-o-pencil-square')
@@ -101,7 +101,6 @@ class ManageOpportunity extends ViewRecord
                         ->send();
                 }),
 
-            // خطر در هدر کم‌رنگ؛ تمرکز بصری روی کار داخل کارت‌ها بماند
             DeleteAction::make()
                 ->label('حذف')
                 ->icon('heroicon-o-trash')
@@ -141,6 +140,10 @@ class ManageOpportunity extends ViewRecord
         ];
         $roleLabel = $roleMap[$roleKey ?? ''] ?? null;
 
+        $listLabel = OpportunityResource::getNavigationLabel()
+            ?: OpportunityResource::getBreadcrumb()
+            ?: 'فرصت‌ها';
+
         return [
             'opportunity' => $record,
             'activities' => $activities,
@@ -152,6 +155,9 @@ class ManageOpportunity extends ViewRecord
             'ownerLabel' => $record->owner?->name ?? '—',
             'codeLabel' => 'OPP-' . str_pad((string) $record->id, 3, '0', STR_PAD_LEFT),
             'roleLabel' => $roleLabel,
+            'listUrl' => OpportunityResource::getUrl(),
+            'listLabel' => $listLabel,
+            'pageTitle' => $this->getTitle(),
         ];
     }
 
