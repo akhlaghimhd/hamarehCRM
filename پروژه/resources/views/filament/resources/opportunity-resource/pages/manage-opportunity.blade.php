@@ -1,15 +1,8 @@
 <x-filament-panels::page>
     @php
         /** @var \App\Models\Opportunity $opportunity */
-        $opportunity = $this->opportunity;
-        $activities = $this->activities;
-        $isOverdue = $this->isOverdue;
-        $dueLabel = $this->dueLabel;
-        $statusLabel = $this->statusLabel;
-        $stageLabel = $this->stageLabel;
-        $productLabel = $this->productLabel;
-        $ownerLabel = $this->ownerLabel;
-        $codeLabel = $this->codeLabel;
+        // $opportunity, $activities, $isOverdue, $dueLabel, $statusLabel, $stageLabel,
+        // $productLabel, $ownerLabel, $codeLabel از getViewData() می‌آیند — نه propertyهای Livewire
         $dash = '—';
 
         $roleLabels = [
