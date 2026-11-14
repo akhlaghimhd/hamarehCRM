@@ -217,3 +217,13 @@
 2 بازاریابی → 3 سفارش → 4 تولید → 5 انبار → 6 مالی  
 
 جزئیات اجرا: `اسناد/PROJECT_CONTEXT.md` و `اسناد/CATALOG_ARCHITECTURE.md`.
+
+
+
+## ۸. معماری پویا — الزام ضد-hardcode
+- اسناد تکمیلی لازم‌الرجوع: `اسناد/system/04_DYNAMIC_PRODUCT_CONFIGURATION.md`، `05_WORKFLOW_ORDER_PRODUCTION.md` و `06_PLATFORM_INFRASTRUCTURE.md`.
+- ProductType، Attribute، Option، CatalogRule، PriceRule، Workflow State/Transition و Routing Template باید داده‌محور باشند.
+- نام محصول، ویژگی یا مرحله تولید مبنای شرط اختصاصی PHP قرار نگیرد.
+- افزودن نوع محصول یا ویژگی تجاری جدید نباید به Migration یا تغییر کد نیاز داشته باشد؛ افزودن قابلیت فنی جدید می‌تواند نیازمند توسعه باشد.
+- Definitionهای منتشرشده نسخه‌دار و Snapshot سفارش تأییدشده immutable هستند.
+- Rule DSL فقط از عملگرها و Actionهای allowlist شده استفاده می‌کند؛ eval/SQL/PHP ذخیره‌شده ممنوع است.
