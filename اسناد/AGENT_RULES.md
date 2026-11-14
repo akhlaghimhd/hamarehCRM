@@ -117,7 +117,7 @@
 
 ## ۲. دامنه محصول و کاتالوگ
 
-منبع کامل: `docs/CATALOG_ARCHITECTURE.md`
+منبع کامل: `اسناد/CATALOG_ARCHITECTURE.md`
 
 **۲.۱** استخر امکانات → مدل فقط زیرمجموعه مجاز (allow-matrix).
 
@@ -143,7 +143,7 @@
 
 **۳.۴** Business logic سنگین داخل DB (Trigger/SP) ممنوع مگر تصمیم معماری ثبت‌شده.
 
-**۳.۵** استاندارد لیست/جدول UI: `docs/TABLE_STANDARDS.md`.
+**۳.۵** استاندارد لیست/جدول UI: `اسناد/TABLE_STANDARDS.md`.
 
 ---
 
@@ -216,4 +216,4 @@
 1 محصول نوتوپیا — اسپرینت ۱ کاتالوگ (فعال)  
 2 بازاریابی → 3 سفارش → 4 تولید → 5 انبار → 6 مالی  
 
-جزئیات اجرا: `PROJECT_CONTEXT.md` و `docs/CATALOG_ARCHITECTURE.md`.
+جزئیات اجرا: `اسناد/PROJECT_CONTEXT.md` و `اسناد/CATALOG_ARCHITECTURE.md`.
