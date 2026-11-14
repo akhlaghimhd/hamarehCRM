@@ -20,6 +20,7 @@ class Activity extends Model
     protected $fillable = [
         'company_id',
         'opportunity_id',
+        'opportunity_step_id',
         'user_id',
         'type',
         'subject',
@@ -51,6 +52,11 @@ class Activity extends Model
     public function opportunity(): BelongsTo
     {
         return $this->belongsTo(Opportunity::class);
+    }
+
+    public function step(): BelongsTo
+    {
+        return $this->belongsTo(OpportunityStep::class, 'opportunity_step_id');
     }
 
     public function user(): BelongsTo
