@@ -33,7 +33,7 @@ class ManageOpportunity extends ViewRecord
 
     public function getHeading(): string
     {
-        return '';
+        return $this->getTitle();
     }
 
     public function hasBreadcrumbs(): bool
@@ -128,7 +128,7 @@ class ManageOpportunity extends ViewRecord
                         assignedUserId: $to->id,
                     );
 
-                    $this->record->followup_user_id = $to->id;
+                                       $this->record->followup_user_id = $to->id;
                     $this->record->save();
 
                     Notification::make()
@@ -201,7 +201,6 @@ class ManageOpportunity extends ViewRecord
         ];
     }
 
-    /** سازگاری با فرصت‌هایی که فقط next_step دارند و هنوز ردیف step ندارند */
     protected function ensureStepSyncedFromLegacy(Opportunity $record): void
     {
         if ($record->steps->firstWhere('is_open', true)) {
