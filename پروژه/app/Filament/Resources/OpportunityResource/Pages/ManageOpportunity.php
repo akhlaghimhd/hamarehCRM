@@ -60,6 +60,13 @@ class ManageOpportunity extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('editInfo')
+                ->label('ویرایش اطلاعات')
+                ->icon('heroicon-o-pencil-square')
+                ->color('gray')
+                ->url(fn () => OpportunityResource::getUrl('edit', ['record' => $this->record]))
+                ->visible(fn () => OpportunityResource::canEdit($this->record)),
+
             Action::make('refer')
                 ->label('ارجاع')
                 ->icon('heroicon-o-arrow-path-rounded-square')
@@ -148,7 +155,7 @@ class ManageOpportunity extends ViewRecord
         $this->ensureStepSyncedFromLegacy($record);
 
         $openStep = $record->steps->firstWhere('is_open', true);
-        $closedSteps = $record->steps->where('is_open', false)->values();
+        $closedSteps = $record->steps->where('is_open', false)->sortByDesc('closed_at')->values();
 
         $due = $openStep?->due_at ?? $record->next_step_due;
         $isOverdue = $openStep
@@ -167,6 +174,11 @@ class ManageOpportunity extends ViewRecord
             ? $openStep->activities->sortByDesc('id')->values()
             : collect();
 
+        $assigneeLabel = $openStep?->assignedUser?->name
+            ?? $record->followupUser?->name
+            ?? $record->owner?->name
+            ?? '—';
+
         return [
             'opportunity' => $record,
             'openStep' => $openStep,
@@ -179,6 +191,7 @@ class ManageOpportunity extends ViewRecord
             'productLabel' => $record->productInterestLabel(),
             'ownerLabel' => $record->owner?->name ?? '—',
             'followupLabel' => $record->followupUser?->name ?? ($record->owner?->name ?? '—'),
+            'assigneeLabel' => $assigneeLabel,
             'codeLabel' => 'OPP-' . str_pad((string) $record->id, 3, '0', STR_PAD_LEFT),
             'roleLabel' => $roleLabel,
             'listUrl' => OpportunityResource::getUrl(),
@@ -199,7 +212,7 @@ class ManageOpportunity extends ViewRecord
             return;
         }
 
-        $step = OpportunityStep::query()->create([
+        OpportunityStep::query()->create([
             'company_id' => $record->company_id,
             'opportunity_id' => $record->id,
             'assigned_user_id' => $record->followup_user_id ?: $record->owner_user_id,
@@ -267,7 +280,7 @@ class ManageOpportunity extends ViewRecord
             ->label('ثبت فعالیت')
             ->icon('heroicon-o-plus')
             ->color('primary')
-            ->link()
+            ->size('sm')
             ->visible(fn () => $this->currentOpenStep() !== null)
             ->modalHeading('ثبت فعالیت')
             ->form([
@@ -308,13 +321,22 @@ class ManageOpportunity extends ViewRecord
             ->label('بستن گام')
             ->icon('heroicon-o-check-circle')
             ->color('success')
+            ->size('sm')
             ->modalHeading('بستن گام جاری')
             ->form([
                 Textarea::make('result')->label('نتیجه این گام')->required()->rows(3),
                 TextInput::make('next_step')->label('گام بعدی (اختیاری)'),
                 DatePicker::make('next_step_due')->label('مهلت گام بعد')->native(false)->default(now()->addDays(3)),
-                Select::make('stage_id')->label('مرحله قیف')->options(fn () => OpportunityStage::query()->where('is_active', true)->orderBy('sort_order')->pluck('name', 'id'))->default(fn () => $this->record->stage_id)->native(false),
-                Select::make('status')->label('وضعیت')->options(Opportunity::statusOptions())->default(fn () => $this->record->status)->native(false),
+                Select::make('stage_id')
+                    ->label('مرحله قیف')
+                    ->options(fn () => OpportunityStage::query()->where('is_active', true)->orderBy('sort_order')->pluck('name', 'id'))
+                    ->default(fn () => $this->record->stage_id)
+                    ->native(false),
+                Select::make('status')
+                    ->label('وضعیت')
+                    ->options(Opportunity::statusOptions())
+                    ->default(fn () => $this->record->status)
+                    ->native(false),
             ])
             ->action(function (array $data): void {
                 $open = $this->currentOpenStep();
@@ -349,9 +371,11 @@ class ManageOpportunity extends ViewRecord
     public function clearStepAction(): Action
     {
         return Action::make('clearStep')
-            ->label('حذف گام')
+            ->label('حذف')
             ->icon('heroicon-o-trash')
             ->color('gray')
+            ->size('sm')
+            ->outlined()
             ->requiresConfirmation()
             ->modalHeading('حذف گام جاری؟')
             ->modalDescription('گام باز حذف می‌شود؛ فعالیت‌های ثبت‌شده زیر آن می‌مانند ولی گام بسته محسوب نمی‌شود.')
@@ -370,7 +394,7 @@ class ManageOpportunity extends ViewRecord
     public function setStepAction(): Action
     {
         return Action::make('setStep')
-            ->label('تعریف گام')
+            ->label('تعریف گام بعدی')
             ->icon('heroicon-o-flag')
             ->color('primary')
             ->form([
