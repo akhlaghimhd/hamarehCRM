@@ -4,198 +4,278 @@
         $hasOpen = $openStep !== null;
     @endphp
 
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12" dir="rtl">
-        {{-- سایدبار --}}
-        <aside class="order-2 space-y-4 xl:order-1 xl:col-span-4">
-            <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                <div class="mb-2 text-xs font-medium text-primary-600 dark:text-primary-400">مخاطب</div>
-                <div class="text-base font-semibold text-gray-950 dark:text-white">
-                    {{ $opportunity->contact_name ?: $dash }}
-                </div>
-                @if ($roleLabel)
-                    <div class="mt-0.5 text-xs text-gray-500">{{ $roleLabel }}</div>
-                @endif
-                @if ($opportunity->organization_name)
-                    <div class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ $opportunity->organization_name }}</div>
-                @endif
-                <div class="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                    @if ($opportunity->mobile)
-                        <div dir="ltr">{{ \App\Support\Fa::digits($opportunity->mobile) }}</div>
-                    @endif
-                    @if ($opportunity->phone)
-                        <div dir="ltr">{{ \App\Support\Fa::digits($opportunity->phone) }}</div>
-                    @endif
-                    @if ($opportunity->email)
-                        <div class="truncate">{{ $opportunity->email }}</div>
-                    @endif
-                </div>
-            </div>
+    <style>
+        .opp-ws { display: flex; flex-direction: column; gap: 1rem; }
+        @media (min-width: 1024px) {
+            .opp-ws { flex-direction: row; align-items: flex-start; }
+            .opp-ws__main { flex: 1 1 0%; min-width: 0; order: 2; }
+            .opp-ws__side { width: 20rem; flex: 0 0 20rem; order: 1; }
+        }
+        .opp-ws__stack { display: flex; flex-direction: column; gap: 1rem; }
+        .opp-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,.04);
+        }
+        .dark .opp-card { background: rgb(17 24 39); border-color: rgba(255,255,255,.1); }
+        .opp-card__pad { padding: 1rem; }
+        .opp-card__label { font-size: .75rem; font-weight: 500; color: #0d9488; margin-bottom: .35rem; }
+        .dark .opp-card__label { color: #5eead4; }
+        .opp-step {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,.04);
+        }
+        .dark .opp-step { background: rgba(6,78,59,.25); border-color: rgba(6,95,70,.4); }
+        .opp-step__top { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: flex-start; }
+        .opp-step__title-block { flex: 1 1 12rem; min-width: 0; }
+        .opp-step__close-block { flex: 0 0 auto; max-width: 14rem; }
+        .opp-step__label { font-size: .75rem; font-weight: 500; color: #065f46; margin-bottom: .25rem; }
+        .dark .opp-step__label { color: #6ee7b7; }
+        .opp-step__title { font-size: 1.125rem; font-weight: 600; line-height: 1.35; color: #030712; margin: 0; }
+        .dark .opp-step__title { color: #fff; }
+        .opp-step__meta { margin-top: .5rem; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; font-size: .875rem; color: #4b5563; }
+        .dark .opp-step__meta { color: #d1d5db; }
+        .opp-step__meta.is-overdue { color: #dc2626; font-weight: 600; }
+        .opp-step__hint { margin-top: .5rem; font-size: .75rem; line-height: 1.4; color: #6b7280; }
+        .opp-step__divider { margin: 1rem 0; border: 0; border-top: 1px dashed #a7f3d0; }
+        .dark .opp-step__divider { border-color: rgba(6,95,70,.5); }
+        .opp-step__acts-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .75rem; }
+        .opp-step__acts-title { font-size: .875rem; font-weight: 500; color: #1f2937; }
+        .dark .opp-step__acts-title { color: #f3f4f6; }
+        .opp-empty {
+            background: rgba(255,255,255,.9);
+            border-radius: .75rem;
+            padding: 1.25rem 1rem;
+            text-align: center;
+            font-size: .875rem;
+            color: #6b7280;
+        }
+        .dark .opp-empty { background: rgba(255,255,255,.05); color: #9ca3af; }
+        .opp-pills { display: flex; flex-wrap: wrap; gap: .35rem; }
+        .opp-pill {
+            display: inline-flex; align-items: center;
+            border-radius: 9999px; padding: .15rem .65rem;
+            font-size: .75rem; background: #f3f4f6; color: #374151;
+        }
+        .dark .opp-pill { background: rgba(255,255,255,.1); color: #e5e7eb; }
+        .opp-pill--ok { background: #ecfdf5; color: #065f46; }
+        .opp-pill--stage { background: #fffbeb; color: #92400e; }
+        .opp-pill--prod { background: #f0f9ff; color: #0c4a6e; }
+        .dark .opp-pill--ok { background: rgba(6,78,59,.4); color: #a7f3d0; }
+        .dark .opp-pill--stage { background: rgba(120,53,15,.4); color: #fde68a; }
+        .dark .opp-pill--prod { background: rgba(12,74,110,.4); color: #bae6fd; }
+        .opp-dl { margin: 0; }
+        .opp-dl__row {
+            display: flex; justify-content: space-between; gap: .75rem;
+            padding: .65rem 1rem; font-size: .875rem;
+            border-bottom: 1px solid #f9fafb;
+        }
+        .dark .opp-dl__row { border-color: rgba(255,255,255,.05); }
+        .opp-dl__row:last-child { border-bottom: 0; }
+        .opp-dl__k { color: #9ca3af; flex-shrink: 0; }
+        .opp-dl__v { font-weight: 500; color: #030712; text-align: left; }
+        .dark .opp-dl__v { color: #fff; }
+        .opp-contact-name { font-size: 1rem; font-weight: 600; color: #030712; }
+        .dark .opp-contact-name { color: #fff; }
+        .opp-contact-sub { margin-top: .15rem; font-size: .75rem; color: #6b7280; }
+        .opp-contact-phones { margin-top: .75rem; font-size: .875rem; color: #4b5563; line-height: 1.6; }
+        .dark .opp-contact-phones { color: #d1d5db; }
+        .opp-prev-head { padding: .75rem 1.25rem; }
+        .opp-prev-head h2 { margin: 0; font-size: .875rem; font-weight: 600; color: #0f766e; }
+        .dark .opp-prev-head h2 { color: #5eead4; }
+        .opp-prev-item { border-top: 1px solid #f3f4f6; }
+        .dark .opp-prev-item { border-color: rgba(255,255,255,.05); }
+        .opp-prev-sum {
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem;
+            padding: .75rem 1.25rem; font-size: .875rem; cursor: pointer; list-style: none;
+            background: #ecfdf580;
+        }
+        .dark .opp-prev-sum { background: rgba(6,78,59,.15); }
+        .opp-prev-sum::-webkit-details-marker { display: none; }
+        .opp-prev-body { padding: 1rem 1.25rem; font-size: .875rem; }
+        .opp-act {
+            border: 1px solid #f3f4f6; border-radius: .5rem; padding: .65rem .75rem; margin-top: .5rem;
+        }
+        .dark .opp-act { border-color: rgba(255,255,255,.1); }
+        .opp-act__meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; font-size: .75rem; color: #6b7280; }
+    </style>
 
-            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
-                <div class="border-b border-gray-100 px-4 py-2.5 text-xs font-medium text-primary-600 dark:border-white/10 dark:text-primary-400">
-                    جزئیات فرصت
+    <div class="opp-ws" dir="rtl">
+        <aside class="opp-ws__side">
+            <div class="opp-ws__stack">
+                <div class="opp-card">
+                    <div class="opp-card__pad">
+                        <div class="opp-card__label">مخاطب</div>
+                        <div class="opp-contact-name">{{ $opportunity->contact_name ?: $dash }}</div>
+                        @if ($roleLabel)
+                            <div class="opp-contact-sub">{{ $roleLabel }}</div>
+                        @endif
+                        @if ($opportunity->organization_name)
+                            <div class="opp-contact-sub">{{ $opportunity->organization_name }}</div>
+                        @endif
+                        <div class="opp-contact-phones">
+                            @if ($opportunity->mobile)
+                                <div dir="ltr">{{ \App\Support\Fa::digits($opportunity->mobile) }}</div>
+                            @endif
+                            @if ($opportunity->phone)
+                                <div dir="ltr">{{ \App\Support\Fa::digits($opportunity->phone) }}</div>
+                            @endif
+                            @if ($opportunity->email)
+                                <div>{{ $opportunity->email }}</div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
-                <dl class="divide-y divide-gray-50 text-sm dark:divide-white/5">
-                    <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                        <dt class="text-gray-400">محصول</dt>
-                        <dd class="font-medium text-gray-950 dark:text-white">{{ $productLabel ?: $dash }}</dd>
+
+                <div class="opp-card">
+                    <div class="opp-card__pad" style="padding-bottom:.35rem">
+                        <div class="opp-card__label" style="margin:0">جزئیات فرصت</div>
                     </div>
-                    <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                        <dt class="text-gray-400">مرحله قیف</dt>
-                        <dd class="font-medium text-gray-950 dark:text-white">{{ $stageLabel }}</dd>
-                    </div>
-                    <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                        <dt class="text-gray-400">وضعیت</dt>
-                        <dd class="font-medium text-gray-950 dark:text-white">{{ $statusLabel }}</dd>
-                    </div>
-                    <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                        <dt class="text-gray-400">مالک</dt>
-                        <dd class="font-medium text-gray-950 dark:text-white">{{ $ownerLabel }}</dd>
-                    </div>
-                    <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                        <dt class="text-gray-400">پیگیری</dt>
-                        <dd class="font-medium text-gray-950 dark:text-white">{{ $followupLabel }}</dd>
-                    </div>
-                    @if ($opportunity->updated_at)
-                        <div class="flex items-center justify-between gap-3 px-4 py-2.5">
-                            <dt class="text-gray-400">آخرین تعامل</dt>
-                            <dd class="font-medium text-gray-950 dark:text-white">{{ \App\Support\Fa::dateTime($opportunity->updated_at, 'Y/m/d') }}</dd>
+                    <dl class="opp-dl">
+                        <div class="opp-dl__row">
+                            <dt class="opp-dl__k">محصول</dt>
+                            <dd class="opp-dl__v">{{ $productLabel ?: $dash }}</dd>
                         </div>
-                    @endif
-                    @if (filled($opportunity->main_objection) || filled($opportunity->purchase_use))
-                        <div class="px-4 py-2.5">
-                            <dt class="mb-1 text-gray-400">خلاصه</dt>
-                            <dd class="text-gray-700 dark:text-gray-200">{{ $opportunity->main_objection ?: $opportunity->purchase_use }}</dd>
+                        <div class="opp-dl__row">
+                            <dt class="opp-dl__k">مرحله قیف</dt>
+                            <dd class="opp-dl__v">{{ $stageLabel }}</dd>
                         </div>
-                    @endif
-                </dl>
+                        <div class="opp-dl__row">
+                            <dt class="opp-dl__k">وضعیت</dt>
+                            <dd class="opp-dl__v">{{ $statusLabel }}</dd>
+                        </div>
+                        <div class="opp-dl__row">
+                            <dt class="opp-dl__k">مالک</dt>
+                            <dd class="opp-dl__v">{{ $ownerLabel }}</dd>
+                        </div>
+                        <div class="opp-dl__row">
+                            <dt class="opp-dl__k">پیگیری</dt>
+                            <dd class="opp-dl__v">{{ $followupLabel }}</dd>
+                        </div>
+                        @if ($opportunity->updated_at)
+                            <div class="opp-dl__row">
+                                <dt class="opp-dl__k">آخرین تعامل</dt>
+                                <dd class="opp-dl__v">{{ \App\Support\Fa::dateTime($opportunity->updated_at, 'Y/m/d') }}</dd>
+                            </div>
+                        @endif
+                        @if (filled($opportunity->main_objection) || filled($opportunity->purchase_use))
+                            <div class="opp-dl__row" style="flex-direction:column;align-items:stretch">
+                                <dt class="opp-dl__k">خلاصه</dt>
+                                <dd class="opp-dl__v" style="text-align:right;font-weight:400;margin-top:.25rem">
+                                    {{ $opportunity->main_objection ?: $opportunity->purchase_use }}
+                                </dd>
+                            </div>
+                        @endif
+                    </dl>
+                </div>
             </div>
         </aside>
 
-        {{-- اصلی --}}
-        <section class="order-1 space-y-4 xl:order-2 xl:col-span-8">
-            {{-- متا --}}
-            <div class="flex flex-wrap items-center gap-2 text-sm">
-                <span class="rounded-full bg-gray-100 px-2.5 py-0.5 font-mono text-xs text-gray-700 dark:bg-white/10 dark:text-gray-200">
-                    {{ \App\Support\Fa::digits($codeLabel) }}
-                </span>
-                <span class="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200">
-                    {{ $statusLabel }}
-                </span>
-                <span class="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs text-amber-900 dark:bg-amber-900/40 dark:text-amber-100">
-                    {{ $stageLabel }}
-                </span>
-                @if ($productLabel && $productLabel !== '—')
-                    <span class="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs text-sky-900 dark:bg-sky-900/40 dark:text-sky-100">
-                        {{ $productLabel }}
-                    </span>
-                @endif
-            </div>
-
-            {{-- گام جاری --}}
-            <div class="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-5 shadow-sm dark:border-emerald-900/40 dark:bg-emerald-950/30">
-                @if ($hasOpen)
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        {{-- راست: عنوان --}}
-                        <div class="min-w-0 flex-1">
-                            <div class="mb-1 text-xs font-medium text-emerald-800 dark:text-emerald-200">گام جاری</div>
-                            <h2 class="text-lg font-semibold leading-snug text-gray-950 dark:text-white">
-                                {{ $openStep->title }}
-                            </h2>
-                            <div class="mt-2 flex flex-wrap items-center gap-2">
-                                @if ($dueLabel)
-                                    <span @class([
-                                        'text-sm',
-                                        'font-semibold text-danger-600 dark:text-danger-400' => $isOverdue,
-                                        'text-gray-600 dark:text-gray-300' => ! $isOverdue,
-                                    ])>
-                                        مهلت {{ \App\Support\Fa::digits($dueLabel) }}
-                                        @if ($isOverdue) · عقب‌افتاده @endif
-                                    </span>
-                                @endif
-                                {{ $this->clearStepAction }}
-                            </div>
-                        </div>
-
-                        {{-- چپ: بستن --}}
-                        <div class="shrink-0 sm:max-w-[220px] sm:text-start">
-                            {{ $this->closeStepAction }}
-                            <p class="mt-2 text-xs leading-5 text-gray-500 dark:text-gray-400">
-                                گام را با نتیجه ببندید؛ فعالیت جداگانه از دکمه زیر است.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div class="my-4 border-t border-dashed border-emerald-200/90 dark:border-emerald-800/50"></div>
-
-                    <div>
-                        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                            <span class="text-sm font-medium text-gray-800 dark:text-gray-100">فعالیت‌های زیر این گام</span>
-                            {{ $this->logActivityAction }}
-                        </div>
-
-                        @if ($stepActivities->isEmpty())
-                            <div class="rounded-xl bg-white/90 px-4 py-5 text-center text-sm text-gray-500 dark:bg-white/5 dark:text-gray-400">
-                                فعالیتی ثبت نشده. از «+ ثبت فعالیت» برای تماس/جلسه استفاده کنید.
-                            </div>
-                        @else
-                            <ul class="space-y-2">
-                                @foreach ($stepActivities as $activity)
-                                    <li class="rounded-xl bg-white px-4 py-3 shadow-sm dark:bg-gray-900/40">
-                                        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
-                                            <span>
-                                                {{ \App\Models\Activity::typeOptions()[$activity->type] ?? $activity->type }}
-                                                ·
-                                                {{ $activity->due_at ? \App\Support\Fa::dateTime($activity->due_at, 'Y/m/d') : $dash }}
-                                            </span>
-                                            <span>{{ $activity->user?->name ?? $dash }}</span>
-                                        </div>
-                                        <p class="mt-1.5 text-sm font-medium text-gray-950 dark:text-white">{{ $activity->subject }}</p>
-                                        @if (filled($activity->body))
-                                            <p class="mt-1 text-xs leading-5 text-gray-500">{{ $activity->body }}</p>
-                                        @endif
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </div>
-                @else
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <div class="mb-1 text-xs font-medium text-emerald-800 dark:text-emerald-200">گام جاری</div>
-                            <h2 class="text-base font-semibold text-gray-700 dark:text-gray-200">گام بعدی تعریف نشده</h2>
-                        </div>
-                        {{ $this->setStepAction }}
-                    </div>
-                @endif
-            </div>
-
-            {{-- گام‌های قبلی --}}
-            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
-                <div class="px-5 py-3">
-                    <h2 class="text-sm font-semibold text-primary-700 dark:text-primary-300">گام‌های قبلی</h2>
+        <section class="opp-ws__main">
+            <div class="opp-ws__stack">
+                <div class="opp-pills">
+                    <span class="opp-pill">{{ \App\Support\Fa::digits($codeLabel) }}</span>
+                    <span class="opp-pill opp-pill--ok">{{ $statusLabel }}</span>
+                    <span class="opp-pill opp-pill--stage">{{ $stageLabel }}</span>
+                    @if ($productLabel && $productLabel !== '—')
+                        <span class="opp-pill opp-pill--prod">{{ $productLabel }}</span>
+                    @endif
                 </div>
-                <div class="border-t border-gray-100 dark:border-white/10">
+
+                <div class="opp-step">
+                    @if ($hasOpen)
+                        <div class="opp-step__top">
+                            <div class="opp-step__title-block">
+                                <div class="opp-step__label">گام جاری</div>
+                                <h2 class="opp-step__title">{{ $openStep->title }}</h2>
+                                <div class="opp-step__meta {{ $isOverdue ? 'is-overdue' : '' }}">
+                                    @if ($dueLabel)
+                                        <span>
+                                            مهلت {{ \App\Support\Fa::digits($dueLabel) }}
+                                            @if ($isOverdue) · عقب‌افتاده @endif
+                                        </span>
+                                    @endif
+                                    {{ $this->clearStepAction }}
+                                </div>
+                            </div>
+                            <div class="opp-step__close-block">
+                                {{ $this->closeStepAction }}
+                                <p class="opp-step__hint">گام را با نتیجه ببندید؛ فعالیت جداگانه از دکمه زیر است.</p>
+                            </div>
+                        </div>
+
+                        <hr class="opp-step__divider">
+
+                        <div>
+                            <div class="opp-step__acts-head">
+                                <span class="opp-step__acts-title">فعالیت‌های زیر این گام</span>
+                                {{ $this->logActivityAction }}
+                            </div>
+
+                            @if ($stepActivities->isEmpty())
+                                <div class="opp-empty">
+                                    فعالیتی ثبت نشده. از «+ ثبت فعالیت» برای تماس/جلسه استفاده کنید.
+                                </div>
+                            @else
+                                <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem">
+                                    @foreach ($stepActivities as $activity)
+                                        <li class="opp-act" style="background:#fff">
+                                            <div class="opp-act__meta">
+                                                <span>
+                                                    {{ \App\Models\Activity::typeOptions()[$activity->type] ?? $activity->type }}
+                                                    ·
+                                                    {{ $activity->due_at ? \App\Support\Fa::dateTime($activity->due_at, 'Y/m/d') : $dash }}
+                                                </span>
+                                                <span>{{ $activity->user?->name ?? $dash }}</span>
+                                            </div>
+                                            <p style="margin:.35rem 0 0;font-size:.875rem;font-weight:500;color:#030712">{{ $activity->subject }}</p>
+                                            @if (filled($activity->body))
+                                                <p style="margin:.25rem 0 0;font-size:.75rem;color:#6b7280;line-height:1.4">{{ $activity->body }}</p>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    @else
+                        <div class="opp-step__top">
+                            <div class="opp-step__title-block">
+                                <div class="opp-step__label">گام جاری</div>
+                                <h2 class="opp-step__title" style="font-size:1rem;color:#374151">گام بعدی تعریف نشده</h2>
+                            </div>
+                            <div>{{ $this->setStepAction }}</div>
+                        </div>
+                    @endif
+                </div>
+
+                <div class="opp-card">
+                    <div class="opp-prev-head">
+                        <h2>گام‌های قبلی</h2>
+                    </div>
                     @forelse ($closedSteps as $step)
                         @php $stepActs = $step->activities->sortByDesc('id'); @endphp
-                        <details class="border-b border-gray-100 last:border-b-0 dark:border-white/5" open>
-                            <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-2 bg-emerald-50/50 px-5 py-3 text-sm dark:bg-emerald-950/20">
-                                <span class="font-medium text-gray-950 dark:text-white">{{ $step->title }}</span>
-                                <span class="flex items-center gap-2 text-xs text-gray-500">
+                        <details class="opp-prev-item" open>
+                            <summary class="opp-prev-sum">
+                                <span style="font-weight:500;color:#030712">{{ $step->title }}</span>
+                                <span style="font-size:.75rem;color:#6b7280">
                                     {{ $step->closed_at ? \App\Support\Fa::dateTime($step->closed_at, 'Y/m/d') : $dash }}
                                     · {{ \App\Support\Fa::digits((string) $stepActs->count()) }} فعالیت
                                 </span>
                             </summary>
-                            <div class="space-y-2.5 px-5 py-4">
+                            <div class="opp-prev-body">
                                 @if (filled($step->result))
-                                    <p class="text-sm leading-6 text-gray-600 dark:text-gray-300">
-                                        <span class="font-medium text-gray-800 dark:text-gray-100">نتیجه گام:</span>
+                                    <p style="margin:0 0 .5rem;color:#4b5563;line-height:1.5">
+                                        <strong style="color:#1f2937">نتیجه گام:</strong>
                                         {{ $step->result }}
                                     </p>
                                 @endif
                                 @foreach ($stepActs as $activity)
-                                    <div class="rounded-lg border border-gray-100 px-3 py-2.5 text-sm dark:border-white/10">
-                                        <div class="flex flex-wrap justify-between gap-2 text-xs text-gray-500">
+                                    <div class="opp-act">
+                                        <div class="opp-act__meta">
                                             <span>
                                                 {{ \App\Models\Activity::typeOptions()[$activity->type] ?? $activity->type }}
                                                 ·
@@ -203,16 +283,16 @@
                                             </span>
                                             <span>{{ $activity->user?->name ?? $dash }}</span>
                                         </div>
-                                        <p class="mt-1 font-medium text-gray-950 dark:text-white">{{ $activity->subject }}</p>
+                                        <p style="margin:.35rem 0 0;font-weight:500">{{ $activity->subject }}</p>
                                         @if (filled($activity->body))
-                                            <p class="mt-0.5 text-xs text-gray-500">{{ $activity->body }}</p>
+                                            <p style="margin:.2rem 0 0;font-size:.75rem;color:#6b7280">{{ $activity->body }}</p>
                                         @endif
                                     </div>
                                 @endforeach
                             </div>
                         </details>
                     @empty
-                        <div class="px-5 py-6 text-center text-sm text-gray-400">هنوز گام بسته‌شده‌ای نیست.</div>
+                        <div class="opp-empty" style="margin:0;border-radius:0;border-top:1px solid #f3f4f6">هنوز گام بسته‌شده‌ای نیست.</div>
                     @endforelse
                 </div>
             </div>
