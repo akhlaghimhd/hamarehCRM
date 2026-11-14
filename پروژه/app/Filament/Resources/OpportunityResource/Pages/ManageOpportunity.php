@@ -36,6 +36,23 @@ class ManageOpportunity extends ViewRecord
         return $this->getTitle();
     }
 
+    public function getBreadcrumbs(): array
+    {
+        return [
+            OpportunityResource::getUrl() => OpportunityResource::getBreadcrumb(),
+            OpportunityResource::getUrl('view', ['record' => $this->record]) => $this->getTitle(),
+        ];
+    }
+
+    public function getSubheading(): ?string
+    {
+        $org = $this->record->organization_name;
+        $contact = $this->record->contact_name;
+        $parts = array_filter([$org, $contact]);
+
+        return $parts ? implode(' · ', $parts) : null;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
