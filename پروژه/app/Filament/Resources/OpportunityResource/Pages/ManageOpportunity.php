@@ -31,9 +31,10 @@ class ManageOpportunity extends ViewRecord
         return $this->record->title ?: ($this->record->organization_name ?: 'فرصت');
     }
 
+    /** عنوان را در blade می‌سازیم تا با هدر Filament دوبل نشود */
     public function getHeading(): string
     {
-        return $this->getTitle();
+        return '';
     }
 
     public function hasBreadcrumbs(): bool
