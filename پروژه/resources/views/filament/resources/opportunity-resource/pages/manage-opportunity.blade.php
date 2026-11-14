@@ -1,18 +1,9 @@
 <x-filament-panels::page>
     @php
         /** @var \App\Models\Opportunity $opportunity */
-        // $opportunity, $activities, $isOverdue, $dueLabel, $statusLabel, $stageLabel,
-        // $productLabel, $ownerLabel, $codeLabel از getViewData() می‌آیند — نه propertyهای Livewire
+        // متغیرها از getViewData(): $opportunity, $activities, $isOverdue, $dueLabel,
+        // $statusLabel, $stageLabel, $productLabel, $ownerLabel, $codeLabel, $roleLabel
         $dash = '—';
-
-        $roleLabels = [
-            'decision_maker' => 'تصمیم‌گیر',
-            'influencer' => 'تأثیرگذار',
-            'user' => 'کاربر نهایی',
-            'gatekeeper' => 'دروازه‌بان',
-            'other' => 'سایر',
-        ];
-        $roleLabel = $roleLabels[$opportunity->decision_role ?? ''] ?? null;
     @endphp
 
     <div class="space-y-6" dir="rtl">
@@ -161,7 +152,7 @@
                         </div>
                         <div class="flex justify-between gap-3 py-2.5 text-sm">
                             <dt class="shrink-0 text-gray-500 dark:text-gray-400">نقش</dt>
-                            <dd class="text-left font-medium text-gray-900 dark:text-white">{{ $roleLabel ?: ($opportunity->contact_role ?: $dash) }}</dd>
+                            <dd class="text-left font-medium text-gray-900 dark:text-white">{{ $roleLabel ?: $dash }}</dd>
                         </div>
                         <div class="flex justify-between gap-3 py-2.5 text-sm">
                             <dt class="shrink-0 text-gray-500 dark:text-gray-400">موبایل</dt>
