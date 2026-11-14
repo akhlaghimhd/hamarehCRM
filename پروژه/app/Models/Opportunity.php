@@ -194,6 +194,16 @@ class Opportunity extends Model
         return $this->hasMany(Activity::class);
     }
 
+    public function steps(): HasMany
+    {
+        return $this->hasMany(OpportunityStep::class)->orderByDesc('id');
+    }
+
+    public function openStep(): ?OpportunityStep
+    {
+        return $this->steps()->where('is_open', true)->orderByDesc('id')->first();
+    }
+
     public function markWon(): void
     {
         $wonStage = OpportunityStage::query()
