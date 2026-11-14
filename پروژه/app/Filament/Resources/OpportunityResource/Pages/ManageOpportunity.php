@@ -151,7 +151,7 @@ class ManageOpportunity extends ViewRecord
     protected function getViewData(): array
     {
         /** @var Opportunity $record */
-        $record = $this->record->loadMissing(['stage', 'owner', 'followup', 'customer', 'activities.user']);
+        $record = $this->record->loadMissing(['stage', 'owner', 'followupUser', 'customer', 'activities.user']);
 
         $activities = $record->activities()
             ->with('user')
@@ -191,7 +191,7 @@ class ManageOpportunity extends ViewRecord
             'stageLabel' => $record->stage?->name ?? '—',
             'productLabel' => $record->productInterestLabel(),
             'ownerLabel' => $record->owner?->name ?? '—',
-            'followupLabel' => $record->followup?->name ?? ($record->owner?->name ?? '—'),
+            'followupLabel' => $record->followupUser?->name ?? ($record->owner?->name ?? '—'),
             'codeLabel' => 'OPP-' . str_pad((string) $record->id, 3, '0', STR_PAD_LEFT),
             'roleLabel' => $roleLabel,
             'listUrl' => OpportunityResource::getUrl(),
