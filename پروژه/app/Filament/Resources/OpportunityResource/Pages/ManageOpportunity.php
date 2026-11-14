@@ -38,9 +38,12 @@ class ManageOpportunity extends ViewRecord
 
     public function getBreadcrumbs(): array
     {
+        $listLabel = OpportunityResource::getNavigationLabel()
+            ?: OpportunityResource::getBreadcrumb()
+            ?: 'فرصت‌ها';
+
         return [
-            OpportunityResource::getUrl() => OpportunityResource::getBreadcrumb(),
-            OpportunityResource::getUrl('view', ['record' => $this->record]) => $this->getTitle(),
+            OpportunityResource::getUrl() => $listLabel,
         ];
     }
 
@@ -56,6 +59,12 @@ class ManageOpportunity extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('backToList')
+                ->label('فهرست فرصت‌ها')
+                ->icon('heroicon-o-arrow-right')
+                ->color('gray')
+                ->url(OpportunityResource::getUrl()),
+
             Action::make('editInfo')
                 ->label('ویرایش اطلاعات')
                 ->icon('heroicon-o-pencil-square')
@@ -92,8 +101,14 @@ class ManageOpportunity extends ViewRecord
                         ->send();
                 }),
 
+            // خطر در هدر کم‌رنگ؛ تمرکز بصری روی کار داخل کارت‌ها بماند
             DeleteAction::make()
-                ->label('حذف فرصت')
+                ->label('حذف')
+                ->icon('heroicon-o-trash')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalHeading('حذف این فرصت؟')
+                ->modalDescription('فرصت و ارتباط‌های وابسته طبق قوانین سامانه حذف می‌شوند.')
                 ->visible(fn () => OpportunityResource::canDelete($this->record)),
         ];
     }
@@ -116,6 +131,16 @@ class ManageOpportunity extends ViewRecord
         $isOverdue = $due && Carbon::parse($due)->startOfDay()->lt(now()->startOfDay())
             && filled($record->next_step);
 
+        $roleKey = $record->decision_role ?: $record->contact_role;
+        $roleMap = [
+            'decision_maker' => 'تصمیم‌گیر',
+            'influencer' => 'تأثیرگذار',
+            'user' => 'کاربر نهایی',
+            'gatekeeper' => 'دروازه‌بان',
+            'other' => 'سایر',
+        ];
+        $roleLabel = $roleMap[$roleKey ?? ''] ?? null;
+
         return [
             'opportunity' => $record,
             'activities' => $activities,
@@ -126,6 +151,7 @@ class ManageOpportunity extends ViewRecord
             'productLabel' => $record->productInterestLabel(),
             'ownerLabel' => $record->owner?->name ?? '—',
             'codeLabel' => 'OPP-' . str_pad((string) $record->id, 3, '0', STR_PAD_LEFT),
+            'roleLabel' => $roleLabel,
         ];
     }
 
