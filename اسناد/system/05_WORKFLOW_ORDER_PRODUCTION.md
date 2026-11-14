@@ -45,7 +45,7 @@ Stateهای نمونه و قابل Seed:
 - Quote: draft، review، sent، accepted، rejected، expired، superseded
 - Order: draft، confirmed، in_fulfillment، partially_completed، completed، cancelled
 
-شرکت می‌تواند State/Transitionهای خود را تعریف کند. Invariants ثابت: Quote منقضی یا پیکربندی نامعتبر تأیید نمی‌شود؛ تأیید سفارش Snapshot را قفل می‌کند؛ لغو اثر رزرو/تولید/مالی را با Action جبرانی کنترل می‌کند.
+شرکت می‌تواند State/Transitionهای خود را تعریف کند. Invariants ثابت: Quote منقضی یا پیکربندی نامعتبر تأیید نمی‌شود؛ تأیید سفارش Snapshot را قفل می‌کند؛ لغو اثر رزرو/تولید/مالی را با Action جبرانی کنترل می‌کند. در قالب Seed نوتوپیا، چرخه draft → reserved → confirmed → in_production → shipped → cancelled حفظ می‌شود؛ این نام‌ها قابل تنظیم‌اند و Actionهای رزرو/آزادسازی/کسر به Transitionهای معنایی متصل می‌شوند.
 
 Quote Revision و Change Order:
 - هر نسخه Quote قابل ردیابی است.
