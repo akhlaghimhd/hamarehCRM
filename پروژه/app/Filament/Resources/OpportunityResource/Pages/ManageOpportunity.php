@@ -60,13 +60,6 @@ class ManageOpportunity extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('editInfo')
-                ->label('ویرایش اطلاعات')
-                ->icon('heroicon-o-pencil-square')
-                ->color('gray')
-                ->url(fn () => OpportunityResource::getUrl('edit', ['record' => $this->record]))
-                ->visible(fn () => OpportunityResource::canEdit($this->record)),
-
             Action::make('refer')
                 ->label('ارجاع')
                 ->icon('heroicon-o-arrow-path-rounded-square')
@@ -128,7 +121,7 @@ class ManageOpportunity extends ViewRecord
                         assignedUserId: $to->id,
                     );
 
-                                       $this->record->followup_user_id = $to->id;
+                    $this->record->followup_user_id = $to->id;
                     $this->record->save();
 
                     Notification::make()
@@ -136,6 +129,20 @@ class ManageOpportunity extends ViewRecord
                         ->body('گام برای «' . $to->name . '» باز شد.')
                         ->success()
                         ->send();
+                }),
+
+            Action::make('delete')
+                ->label('حذف فرصت')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->modalHeading('حذف این فرصت؟')
+                ->modalDescription('این عمل قابل بازگشت نیست.')
+                ->visible(fn () => OpportunityResource::canEdit($this->record))
+                ->action(function (): void {
+                    $this->record->delete();
+                    Notification::make()->title('فرصت حذف شد')->success()->send();
+                    $this->redirect(OpportunityResource::getUrl());
                 }),
         ];
     }
@@ -279,7 +286,7 @@ class ManageOpportunity extends ViewRecord
             ->label('ثبت فعالیت')
             ->icon('heroicon-o-plus')
             ->color('primary')
-            ->size('sm')
+            ->link()
             ->visible(fn () => $this->currentOpenStep() !== null)
             ->modalHeading('ثبت فعالیت')
             ->form([
@@ -320,7 +327,6 @@ class ManageOpportunity extends ViewRecord
             ->label('بستن گام')
             ->icon('heroicon-o-check-circle')
             ->color('success')
-            ->size('sm')
             ->modalHeading('بستن گام جاری')
             ->form([
                 Textarea::make('result')->label('نتیجه این گام')->required()->rows(3),
@@ -370,11 +376,10 @@ class ManageOpportunity extends ViewRecord
     public function clearStepAction(): Action
     {
         return Action::make('clearStep')
-            ->label('حذف')
+            ->label('حذف گام')
             ->icon('heroicon-o-trash')
             ->color('gray')
             ->size('sm')
-            ->outlined()
             ->requiresConfirmation()
             ->modalHeading('حذف گام جاری؟')
             ->modalDescription('گام باز حذف می‌شود؛ فعالیت‌های ثبت‌شده زیر آن می‌مانند ولی گام بسته محسوب نمی‌شود.')
