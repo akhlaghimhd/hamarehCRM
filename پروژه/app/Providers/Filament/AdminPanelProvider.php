@@ -47,10 +47,10 @@ class AdminPanelProvider extends PanelProvider
                 'استخر کاتالوگ (پایه)',
                 'سیستم',
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Pages\\Dashboard::class,
+                Pages\Dashboard::class,
                 SwitchCompany::class,
             ])
             ->userMenuItems([
@@ -71,9 +71,9 @@ class AdminPanelProvider extends PanelProvider
                     })
                     ->sort(10),
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                Widgets\\AccountWidget::class,
+                Widgets\AccountWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
