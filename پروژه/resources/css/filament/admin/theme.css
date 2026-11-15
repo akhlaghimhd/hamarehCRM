@@ -2,6 +2,7 @@
 
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 @import './hamareh-ds.css';
+@import './hamareh-ds-polish.css';
 
 /* Kinetics موقتاً غیرفعال
 @import '../../../../vendor/otatechie/filament-kinetics/resources/css/layers.css';
