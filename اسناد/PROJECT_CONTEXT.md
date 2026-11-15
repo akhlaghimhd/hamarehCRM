@@ -29,6 +29,7 @@
 - فقط شاخه feature/filament5-upgrade مبنای توسعه است.
 
 ## اسناد مرجع
+- [منشور مادر پروژه](./PROJECT-CHARTER.md) — مرجع هدف، اصول و ترتیب توسعه از Foundation
 - [AGENT_RULES](./AGENT_RULES.md)
 - [فهرست معماری](./system/00_INDEX.md)
 - [قواعد حاکمیتی](./system/02_RULES_AND_GOVERNANCE.md)
