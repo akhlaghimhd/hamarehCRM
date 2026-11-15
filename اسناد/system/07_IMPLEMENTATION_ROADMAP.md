@@ -6,7 +6,7 @@
 | نسخه | 1.0.0 |
 | تاریخ | 2026-11-15 |
 | شاخه مبنا | feature/filament5-upgrade |
-| وضعیت | برنامه اجرایی پیشنهادی؛ نیازمند تأیید مالک برای شروع هر فاز |
+| وضعیت | ممیزی Remote فاز ۰ انجام شده؛ دروازه G0 تا اجرای تست و بررسی محیط محلی باز است |
 
 > این سند نتیجه تطبیق نمونه‌ای اسناد معماری با فایل‌های کد قابل مشاهده در شاخه مبناست. وجود مدل یا فایل به معنی کامل بودن قابلیت، امنیت یا تست آن نیست. مواردی که هنوز Migration، Resource، Action، Policy و تست آن‌ها به‌طور کامل بررسی نشده‌اند، «تأییدنشده» محسوب می‌شوند.
 
@@ -68,6 +68,104 @@
 - «در مسیر متعارف پیدا نشد» به معنی اثبات نبودن قابلیت در کل مخزن نیست.
 - وضعیت هر قابلیت تا بررسی Migration + Model + UI/Action + Policy + Test، قطعی نیست.
 - هیچ قابلیت صرفاً به دلیل وجود در سند معماری Done تلقی نمی‌شود.
+
+
+### ۲.۴ گزارش ممیزی درخت کامل شاخه فعال — 2026-11-15
+
+#### خط مبنای مخزن و استک
+
+- شاخه فعال: `feature/filament5-upgrade`
+- HEAD شاخه در زمان ممیزی: `05c08bec0bda4d84347856b3ac36683cbff9455`
+- Commit والد: `ea357bbfdfabdf722a80ab3f0d63e56eb06cc180`
+- شاخه پیش‌فرض مخزن `develop` است؛ این ممیزی فقط از ref صریح شاخه فعال خوانده شده و هیچ تغییری روی `develop` یا `main` انجام نشده است.
+- درخت Git در HEAD شامل ۳٬۱۵۸ مسیر است؛ برنامه ۱۴۵ فایل PHP در `پروژه/app`، شامل ۳۴ فایل مدل/Concern، ۲۱ Resource اصلی، ۴۸ Migration، ۱۱ Seeder و فقط ۳ فایل PHP در پوشه تست دارد.
+- در `app/Services` فقط دو Service وجود دارد؛ پوشه‌های `Actions`، `Policies`، `Jobs`، `Events`، `Listeners`، `Observers` و `app/Console` وجود ندارند. این نتیجه درباره ساختار فعلی شاخه است، نه الزام معماری آینده.
+- درخت شاخه فاقد `.github/workflows` است و GitHub برای HEAD بررسی‌شده Status Check ثبت‌شده‌ای برنگرداند.
+- نسخه‌های قفل‌شده در `composer.lock`: Laravel 13.42.0، Filament 5.11.3، Livewire 4.4.8 و PHPUnit 12.5.44. Dockerfile بر پایه PHP 8.4 است؛ platform در Composer برابر `^8.3` و MariaDB در Compose برابر 10.4 تعریف شده است. نسخه واقعی محیط محلی در این ممیزی قابل مشاهده نبود.
+
+#### ماتریس وضعیت ماژول‌ها
+
+| ماژول | شواهد فعلی کد | وضعیت نسبت به قرارداد معماری |
+|---|---|---|
+| M00 Foundation | User، Company، Role، Permission، company_user و سازوکار مجوز Resource | موجود اما نیازمند سخت‌سازی؛ Role و مسیرهای مدیریت هویت مرز شرکتی کافی ندارند |
+| M01 Identity & Access | ورود Laravel/Filament، عضویت شرکت، نقش و مجوز | موجودِ ناقص؛ Policy مستقل وجود ندارد و مجوزها عمدتاً از Concern سفارشی Resource اعمال می‌شوند |
+| M02 Organization | Company، عضویت چندشرکتی، SwitchCompany و Global Scope | موجودِ پرریسک؛ fallback، Console bypass و کنترل سازگاری Role/Company باید اصلاح شوند |
+| M03 Party / Customer | Customer، CustomerContact و CustomerResource | پایه موجود؛ CustomerContact به‌صورت فرزند Customer است و Scope مستقل ندارد؛ کنترل دسترسی فقط از مسیر والد باید تضمین شود |
+| M04 Marketing / CRM | Opportunity، OpportunityStage، Activity، OpportunityStep، ثبت سریع و MarketingFunnel | بخشی از جریان CRM موجود؛ گزینه‌های دامنه‌ای ثابت و Task عمومی مستقل وجود ندارد |
+| M05 Catalog / Product | ProductLine، Family، Season، Model، Option، Attribute، Variant، CatalogRule و CatalogConfigurator | کاتالوگ نوتوپیا تا حدی موجود؛ موتور عمومی نسخه‌دار، ارزیاب Rule و Snapshot سازنده کامل اثبات نشده‌اند |
+| M06 Quote / Order | Quote، QuoteLine، Order، OrderLine، Resourceها و config_snapshot | مسیر پایه موجود اما تبدیل امن/اتمیک، Revision و تغییرناپذیری Snapshot ناقص است |
+| M07 Production | مدل، Migration و Resource مشخصی برای ProductionRun یا WorkPackage در کل درخت برنامه یافت نشد | غایب در وضعیت فعلی |
+| M08 Tasks / Workspace | Activity با نوع task و OpportunityStep | فقط پیگیری CRM؛ Task/Workspace عمومی مطابق M08 مشاهده نشد |
+| M09 Operational Finance | مدل/جدول/Resource مشخص برای Invoice، Payment یا دفتر مالی عملیاتی یافت نشد | غایب در وضعیت فعلی |
+| M10 Inventory | CoverSku، CoverSkuStock و stock_qty در برخی Optionها/Variantها | فقط موجودی محدود و مستقیم؛ Ledger، Reservation و چرخه تولید/تحویل وجود ندارد |
+| M11 Reporting / Notifications | صفحه گزارش یا زیرساخت اختصاصی گزارش/اعلان در ساختار فعلی یافت نشد | پیاده‌سازی تأیید نشد؛ در این فاز غایب فرض می‌شود تا شاهد کد ارائه شود |
+
+#### ریسک‌های تکمیلی ممیزی
+
+**R6 — فایل محیط و اعتبارنامه‌های قابل دسترس در مخزن (بحرانی):**
+- فایل ریشه `.env.backup.20261107_192951` در Git ثبت شده و شامل متغیرهای حساس غیرخالی از جمله APP_KEY و تنظیمات سرویس‌هاست. مقادیر آن در این سند درج نمی‌شوند.
+- `.gitignore` فقط الگوی دقیق `.env.backup` را دارد و نام تاریخ‌دار بالا را پوشش نمی‌دهد.
+- اگر مقادیر فایل به محیط واقعی یا سرویس فعال مربوط‌اند، باید افشاشده فرض شوند و اعتبارنامه/کلیدهای مربوط با هماهنگی مالک تعویض شوند. حذف فایل از HEAD به‌تنهایی تاریخچه Git را پاک نمی‌کند؛ بازنویسی تاریخچه بدون اجازه صریح مجاز نیست.
+- `پروژه/compose.yaml` رمزهای ثابت توسعه برای MariaDB و پورت منتشرشده DB دارد؛ این Compose نباید بدون بازبینی به‌عنوان تنظیم تولید استفاده شود.
+- `DatabaseSeeder`، `FoundationSeeder` و `DemoAccessSeeder` حساب‌های demo با رمز ثابت `password` می‌سازند/به‌روزرسانی می‌کنند. اجرای Seeder در محیط واقعی باید ممنوع یا صریحاً ایمن‌سازی شود.
+
+**R7 — مرز نقش، کاربر و شرکت (بحرانی):**
+- جدول `roles` دارای `company_id` است، اما مدل Role از BelongsToCompany استفاده نمی‌کند و RoleResource نیز Query شرکتی ندارد؛ در نتیجه فهرست نقش‌ها می‌تواند نقش شرکت‌های دیگر را دربرگیرد.
+- `User::currentRole()` نقش را صرفاً با شناسه از جدول Role می‌خواند و تطبیق `roles.company_id` با شرکت جاری را کنترل نمی‌کند.
+- جدول `company_user` فقط FK مستقل `role_id` دارد و قید دیتابیسی برای هم‌شرکت بودن Role و Company ندارد.
+- UserResource مدل User را بدون محدودسازی عضویت جاری فهرست می‌کند، در حالی که مجوز `users.manage` به نقش مدیر شرکت داده شده است؛ ویرایش اطلاعات هویتی کاربر می‌تواند اثر سراسری بر عضویت‌های دیگر داشته باشد.
+- CompanyResource نیز شرکت‌ها را به‌صورت سراسری می‌خواند و مجوز `companies.manage` در Seeder به نقش مدیر شرکت داده می‌شود. اینکه مدیر هر شرکت باید امکان مدیریت همه شرکت‌ها را داشته باشد، نیازمند تصمیم صریح مالک است.
+- `User::defaultCompany()`، صفحات ایجاد/ویرایش User و صفحه ایجاد Role در نبود Session به اولین عضویت/شرکت fallback می‌کنند. در `ProductFamily` و `CatalogSeason` نیز callback fallback به اولین شرکت وجود دارد؛ ترتیب اجرای آن نسبت به callback Trait باید با تست runtime تعیین شود.
+- `AppServiceProvider` تلاش می‌کند عضویت Session را اعتبارسنجی کند، اما زمان اجرای callback نسبت به Middleware احراز هویت/Session در این ممیزی runtime-test نشده است؛ نباید تا اثبات با تست به آن اتکا کرد.
+- Global Scope در Console بدون Auth و Session عمداً حذف می‌شود؛ هر Query عملیاتی در Artisan/Seeder در آن وضعیت می‌تواند همه شرکت‌ها را ببیند. تفکیک عملیات سراسری از عملیات شرکتی لازم است.
+
+**R8 — Quote/Order و Snapshot (بحرانی برای صحت سفارش):**
+- `Order::fromQuote()` سفارش را با وضعیت confirmed می‌سازد، خطوط و Snapshot را کپی می‌کند و Quote را converted می‌کند؛ بدنه متد Transaction، قفل یا idempotency ندارد.
+- Action تبدیل در QuoteResource فقط وضعیت converted و وجود خط را بررسی می‌کند؛ accepted بودن Quote شرط نشده است. بنابراین مسیر UI فعلی می‌تواند Quote پیش‌نویس/ارسال‌شده را هم به سفارش confirmed تبدیل کند.
+- `OrderResource` وضعیت سفارش را قابل ویرایش مستقیم قرار می‌دهد؛ Workflow/Transition مجاز اعمال نشده است.
+- فیلد config_snapshot وجود دارد و کپی می‌شود، اما Revision مرجع و قفل تغییرناپذیری در Model/DB اثبات نشده است.
+
+**R9 — موجودی و تولید (بحرانی برای عملیات):**
+- `CoverSkuStock` فقط به CoverSku و رنگ‌ها متصل است و company_id یا Trait مستقل ندارد. StocksRelationManager مقدار موجودی را مستقیم Create/Edit/Delete می‌کند؛ رویداد Ledger، علت اجباری، actor و گردش اصلاح مستقل وجود ندارد.
+- CoverSku هم فیلد stock_qty دارد و هم جمع stock ردیف‌های CoverSkuStock نمایش داده می‌شود. ProductOption و ProductOptionVariant نیز stock_qty مستقل دارند؛ چند منبع شمارش موجودی وجود دارد.
+- موجودی داخله/صفحات، رزرو سفارش، انتقال به تولید، مصرف واقعی، ضایعات/نمونه، محصول آماده و تحویل مشتری در Migration/Model فعلی مشاهده نشد.
+- هیچ WorkPackage، ProductionRun یا مدل عمومی StockMovement/StockItem در درخت فعلی وجود ندارد.
+
+**R10 — موتور کاتالوگ هنوز عمومی/نسخه‌دار نیست:**
+- CatalogConfigurator فقط validate و price را ارائه می‌کند؛ ProductType را با allowlist ثابت می‌پذیرد و schema/snapshot API سند M05 را پیاده نکرده است.
+- CatalogRule داده شرط/اثر ذخیره می‌کند، اما CatalogConfigurator آن را ارزیابی نمی‌کند؛ متن Resource نیز قواعد را فعلاً دستی معرفی می‌کند.
+- ProductModel دارای فیلدهای ثابت مختص ویژگی‌های مانا/کیوان است و isPublishable به Family/Season/Size/Cover وابسته است.
+- ProductModelResource، ProductSizeResource، CoverSkuResource و CatalogRuleResource در چند نقطه صریحاً روی کد ProductLine نوتوپیا فیلتر/مقداردهی می‌کنند. این UI می‌تواند مخصوص نوتوپیا باشد، اما به‌تنهایی موتور عمومی M05 محسوب نمی‌شود.
+- AddonModelRule و Pivotهای مدل/Option دو ساختار جدا برای محدودیت مدل و اقلام ایجاد کرده‌اند؛ منبع حقیقت نهایی باید مشخص و در یک مسیر اعتبارسنجی شود.
+
+**R11 — کیفیت مخزن، تست و اسناد اجرایی:**
+- ۲۹ فایل پشتیبان با پسوندهای `.bak`، `.bak_*` و `.backup.*` در درخت Git وجود دارد؛ `.gitignore` الگوی عمومی برای آن‌ها ندارد.
+- `RESTRUCTURE.md` دستورهای قدیمی برای checkout/push روی `develop` می‌دهد که با قاعده فعلی توسعه انحصاری روی `feature/filament5-upgrade` تعارض دارد. README ریشه نیز هنوز قالب عمومی Laravel است.
+- دو تست موجود فقط ExampleTest هستند؛ تست چندشرکتی، کاتالوگ، Quote/Order و موجودی وجود ندارد.
+- `phpunit.xml` از SQLite حافظه‌ای استفاده می‌کند، اما Migration مربوط به `opportunity_product_interest_json` از `ALTER TABLE ... MODIFY` مخصوص MySQL/MariaDB استفاده می‌کند. سازگاری اجرای Migrationها در SQLite باید با تست واقعی تعیین شود.
+- در این ممیزی تست اجرا نشد: مخزن محلی کاربر از طریق این اتصال قابل مشاهده نیست، محیط ممیزی Composer/Docker در اختیار نداشت و clone مستقیم به علت عدم دسترسی شبکه موفق نشد. خالی بودن Status Checks نیز اثبات اجرای تست نیست.
+
+### ۲.۵ اولویت‌های خروجی فاز صفر
+
+| اولویت | موضوع | اقدام مورد انتظار |
+|---|---|---|
+| P0 | فایل env و رمزهای demo | بررسی اعتبارنامه‌های افشاشده و تعویض موارد واقعی؛ جلوگیری از Seeder ناامن در محیط واقعی |
+| P0 | Role/User/Company و Scope | طراحی قرارداد واحد company context، اعتبارسنجی عضویت و Role، محدودسازی Queryها و تست منفی دوشرکتی |
+| P0 | Console bypass | تفکیک عملیات سراسری از عملیات شرکت‌محور؛ عملیات شرکت‌محور بدون company_id صریح باید fail-closed باشد |
+| P1 | Quote → Order | شرط پذیرش Quote، Transaction، قفل/Idempotency، شماره‌گذاری امن و Snapshot تغییرناپذیر |
+| P1 | Catalog | تعیین منبع حقیقت Option Ruleها و تکمیل اعتبارسنجی Rule/Revision بدون hardcode محصول |
+| P1 | Inventory/Production | طراحی Ledger سبک با موجودی جلد و داخله مستقل، Reservation و رویدادهای مجزای تولید/تحویل |
+| P2 | Tasks/Finance/Reporting | تعریف محدوده کسب‌وکار و سپس پیاده‌سازی ماژول‌های غایب |
+| P2 | Repository hygiene | اصلاح الگوی ignore، تعیین تکلیف فایل‌های پشتیبان و اصلاح RESTRUCTURE.md و README |
+
+### ۲.۶ وضعیت دروازه G0
+
+ممیزی Remote شاخه و تطبیق عمده Migration/Model/Resource/Seeder انجام شده است؛ اما G0 هنوز بسته نیست. موارد باقی‌مانده:
+1. مالک خروجی `git status -sb` و `git log -3 --oneline --decorate` محیط محلی را ارائه کند تا اختلاف Remote و Working Tree بدون دست‌زدن به تغییرات کاربر مشخص شود.
+2. تست‌های پایه در محیط واقعی پروژه اجرا و خروجی کامل ثبت شود؛ تا آن زمان وضعیت تست «اجرا نشده/تأییدنشده» است.
+3. مالک اولویت‌های P0 و تصمیم‌های نیازمند تأیید در R7 را تأیید کند.
+
+تا بسته‌شدن G0 هیچ اصلاح کد، Migration، داده یا تغییر Schema در این ممیزی انجام نمی‌شود.
 
 ## ۳. ترتیب پیشنهادی اجرا
 
