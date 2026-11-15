@@ -110,6 +110,9 @@
                             <span class="text-gray-500">{{ class_basename($event->auditable_type) === 'Task' ? 'یک کار' : 'یک فعالیت CRM' }}</span>
                         </div>
                         <time class="text-xs text-gray-500">{{ $event->occurred_at?->format('Y/m/d H:i') }}</time>
+                        @if (! empty($event->new_values))
+                            <div class="w-full text-xs text-gray-500">{{ collect($event->new_values)->map(fn ($value, $field) => $field . ': ' . (is_scalar($value) ? $value : json_encode($value)))->implode('، ') }}</div>
+                        @endif
                     </div>
                 @empty
                     <div class="p-6 text-center text-sm text-gray-500">هنوز رویداد ممیزی ثبت نشده است.</div>

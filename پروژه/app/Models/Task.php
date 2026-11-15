@@ -40,12 +40,24 @@ class Task extends Model
     protected static function booted(): void
     {
         static::saving(function (Task $task): void {
+            if (auth()->check()) {
+                $currentCompanyId = auth()->user()->currentCompanyId();
+                if (! $currentCompanyId || (int) $task->company_id !== (int) $currentCompanyId) {
+                    throw ValidationException::withMessages(['company_id' => 'ثبت یا ویرایش کار خارج از شرکت جاری مجاز نیست.']);
+                }
+            }
+
             if (! $task->company_id || ! $task->assignee_user_id || ! $task->reporter_user_id) {
                 throw ValidationException::withMessages(['subject' => 'شرکت، مسئول و ایجادکننده کار الزامی است.']);
             }
 
             foreach ([$task->assignee_user_id, $task->reporter_user_id] as $userId) {
-                $member = DB::table('company_user')->where('company_id', $task->company_id)->where('user_id', $userId)->exists();
+                $member = DB::table('company_user')
+                    ->join('users', 'users.id', '=', 'company_user.user_id')
+                    ->where('company_user.company_id', $task->company_id)
+                    ->where('company_user.user_id', $userId)
+                    ->where('users.is_active', true)
+                    ->exists();
                 if (! $member) {
                     throw ValidationException::withMessages(['assignee_user_id' => 'مسئول و ایجادکننده باید عضو همان شرکت باشند.']);
                 }

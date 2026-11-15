@@ -20,15 +20,16 @@ class SaveTask
         if (! $isNew && (int) $task->company_id !== (int) $companyId) {
             throw ValidationException::withMessages(['task' => 'این کار متعلق به شرکت جاری نیست.']);
         }
+        if ($isNew && ! $actor->hasPermission('tasks.create')) {
+            throw ValidationException::withMessages(['subject' => 'مجوز ایجاد کار را ندارید.']);
+        }
+
         $idempotencyKey = $data['idempotency_key'] ?? null;
         if ($isNew && $idempotencyKey) {
             $existing = Task::query()->where('company_id', $companyId)->where('idempotency_key', $idempotencyKey)->first();
             if ($existing) {
                 return $existing;
             }
-        }
-        if ($isNew && ! $actor->hasPermission('tasks.create')) {
-            throw ValidationException::withMessages(['subject' => 'مجوز ایجاد کار را ندارید.']);
         }
 
         $assigneeId = (int) ($data['assignee_user_id'] ?? $actor->id);
@@ -41,7 +42,12 @@ class SaveTask
             }
         }
 
-        $member = DB::table('company_user')->where('company_id', $companyId)->where('user_id', $assigneeId)->exists();
+        $member = DB::table('company_user')
+            ->join('users', 'users.id', '=', 'company_user.user_id')
+            ->where('company_user.company_id', $companyId)
+            ->where('company_user.user_id', $assigneeId)
+            ->where('users.is_active', true)
+            ->exists();
         if (! $member) {
             throw ValidationException::withMessages(['assignee_user_id' => 'مسئول کار باید عضو همین شرکت باشد.']);
         }

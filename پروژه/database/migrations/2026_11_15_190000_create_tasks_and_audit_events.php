@@ -19,13 +19,14 @@ return new class extends Migration
             $table->string('status', 20)->default('open');
             $table->timestamp('due_at')->nullable();
             $table->nullableMorphs('linkable');
-            $table->string('idempotency_key', 100)->nullable()->unique();
+            $table->string('idempotency_key', 100)->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
             $table->index(['company_id', 'assignee_user_id', 'status']);
             $table->index(['company_id', 'due_at', 'status']);
             $table->index(['company_id', 'reporter_user_id']);
+            $table->unique(['company_id', 'idempotency_key']);
         });
 
         Schema::create('audit_events', function (Blueprint $table) {

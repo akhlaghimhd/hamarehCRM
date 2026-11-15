@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Task;
+use App\Filament\Resources\TaskResource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,26 @@ class TaskTeamAccessTest extends TestCase
         $event = $task->auditEvents()->where('event', 'updated')->first();
         $this->assertSame(Task::STATUS_OPEN, $event->old_values['status']);
         $this->assertSame(Task::STATUS_IN_PROGRESS, $event->new_values['status']);
+    }
+
+    public function test_task_creation_is_idempotent_within_a_company(): void
+    {
+        [$company, $manager, $staff, $outsider, $role] = $this->fixture();
+        $this->grant($role, ['tasks.create']);
+        $this->actingAs($manager);
+        session(['current_company_id' => $company->id]);
+
+        $data = [
+            'subject' => 'Single task',
+            'assignee_user_id' => $manager->id,
+            'idempotency_key' => 'workflow-step-123',
+        ];
+
+        $first = app(SaveTask::class)->handle($data, $manager);
+        $second = app(SaveTask::class)->handle($data, $manager);
+
+        $this->assertSame($first->id, $second->id);
+        $this->assertSame(1, Task::query()->where('idempotency_key', 'workflow-step-123')->count());
     }
 
     private function fixture(): array
