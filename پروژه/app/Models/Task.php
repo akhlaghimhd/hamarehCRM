@@ -104,6 +104,11 @@ class Task extends Model
         return $this->morphTo();
     }
 
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->latest();
+    }
+
     public function auditEvents(): MorphMany
     {
         return $this->morphMany(AuditEvent::class, 'auditable')->latest('occurred_at');

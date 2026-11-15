@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Actions\Attachments\StoreAttachment;
 use App\Models\Attachment;
 use App\Models\Company;
-use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\User;
@@ -39,6 +38,7 @@ class AttachmentIsolationTest extends TestCase
         $this->assertSame(64, strlen($attachment->checksum));
         Storage::disk('local')->assertExists($attachment->path);
         $this->assertSame(1, Attachment::query()->count());
+        $this->get(route('attachments.download', $attachment))->assertDownload('contract.pdf');
     }
 
     public function test_attachment_cannot_be_downloaded_from_another_company_context(): void
@@ -63,7 +63,7 @@ class AttachmentIsolationTest extends TestCase
         session(['current_company_id' => $companyB->id]);
 
         $this->get(route('attachments.download', $attachment))
-            ->assertForbidden();
+            ->assertNotFound();
     }
 
     private function fixture(): array
