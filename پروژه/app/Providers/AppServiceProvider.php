@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Models\Activity;
 use App\Models\Attachment;
-use App\Models\Activity;
 use App\Models\Task;
 use App\Observers\AuditObserver;
 use App\Policies\ActivityPolicy;

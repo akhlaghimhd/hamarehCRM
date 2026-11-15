@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Tasks\SaveTask;
+use App\Models\Activity;
 use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
@@ -84,10 +85,10 @@ class TaskTeamAccessTest extends TestCase
         $this->actingAs($manager);
         session(['current_company_id' => $company->id]);
 
-        $activity = \\App\\Models\\Activity::query()->create([
+        $activity = Activity::query()->create([
             'company_id' => $company->id,
             'user_id' => $manager->id,
-            'type' => \\App\\Models\\Activity::TYPE_NOTE,
+            'type' => Activity::TYPE_NOTE,
             'subject' => 'Initial subject',
             'body' => 'Initial body',
         ]);
