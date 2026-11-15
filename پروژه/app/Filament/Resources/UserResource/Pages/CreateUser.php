@@ -3,8 +3,9 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
-use App\Models\Company;
+use App\Models\Role;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Validation\ValidationException;
 
 class CreateUser extends CreateRecord
 {
@@ -14,7 +15,27 @@ class CreateUser extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $this->roleId = $data['role_id'] ?? null;
+        $companyId = auth()->user()?->currentCompanyId();
+        $roleId = $data['role_id'] ?? null;
+
+        if (! $companyId) {
+            throw ValidationException::withMessages([
+                'role_id' => 'شرکت جاری معتبر نیست؛ ابتدا شرکت مجاز را انتخاب کنید.',
+            ]);
+        }
+
+        if (! $roleId || ! Role::query()
+            ->where('company_id', $companyId)
+            ->whereKey($roleId)
+            ->exists()) {
+            throw ValidationException::withMessages([
+                'role_id' => 'نقش انتخاب‌شده متعلق به شرکت جاری نیست.',
+            ]);
+        }
+
+        $this->companyId = (int) $companyId;
+        $this->roleId = (int) $roleId;
+
         unset($data['role_id']);
 
         return $data;
@@ -22,17 +43,15 @@ class CreateUser extends CreateRecord
 
     protected function afterCreate(): void
     {
-        $companyId = session('current_company_id') ?? Company::query()->value('id');
-
-        if ($companyId) {
-            $this->record->companies()->syncWithoutDetaching([
-                $companyId => [
-                    'role_id' => $this->roleId,
-                    'is_default' => true,
-                ],
-            ]);
-        }
+        $this->record->companies()->syncWithoutDetaching([
+            $this->companyId => [
+                'role_id' => $this->roleId,
+                'is_default' => true,
+            ],
+        ]);
     }
 
-    public mixed $roleId = null;
+    public ?int $companyId = null;
+
+    public ?int $roleId = null;
 }
