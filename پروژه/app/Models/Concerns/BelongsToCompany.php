@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Models\Concerns;
+namespace App\\Models\\Concerns;
 
-use App\Models\Company;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\\Models\\Company;
+use Illuminate\\Database\\Eloquent\\Builder;
+use Illuminate\\Database\\Eloquent\\Relations\\BelongsTo;
 use RuntimeException;
 
 trait BelongsToCompany
@@ -12,21 +12,26 @@ trait BelongsToCompany
     public static function bootBelongsToCompany(): void
     {
         static::creating(function ($model) {
-            if (! empty($model->company_id)) {
+            if (auth()->check()) {
+                $user = auth()->user();
+                $companyId = $user->currentCompanyId();
+
+                if (! $companyId) {
+                    throw new RuntimeException('شرکت جاری معتبر نیست یا کاربر عضو آن نیست.');
+                }
+
+                if (! empty($model->company_id) && (int) $model->company_id !== $companyId) {
+                    throw new RuntimeException('کاربر مجاز به ثبت اطلاعات برای این شرکت نیست.');
+                }
+
+                $model->company_id = $companyId;
+
                 return;
             }
 
-            $companyId = session('current_company_id');
-
-            if (! $companyId && auth()->check()) {
-                $companyId = auth()->user()->currentCompanyId();
+            if (empty($model->company_id)) {
+                throw new RuntimeException('company_id برای ثبت اطلاعات الزامی است.');
             }
-
-            if (! $companyId) {
-                throw new RuntimeException('company_id الزامی است؛ شرکت جاری در نشست تنظیم نشده.');
-            }
-
-            $model->company_id = $companyId;
         });
 
         static::addGlobalScope('company', function (Builder $builder) {
@@ -34,17 +39,10 @@ trait BelongsToCompany
                 return;
             }
 
-            $companyId = session('current_company_id');
-
-            // اگر نشست خالی است، از شرکت پیش‌فرض کاربر لاگین‌شده استفاده کن و نشست را پر کن
-            if (! $companyId && auth()->check()) {
-                $user = auth()->user();
-                if (method_exists($user, 'currentCompanyId')) {
-                    $companyId = $user->currentCompanyId();
-                }
-                if ($companyId) {
-                    session(['current_company_id' => (int) $companyId]);
-                }
+            if (auth()->check()) {
+                $companyId = auth()->user()->currentCompanyId();
+            } else {
+                $companyId = null;
             }
 
             if ($companyId) {
@@ -56,7 +54,6 @@ trait BelongsToCompany
                 return;
             }
 
-            // بدون شرکت جاری هیچ ردیف عملیاتی دیده نشود (جلوگیری از نشت)
             $builder->whereRaw('1 = 0');
         });
     }
