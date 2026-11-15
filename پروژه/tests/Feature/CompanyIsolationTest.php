@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuditEvent;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Role;
@@ -154,6 +155,35 @@ class CompanyIsolationTest extends TestCase
         );
 
         $this->assertSame(['Customer A'], $names);
+    }
+
+
+    public function test_audit_events_are_isolated_by_company_and_fail_closed_without_context(): void
+    {
+        [$companyA, $companyB] = $this->createCompanies();
+        $context = app(CompanyContext::class);
+
+        foreach ([[$companyA, 'Company A event'], [$companyB, 'Company B event']] as [$company, $description]) {
+            $context->runForCompany($company->id, fn () => AuditEvent::query()->create([
+                'company_id' => $company->id,
+                'auditable_type' => Customer::class,
+                'auditable_id' => 1,
+                'event' => 'created',
+                'metadata' => ['description' => $description],
+                'occurred_at' => now(),
+            ]));
+        }
+
+        $this->assertSame([], AuditEvent::query()->pluck('id')->all());
+
+        $companyAEvents = $context->runForCompany(
+            $companyA->id,
+            fn () => AuditEvent::query()->get(),
+        );
+
+        $this->assertCount(1, $companyAEvents);
+        $this->assertSame($companyA->id, $companyAEvents->first()->company_id);
+        $this->assertSame('Company A event', $companyAEvents->first()->metadata['description']);
     }
 
     /**

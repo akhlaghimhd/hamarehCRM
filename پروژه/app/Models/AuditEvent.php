@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCompany;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class AuditEvent extends Model
 {
+    use BelongsToCompany;
+
     protected $fillable = [
         'company_id', 'auditable_type', 'auditable_id', 'actor_user_id',
         'event', 'old_values', 'new_values', 'metadata', 'occurred_at',
