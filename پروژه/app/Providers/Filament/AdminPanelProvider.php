@@ -105,7 +105,6 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">'
-                    . '<link rel="stylesheet" href="' . asset('css/mf-funnel.css') . '?v=' . @filemtime(public_path('css/mf-funnel.css')) . '">',
             )
             ->renderHook(
                 PanelsRenderHook::BODY_START,
