@@ -29,3 +29,13 @@
 - [ ] Task وابسته به سفارش/فرصت نمایش داده می‌شود
 - [ ] ارجاع به کاربر دیگر همان شرکت
 - [ ] لیست «کارهای من»
+
+
+
+## تکمیل
+Task ابزار ارجاع انسانی است و جایگزین Workflow Instance یا WorkPackage نیست. Task می‌تواند توسط Transition یک Workflow ایجاد شود؛ تکمیل Task به‌تنهایی وضعیت سفارش/تولید را تغییر نمی‌دهد مگر Transition مجاز آن را انجام دهد.
+
+- Task دارای company_id، creator، assignee، due_at، priority، status، subject و تاریخچه باشد.
+- ارجاع فقط به کاربر عضو همان شرکت مجاز است.
+- Task تکراری ناشی از Job/Transition با idempotency key کنترل شود.
+- یادآوری و Escalation از M11/Scheduler انجام شود.

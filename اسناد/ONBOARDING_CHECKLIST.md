@@ -1,103 +1,48 @@
 # چک‌لیست آنبوردینگ — انسان و عامل AI
 
-**مخزن:** `akhlaghimhd/hamarehCRM` · **برنچ:** `develop`
+**مخزن:** akhlaghimhd/hamarehCRM  
+**شاخه مجاز توسعه:** feature/filament5-upgrade
 
-علامت بزنید؛ بدون اتمام بخش دسترسی، کدنویسی شروع نشود.
+## الف) دسترسی و شاخه
+- [ ] دسترسی GitHub روی مخزن رسمی تأیید شده است.
+- [ ] شاخه feature/filament5-upgrade را fetch و checkout کرده‌ام.
+- [ ] develop را تغییر نمی‌دهم.
+- [ ] main بدون دستور صریح مالک تغییر نمی‌کند.
+- [ ] پیش از Pull، وضعیت Working Tree بررسی و تغییرات محلی حفظ می‌شود.
 
----
+## ب) محیط
+- [ ] نسخه PHP/Composer و وابستگی‌ها از فایل‌های پروژه بررسی شده‌اند.
+- [ ] دستورات PHP/Artisan/Composer در محیط Docker با سرویس واقعی app اجرا می‌شوند.
+- [ ] محل اجرای Node/npm جداگانه بررسی شده است.
+- [ ] .env و Secret هرگز commit نمی‌شوند.
 
-## الف) دسترسی
+## ج) اسناد مرجع
+- [ ] اسناد/AGENT_RULES.md
+- [ ] اسناد/system/00_INDEX.md
+- [ ] اسناد/system/01_ARCHITECTURE.md
+- [ ] اسناد/system/02_RULES_AND_GOVERNANCE.md
+- [ ] اسناد/system/03_ROADMAP_AND_PRIORITIES.md
+- [ ] اسناد/system/04_DYNAMIC_PRODUCT_CONFIGURATION.md
+- [ ] اسناد/system/05_WORKFLOW_ORDER_PRODUCTION.md
+- [ ] اسناد/system/06_PLATFORM_INFRASTRUCTURE.md
+- [ ] سند ماژول مربوطه در اسناد/system/modules/
+- [ ] استانداردهای صفحه/جدول در صورت تغییر UI
 
-- [ ] دعوت Collaborator روی مخزن Accept شده (Write)
-- [ ] SSH key یا HTTPS Token روی **اکانت گیت‌هاب خودم** ثبت شده
-- [ ] `ssh -T git@github.com` پیام Hi با یوزرنیم خودم را می‌دهد
-- [ ] (برای AI) کانکتور GitHub با scope نوشتن (`repo` / Contents write) وصل است
+## د) اصول دامنه
+- [ ] company_id در Query، Relation، Policy، Job، File، Cache و Export رعایت می‌شود.
+- [ ] نوع محصول، Attribute، Option، Rule و Routing از داده خوانده می‌شوند.
+- [ ] افزودن محصول/ویژگی تجاری نیازمند شرط PHP یا Migration نیست.
+- [ ] Workflow و Routing نسخه‌دارند.
+- [ ] Snapshot سفارش تأییدشده با تغییر تعریف جاری تغییر نمی‌کند.
+- [ ] هیچ Rule داده‌ای PHP/SQL دلخواه اجرا نمی‌کند.
 
----
+## هـ) گردش کار توسعه
+- [ ] محدوده تغییر روشن و محدود است.
+- [ ] فایل هدف از شاخه مجاز پیش از ویرایش خوانده شده است.
+- [ ] تغییرات ثبت‌نشده کاربر حفظ شده‌اند.
+- [ ] تست مرتبط اجرا یا علت عدم اجرا ثبت شده است.
+- [ ] Commit انگلیسی و Conventional است.
+- [ ] فایل‌ها، SHA و تست‌ها گزارش شده‌اند.
 
-## ب) کلون و محیط
-
-```bash
-git clone git@github.com:akhlaghimhd/hamarehCRM.git
-cd hamarehCRM
-git checkout develop
-git pull origin develop
-```
-
-- [ ] کلون موفق
-- [ ] روی `develop` هستم
-- [ ] PHP / Composer / Node مطابق پروژه (یا Docker طبق `compose.yaml`)
-- [ ] `.env` از `.env.example` ساخته شده — **بدون commit**
-- [ ] `composer install` و در صورت نیاز `npm install`
-- [ ] migrate / seed تستی در محیط محلی
-- [ ] پنل ادمین باز می‌شود (مثلاً `http://localhost:8088/admin`)
-
-اگر کد هنوز در ریشه است (قبل از بازآرایی کامل):
-
-```bash
-# کار روزمره از ریشه مخزن
-```
-
-اگر پوشه `پروژه/` فعال شد:
-
-```bash
-cd پروژه
-```
-
----
-
-## ج) دانش (خواندن)
-
-- [ ] `اسناد/00_AI_AND_HUMAN_INTRODUCTION.md`
-- [ ] `docs/system/03_ROADMAP_AND_PRIORITIES.md`
-- [ ] `docs/system/01_ARCHITECTURE.md`
-- [ ] `docs/system/02_RULES_AND_GOVERNANCE.md`
-- [ ] `docs/AGENT_RULES.md`
-- [ ] سند ماژول اسکواد: `docs/system/modules/Mxx_*.md`
-
----
-
-## د) نقش و اسکواد
-
-- [ ] اسکواد من مشخص است (S0…S6 یا SQ)
-- [ ] مالک تسک / لید فنی را می‌شناسم
-- [ ] می‌دانم روی کدام ماژول (Mxx) کار می‌کنم
-
----
-
-## هـ) گردش کار روزانه
-
-```bash
-git fetch origin
-git pull origin develop
-# … کار …
-git add -A
-git status
-git commit -m "feat: short english message"
-git push origin develop   # یا برنچ feature + PR
-```
-
-- [ ] Commit انگلیسی و معنادار
-- [ ] بعد از pull دیگران: log و diff را می‌بینم
-- [ ] Secret در کد یا چت نمی‌گذارم
-- [ ] بدون `company_id` مدل/جدول عملیاتی جدید نمی‌سازم
-
----
-
-## و) Definition of Done شخصی
-
-- [ ] تغییر با قوانین `02_RULES` و `AGENT_RULES` سازگار است
-- [ ] UI فارسی و بدون متن انگلیسی خام برای کاربر نهایی
-- [ ] در صورت منطق کسب‌وکار: تست یا سناریوی دستی نوشته شده
-- [ ] به لید گزارش فایل‌های تغییر کرده داده شده
-
----
-
-## ز) مشکل رایج
-
-| مشکل | کار |
-|------|-----|
-| Push رد می‌شود | SSH/Token و Collaborator را چک کن |
-| AI فقط می‌خواند | Revoke و دوباره Connect با scope `repo` |
-| ساختار لوکال با remote فرق دارد | `git fetch` + `git reset --hard origin/develop` فقط با تأیید لید |
-| نمی‌دانم از کجا شروع کنم | Roadmap روز جاری + سند Mxx اسکواد |
+## هشدار
+از `git reset --hard`، `git clean`، Force Push یا حذف تغییرات محلی برای حل اختلاف استفاده نکنید مگر مالک صریحاً دستور دهد و اثر آن روشن باشد. در صورت اختلاف Local/Remote ابتدا از تغییرات محافظت و اختلاف را گزارش کنید.

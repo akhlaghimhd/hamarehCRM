@@ -40,3 +40,11 @@
 - [ ] نقش sales مجوز مالی مخرب ندارد
 - [ ] منوی Filament بر اساس مجوز فیلتر می‌شود
 - [ ] سناریوی عدم نشت بین شرکت در SQ ثبت شده
+
+
+
+## تکمیل مجوزها برای موتورهای پویا
+- مجوزهای تعریف/انتشار Product Definition، Attribute، Catalog Rule، Price Rule، Workflow و Routing Template از مجوز اجرای اسناد عملیاتی جدا باشند.
+- Transition باید Permission یا Role requirement مشخص داشته باشد؛ مدیر شرکت فقط در محدوده همان شرکت bypass می‌کند.
+- کاربر مجاز به تعریف Rule نیست مگر مجوز مدیریت کاتالوگ/فرایند داشته باشد؛ تعریف Rule به معنی اجازه اجرای همه Actionها نیست.
+- Job و API با همان Policy/Permission و Company Context اجرا شوند؛ مجوز UI به‌تنهایی کافی نیست.
