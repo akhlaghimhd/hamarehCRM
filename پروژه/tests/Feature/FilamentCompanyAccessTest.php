@@ -99,6 +99,29 @@ class FilamentCompanyAccessTest extends TestCase
         );
     }
 
+    public function test_resource_permissions_are_denied_for_a_non_member_company_selection(): void
+    {
+        [$companyA, $companyB] = $this->createCompanies();
+
+        $adminRole = $this->createRole($companyA, 'admin');
+        $user = User::factory()->create();
+        $user->companies()->attach($companyA->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $companyA->id]);
+
+        $this->assertTrue(UserResource::canViewAny());
+        $this->assertTrue(RoleResource::canViewAny());
+
+        session(['current_company_id' => $companyB->id]);
+
+        $this->assertFalse(UserResource::canViewAny());
+        $this->assertFalse(RoleResource::canViewAny());
+    }
+
     /**
      * @return array{Company, Company}
      */
