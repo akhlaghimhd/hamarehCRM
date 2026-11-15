@@ -81,7 +81,10 @@
     <section class="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div class="space-y-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
             <h2 class="text-base font-bold text-gray-950 dark:text-white">اعلان‌ها و وضعیت‌ها</h2>
-            <x-filament::alert color="success" title="عملیات موفق">نمونه پیام موفقیت‌آمیز.</x-filament::alert><x-filament::alert color="warning" title="نیازمند توجه">نمونه هشدار درباره موعد پیگیری.</x-filament::alert><x-filament::alert color="danger" title="خطا">نمونه پیام خطا و راهنمای اصلاح.</x-filament::alert><x-filament::alert color="info" title="اطلاع‌رسانی">نمونه پیام راهنما.</x-filament::alert>
+            <div role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"><p class="font-semibold">عملیات موفق</p><p class="mt-1 leading-6">نمونه پیام موفقیت‌آمیز.</p></div>
+            <div role="status" class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"><p class="font-semibold">نیازمند توجه</p><p class="mt-1 leading-6">نمونه هشدار درباره موعد پیگیری.</p></div>
+            <div role="alert" class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200"><p class="font-semibold">خطا</p><p class="mt-1 leading-6">نمونه پیام خطا و راهنمای اصلاح.</p></div>
+            <div role="status" class="rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-200"><p class="font-semibold">اطلاع‌رسانی</p><p class="mt-1 leading-6">نمونه پیام راهنما.</p></div>
         </div>
         <div class="space-y-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
             <h2 class="text-base font-bold text-gray-950 dark:text-white">جزئیات و عملیات رکورد</h2>
