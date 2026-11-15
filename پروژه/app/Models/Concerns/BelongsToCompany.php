@@ -1,10 +1,10 @@
 <?php
 
-namespace App\\Models\\Concerns;
+namespace App\Models\Concerns;
 
-use App\\Models\\Company;
-use Illuminate\\Database\\Eloquent\\Builder;
-use Illuminate\\Database\\Eloquent\\Relations\\BelongsTo;
+use App\Models\Company;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RuntimeException;
 
 trait BelongsToCompany
@@ -39,11 +39,9 @@ trait BelongsToCompany
                 return;
             }
 
-            if (auth()->check()) {
-                $companyId = auth()->user()->currentCompanyId();
-            } else {
-                $companyId = null;
-            }
+            $companyId = auth()->check()
+                ? auth()->user()->currentCompanyId()
+                : null;
 
             if ($companyId) {
                 $builder->where(
