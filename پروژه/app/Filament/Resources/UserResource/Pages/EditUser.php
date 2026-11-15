@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
-use App\Models\Company;
+use App\Models\Role;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Validation\ValidationException;
 
 class EditUser extends EditRecord
 {
@@ -16,7 +17,7 @@ class EditUser extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $companyId = session('current_company_id') ?? Company::query()->value('id');
+        $companyId = auth()->user()?->currentCompanyId();
 
         if ($companyId) {
             $pivot = $this->record->companies()
@@ -31,7 +32,29 @@ class EditUser extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $this->roleId = $data['role_id'] ?? null;
+        $companyId = auth()->user()?->currentCompanyId();
+        $roleId = $data['role_id'] ?? null;
+
+        if (! $companyId || ! $this->record->companies()
+            ->where('companies.id', $companyId)
+            ->exists()) {
+            throw ValidationException::withMessages([
+                'role_id' => 'عضویت کاربر در شرکت جاری معتبر نیست.',
+            ]);
+        }
+
+        if (! $roleId || ! Role::query()
+            ->where('company_id', $companyId)
+            ->whereKey($roleId)
+            ->exists()) {
+            throw ValidationException::withMessages([
+                'role_id' => 'نقش انتخاب‌شده متعلق به شرکت جاری نیست.',
+            ]);
+        }
+
+        $this->companyId = (int) $companyId;
+        $this->roleId = (int) $roleId;
+
         unset($data['role_id']);
 
         return $data;
@@ -39,16 +62,11 @@ class EditUser extends EditRecord
 
     protected function afterSave(): void
     {
-        $companyId = session('current_company_id') ?? Company::query()->value('id');
-
-        if ($companyId) {
-            $this->record->companies()->syncWithoutDetaching([
-                $companyId => [
-                    'role_id' => $this->roleId,
-                    'is_default' => true,
-                ],
-            ]);
-        }
+        $this->record->companies()->syncWithoutDetaching([
+            $this->companyId => [
+                'role_id' => $this->roleId,
+            ],
+        ]);
     }
 
     protected function getHeaderActions(): array
@@ -59,5 +77,7 @@ class EditUser extends EditRecord
         ];
     }
 
-    public mixed $roleId = null;
+    public ?int $companyId = null;
+
+    public ?int $roleId = null;
 }
