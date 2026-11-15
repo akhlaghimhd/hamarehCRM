@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Actions\Tasks\SaveTask;
 use App\Models\Activity;
+use App\Models\Customer;
+use App\Models\Opportunity;
+use App\Models\OpportunityStage;
 use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
@@ -85,8 +88,27 @@ class TaskTeamAccessTest extends TestCase
         $this->actingAs($manager);
         session(['current_company_id' => $company->id]);
 
+        $stage = OpportunityStage::query()->create([
+            'company_id' => $company->id,
+            'code' => 'new',
+            'name' => 'جدید',
+        ]);
+        $customer = Customer::query()->create([
+            'company_id' => $company->id,
+            'type' => Customer::TYPE_ORGANIZATION,
+            'name' => 'Audit customer',
+        ]);
+        $opportunity = Opportunity::query()->create([
+            'company_id' => $company->id,
+            'customer_id' => $customer->id,
+            'stage_id' => $stage->id,
+            'owner_user_id' => $manager->id,
+            'title' => 'Audit opportunity',
+        ]);
+
         $activity = Activity::query()->create([
             'company_id' => $company->id,
+            'opportunity_id' => $opportunity->id,
             'user_id' => $manager->id,
             'type' => Activity::TYPE_NOTE,
             'subject' => 'Initial subject',
