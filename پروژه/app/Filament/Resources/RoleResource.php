@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\ChecksResourcePermission;
-
 use App\Filament\Resources\RoleResource\Pages;
-use App\Models\Permission;
 use App\Models\Role;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -17,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class RoleResource extends Resource
@@ -48,6 +47,18 @@ class RoleResource extends Resource
     public static function getPluralModelLabel(): string
     {
         return 'نقش‌ها';
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $companyId = auth()->user()?->currentCompanyId();
+
+        if (! $companyId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where('company_id', $companyId);
     }
 
     public static function form(Schema $schema): Schema
@@ -106,7 +117,6 @@ class RoleResource extends Resource
                 ]),
             ]);
     }
-
 
     public static function getPages(): array
     {
