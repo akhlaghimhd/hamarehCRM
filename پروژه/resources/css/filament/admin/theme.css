@@ -3,11 +3,10 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 @import './hamareh-ds.css';
 @import './hamareh-ds-polish.css';
+@import './hamareh-ui-v2.css';
 
-/* Kinetics موقتاً غیرفعال
-@import '../../../../vendor/otatechie/filament-kinetics/resources/css/layers.css';
-@import '../../../../vendor/otatechie/filament-kinetics/resources/css/kinetics.css';
-*/
+/* Kinetics remains intentionally disabled until its navigation and layout
+   interactions are reviewed against the redesigned shell. */
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';

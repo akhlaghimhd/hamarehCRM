@@ -1,0 +1,339 @@
+/*
+ * Hamareh UI Foundation v2
+ * Centralized RTL design tokens and conservative Filament component styling.
+ * Legacy page styles are intentionally not deleted in this migration phase.
+ */
+
+@layer base {
+    :root {
+        color-scheme: light;
+        --hm-font: "Vazirmatn", Tahoma, ui-sans-serif, system-ui, sans-serif;
+        --hm-font-numeric: "Vazirmatn FD", "Vazirmatn", Tahoma, sans-serif;
+
+        --hm-canvas: #f4f6f8;
+        --hm-surface: #ffffff;
+        --hm-surface-raised: #ffffff;
+        --hm-surface-muted: #f8fafb;
+        --hm-surface-hover: #f1f6f6;
+        --hm-border: #e5e9ed;
+        --hm-border-strong: #d4dce2;
+
+        --hm-ink: #17242b;
+        --hm-ink-secondary: #52636d;
+        --hm-ink-muted: #788790;
+        --hm-primary: #087e78;
+        --hm-primary-hover: #066b66;
+        --hm-primary-soft: #e7f4f2;
+        --hm-success: #16845b;
+        --hm-success-soft: #e8f5ee;
+        --hm-warning: #a96a12;
+        --hm-warning-soft: #fff4df;
+        --hm-danger: #bd4652;
+        --hm-danger-soft: #fbecee;
+        --hm-info: #3976b8;
+        --hm-info-soft: #eaf2fb;
+
+        --hm-radius-xs: .375rem;
+        --hm-radius-sm: .55rem;
+        --hm-radius-md: .8rem;
+        --hm-radius-lg: 1rem;
+        --hm-radius-xl: 1.25rem;
+        --hm-shadow-xs: 0 1px 2px rgb(20 35 45 / 4%);
+        --hm-shadow-sm: 0 2px 8px rgb(20 35 45 / 5%);
+        --hm-shadow-md: 0 10px 28px rgb(20 35 45 / 8%);
+
+        --hm-space-1: .25rem;
+        --hm-space-2: .5rem;
+        --hm-space-3: .75rem;
+        --hm-space-4: 1rem;
+        --hm-space-5: 1.25rem;
+        --hm-space-6: 1.5rem;
+        --hm-touch: 2.75rem;
+        --hm-mobile-nav-space: 4.75rem;
+    }
+
+    .dark {
+        color-scheme: dark;
+        --hm-canvas: #10191d;
+        --hm-surface: #172328;
+        --hm-surface-raised: #1b2a30;
+        --hm-surface-muted: #1c2c32;
+        --hm-surface-hover: #24373d;
+        --hm-border: #2b3c43;
+        --hm-border-strong: #3b5058;
+
+        --hm-ink: #edf3f4;
+        --hm-ink-secondary: #bdcbd0;
+        --hm-ink-muted: #8fa2a9;
+        --hm-primary: #62cbbd;
+        --hm-primary-hover: #7bd9cc;
+        --hm-primary-soft: #193d3a;
+        --hm-success: #61c89b;
+        --hm-success-soft: #183a2e;
+        --hm-warning: #e5b968;
+        --hm-warning-soft: #40331d;
+        --hm-danger: #ed8991;
+        --hm-danger-soft: #42272c;
+        --hm-info: #85b9ed;
+        --hm-info-soft: #1e3449;
+
+        --hm-shadow-xs: 0 1px 2px rgb(0 0 0 / 16%);
+        --hm-shadow-sm: 0 2px 10px rgb(0 0 0 / 18%);
+        --hm-shadow-md: 0 12px 30px rgb(0 0 0 / 26%);
+    }
+}
+
+html {
+    direction: rtl;
+    background: var(--hm-canvas);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+.fi-body {
+    background: var(--hm-canvas);
+    color: var(--hm-ink);
+    font-family: var(--hm-font);
+}
+
+.fi-body,
+.fi-main,
+.fi-sidebar,
+.fi-topbar,
+.fi-modal,
+.fi-dropdown-panel,
+.fi-ta,
+.fi-fo,
+.fi-btn,
+input,
+select,
+textarea,
+button,
+label {
+    font-family: var(--hm-font);
+}
+
+.fi-ta-cell,
+.fi-ta-header-cell,
+.fi-pagination,
+.tabular-nums,
+[data-hm-num] {
+    font-family: var(--hm-font-numeric);
+    font-variant-numeric: tabular-nums;
+}
+
+.fi-main {
+    min-width: 0;
+}
+
+.fi-main-ctn {
+    min-width: 0;
+}
+
+.fi-header-heading {
+    color: var(--hm-ink);
+    font-weight: 750;
+    letter-spacing: -.025em;
+}
+
+.fi-breadcrumbs {
+    color: var(--hm-ink-muted);
+}
+
+.fi-section,
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat,
+.fi-in-section {
+    border-color: var(--hm-border);
+    border-radius: var(--hm-radius-lg);
+    background: var(--hm-surface);
+    box-shadow: var(--hm-shadow-xs);
+}
+
+.fi-section-header {
+    border-color: var(--hm-border);
+}
+
+.fi-section-header-heading,
+.fi-ta-header-cell,
+.fi-fo-field-wrp-label {
+    color: var(--hm-ink-secondary);
+}
+
+.fi-fo-field-wrp-label {
+    font-weight: 600;
+}
+
+.fi-input-wrp,
+.fi-select-input,
+.fi-fo-textarea,
+.fi-fo-rich-editor,
+.fi-fo-key-value,
+.fi-fo-builder {
+    border-color: var(--hm-border-strong);
+    border-radius: var(--hm-radius-sm);
+    background: var(--hm-surface);
+}
+
+.fi-input-wrp:focus-within {
+    border-color: var(--hm-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--hm-primary) 15%, transparent);
+}
+
+.fi-btn {
+    min-height: 2.4rem;
+    border-radius: var(--hm-radius-sm);
+    font-weight: 650;
+}
+
+.fi-btn-color-primary {
+    box-shadow: 0 2px 5px color-mix(in srgb, var(--hm-primary) 16%, transparent);
+}
+
+.fi-ta-header-cell {
+    background: var(--hm-surface-muted);
+    font-weight: 700;
+}
+
+.fi-ta-row {
+    transition: background-color 140ms ease;
+}
+
+.fi-ta-row:hover {
+    background: var(--hm-surface-hover);
+}
+
+.fi-badge {
+    font-weight: 650;
+}
+
+.fi-dropdown-panel,
+.fi-modal-window,
+.fi-modal-content {
+    border-color: var(--hm-border);
+    border-radius: var(--hm-radius-lg);
+    box-shadow: var(--hm-shadow-md);
+}
+
+.fi-sidebar {
+    border-inline-end-color: var(--hm-border);
+    background: var(--hm-surface);
+}
+
+.fi-sidebar-nav {
+    scrollbar-width: thin;
+}
+
+.fi-sidebar-item-button {
+    min-height: 2.55rem;
+    border-radius: var(--hm-radius-sm);
+}
+
+.fi-sidebar-item-active .fi-sidebar-item-button {
+    background: var(--hm-primary-soft);
+    color: var(--hm-primary);
+}
+
+.fi-topbar {
+    border-bottom: 1px solid var(--hm-border);
+    background: color-mix(in srgb, var(--hm-surface) 94%, transparent);
+    backdrop-filter: blur(12px);
+}
+
+.hm-ref,
+.mf-page,
+.sc-page {
+    color: var(--hm-ink);
+    font-family: var(--hm-font);
+}
+
+.hm-ref *,
+.mf-page *,
+.sc-page * {
+    box-sizing: border-box;
+}
+
+.hm-card,
+.hm-mcard,
+.mf-stat,
+.mf-col,
+.mf-card,
+.sc-card,
+.sc-option {
+    border-color: var(--hm-border);
+    border-radius: var(--hm-radius-md);
+    background: var(--hm-surface);
+    color: var(--hm-ink);
+    box-shadow: var(--hm-shadow-xs);
+}
+
+.hm-btn,
+.mf-btn,
+.sc-actions .fi-btn {
+    min-height: var(--hm-touch);
+    border-radius: var(--hm-radius-sm);
+    font-family: var(--hm-font);
+    font-weight: 650;
+}
+
+@media (max-width: 1023px) {
+    .fi-main {
+        padding-bottom: calc(var(--hm-mobile-nav-space) + env(safe-area-inset-bottom, 0px));
+    }
+
+    .fi-page {
+        min-width: 0;
+    }
+
+    .fi-header {
+        gap: .75rem;
+    }
+
+    .fi-header-heading {
+        font-size: 1.1rem;
+        line-height: 1.55;
+    }
+}
+
+@media (max-width: 639px) {
+    .fi-main {
+        padding-inline: .875rem;
+    }
+
+    .fi-section {
+        border-radius: var(--hm-radius-md);
+    }
+
+    .fi-section-content,
+    .fi-section-content-ctn {
+        padding: .9rem;
+    }
+
+    .fi-ta-content {
+        min-width: 0;
+    }
+
+    .hm-ref__intro,
+    .hm-card,
+    .mf-col,
+    .sc-card {
+        border-radius: var(--hm-radius-md);
+    }
+
+    .hm-grid--main {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
