@@ -40,4 +40,9 @@ class Company extends Model
     {
         return $this->hasMany(Customer::class);
     }
+
+    public function settings(): HasMany
+    {
+        return $this->hasMany(CompanySetting::class);
+    }
 }
