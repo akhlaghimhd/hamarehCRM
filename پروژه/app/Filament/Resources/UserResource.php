@@ -91,16 +91,34 @@ class UserResource extends Resource
                     ->dehydrated(fn ($state) => filled($state))
                     ->required(fn (string $operation) => $operation === 'create')
                     ->maxLength(255),
-                Select::make('role_id')
-                    ->label('نقش در شرکت جاری')
+                Select::make('role_ids')
+                    ->label('نقش‌های کاربر در شرکت جاری')
                     ->options(
                         Role::query()
                             ->where('company_id', $companyId ?? 0)
+                            ->orderBy('label')
                             ->pluck('label', 'id')
                     )
+                    ->multiple()
                     ->searchable()
-                    ->required()
-                    ->dehydrated(true),
+                    ->preload()
+                    ->required(),
+                Select::make('manager_user_id')
+                    ->label('مدیر مستقیم')
+                    ->options(
+                        User::query()
+                            ->where('is_active', true)
+                            ->whereHas(
+                                'companies',
+                                fn (Builder $query) => $query->where('companies.id', $companyId ?? 0),
+                            )
+                            ->orderBy('name')
+                            ->pluck('name', 'id')
+                    )
+                    ->searchable()
+                    ->preload()
+                    ->nullable()
+                    ->helperText('مدیر باید عضو فعال همین شرکت باشد. چرخه سرپرستی در زمان ذخیره کنترل می‌شود.'),
                 Toggle::make('is_active')
                     ->label('فعال')
                     ->default(true),
@@ -121,6 +139,10 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->label('ایمیل')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('companies_count')
+                    ->label('شرکت‌ها')
+                    ->counts('companies')
+                    ->toggleable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('فعال')
                     ->boolean(),

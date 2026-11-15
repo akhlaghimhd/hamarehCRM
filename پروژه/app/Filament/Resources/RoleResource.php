@@ -9,6 +9,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -63,6 +64,8 @@ class RoleResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
+        $companyId = auth()->user()?->currentCompanyId();
+
         return $schema
             ->components([
                 TextInput::make('name')
@@ -74,16 +77,43 @@ class RoleResource extends Resource
                     ->label('عنوان نمایشی')
                     ->required()
                     ->maxLength(100),
+                Select::make('parent_role_id')
+                    ->label('نقش والد')
+                    ->options(
+                        Role::query()
+                            ->where('company_id', $companyId ?? 0)
+                            ->orderBy('label')
+                            ->pluck('label', 'id')
+                    )
+                    ->searchable()
+                    ->preload()
+                    ->nullable()
+                    ->helperText('نقش والد باید متعلق به همین شرکت باشد.'),
+                Toggle::make('inherit_permissions')
+                    ->label('ارث‌بری مجوزهای نقش والد')
+                    ->default(true),
+                Select::make('copy_permissions_from_role_id')
+                    ->label('کپی اولیه مجوزها از نقش')
+                    ->options(
+                        Role::query()
+                            ->where('company_id', $companyId ?? 0)
+                            ->orderBy('label')
+                            ->pluck('label', 'id')
+                    )
+                    ->searchable()
+                    ->nullable()
+                    ->visible(fn (string $operation): bool => $operation === 'create')
+                    ->helperText('فقط یک کپی مستقل در زمان ایجاد انجام می‌شود؛ تغییرات بعدی منبع منتقل نمی‌شوند.'),
                 Toggle::make('is_system')
                     ->label('نقش سیستمی')
                     ->helperText('نقش‌های سیستمی معمولاً حذف نمی‌شوند')
                     ->disabled(fn (?Role $record) => $record?->is_system),
                 CheckboxList::make('permissions')
-                    ->label('مجوزها')
+                    ->label('مجوزهای مستقیم')
                     ->relationship('permissions', 'label')
                     ->columns(2)
                     ->bulkToggleable()
-                    ->helperText('مجوزها فقط از لیست Seed قابل انتخاب هستند'),
+                    ->helperText('مجوزهای مستقیم مستقل از مجوزهای ارث‌رسیده هستند.'),
             ]);
     }
 
@@ -98,9 +128,15 @@ class RoleResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->label('نام سیستمی')
                     ->badge(),
+                Tables\Columns\TextColumn::make('parentRole.label')
+                    ->label('نقش والد')
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('permissions_count')
                     ->counts('permissions')
-                    ->label('تعداد مجوز'),
+                    ->label('تعداد مجوز مستقیم'),
+                Tables\Columns\IconColumn::make('inherit_permissions')
+                    ->label('ارث‌بری')
+                    ->boolean(),
                 Tables\Columns\IconColumn::make('is_system')
                     ->label('سیستمی')
                     ->boolean(),

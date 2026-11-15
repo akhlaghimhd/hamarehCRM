@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Identity\UpdateCompanyMembership;
+use App\Actions\Identity\UpdateRoleHierarchy;
 use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
@@ -52,6 +53,49 @@ class UserRoleHierarchyTest extends TestCase
         $this->assertTrue($user->hasPermission('customers.view'));
         $this->assertTrue($user->hasPermission('inventory.view'));
         $this->assertFalse($user->hasPermission('orders.delete'));
+    }
+
+    public function test_permission_copy_is_a_snapshot_independent_from_later_source_changes(): void
+    {
+        $company = $this->createCompany('one');
+        $source = $this->createRole($company, 'source');
+        $child = $this->createRole($company, 'child');
+        $firstPermission = $this->createPermission('customers.view');
+        $laterPermission = $this->createPermission('orders.view');
+        $source->permissions()->attach($firstPermission);
+
+        app(UpdateRoleHierarchy::class)->handle($child, null, false, $source->id);
+
+        $this->assertTrue($child->fresh()->permissions()->whereKey($firstPermission->id)->exists());
+
+        $source->permissions()->attach($laterPermission);
+
+        $this->assertFalse($child->fresh()->permissions()->whereKey($laterPermission->id)->exists());
+        $this->assertEqualsCanonicalizing(
+            [$firstPermission->id],
+            $child->fresh()->effectivePermissionIds()->all(),
+        );
+    }
+
+    public function test_role_parent_cannot_create_a_cycle(): void
+    {
+        $company = $this->createCompany('one');
+        $parent = $this->createRole($company, 'parent');
+        $child = $this->createRole($company, 'child', $parent);
+
+        $this->expectException(ValidationException::class);
+        app(UpdateRoleHierarchy::class)->handle($parent, $child->id, true);
+    }
+
+    public function test_role_parent_cannot_cross_company_boundary(): void
+    {
+        $company = $this->createCompany('one');
+        $otherCompany = $this->createCompany('two');
+        $child = $this->createRole($company, 'child');
+        $foreignRole = $this->createRole($otherCompany, 'foreign');
+
+        $this->expectException(ValidationException::class);
+        app(UpdateRoleHierarchy::class)->handle($child, $foreignRole->id, true);
     }
 
     public function test_membership_manager_tree_is_company_scoped_and_keeps_manager_change_history(): void

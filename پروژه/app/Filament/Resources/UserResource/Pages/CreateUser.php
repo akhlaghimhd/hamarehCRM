@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Actions\Identity\UpdateCompanyMembership;
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
 use Filament\Resources\Pages\CreateRecord;
@@ -16,27 +17,29 @@ class CreateUser extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $companyId = auth()->user()?->currentCompanyId();
-        $roleId = $data['role_id'] ?? null;
+        $roleIds = array_values(array_unique(array_map('intval', $data['role_ids'] ?? [])));
+        $managerUserId = filled($data['manager_user_id'] ?? null) ? (int) $data['manager_user_id'] : null;
 
         if (! $companyId) {
             throw ValidationException::withMessages([
-                'role_id' => 'شرکت جاری معتبر نیست؛ ابتدا شرکت مجاز را انتخاب کنید.',
+                'role_ids' => 'شرکت جاری معتبر نیست؛ ابتدا شرکت مجاز را انتخاب کنید.',
             ]);
         }
 
-        if (! $roleId || ! Role::query()
+        if ($roleIds === [] || Role::query()
             ->where('company_id', $companyId)
-            ->whereKey($roleId)
-            ->exists()) {
+            ->whereIn('id', $roleIds)
+            ->count() !== count($roleIds)) {
             throw ValidationException::withMessages([
-                'role_id' => 'نقش انتخاب‌شده متعلق به شرکت جاری نیست.',
+                'role_ids' => 'حداقل یک نقش معتبر از شرکت جاری انتخاب کنید.',
             ]);
         }
 
         $this->companyId = (int) $companyId;
-        $this->roleId = (int) $roleId;
+        $this->roleIds = $roleIds;
+        $this->managerUserId = $managerUserId;
 
-        unset($data['role_id']);
+        unset($data['role_ids'], $data['manager_user_id']);
 
         return $data;
     }
@@ -45,13 +48,24 @@ class CreateUser extends CreateRecord
     {
         $this->record->companies()->syncWithoutDetaching([
             $this->companyId => [
-                'role_id' => $this->roleId,
+                'role_id' => $this->roleIds[0],
                 'is_default' => true,
             ],
         ]);
+
+        app(UpdateCompanyMembership::class)->handle(
+            $this->companyId,
+            (int) $this->record->id,
+            $this->roleIds,
+            $this->managerUserId,
+            auth()->id(),
+        );
     }
 
     public ?int $companyId = null;
 
-    public ?int $roleId = null;
+    /** @var array<int, int> */
+    public array $roleIds = [];
+
+    public ?int $managerUserId = null;
 }

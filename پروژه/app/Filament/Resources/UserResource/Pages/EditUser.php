@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\UserResource\Pages;
 
+use App\Actions\Identity\UpdateCompanyMembership;
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class EditUser extends EditRecord
@@ -19,11 +21,26 @@ class EditUser extends EditRecord
         $companyId = auth()->user()?->currentCompanyId();
 
         if ($companyId) {
-            $pivot = $this->record->companies()
-                ->where('companies.id', $companyId)
-                ->first()?->pivot;
+            $membership = DB::table('company_user')
+                ->where('company_id', $companyId)
+                ->where('user_id', $this->record->id)
+                ->first();
 
-            $data['role_id'] = $pivot?->role_id;
+            $roleIds = $membership
+                ? DB::table('company_user_role')
+                    ->where('company_user_id', $membership->id)
+                    ->orderBy('id')
+                    ->pluck('role_id')
+                    ->map(fn ($id): int => (int) $id)
+                    ->all()
+                : [];
+
+            if ($roleIds === [] && $membership?->role_id) {
+                $roleIds = [(int) $membership->role_id];
+            }
+
+            $data['role_ids'] = $roleIds;
+            $data['manager_user_id'] = $membership?->manager_user_id;
         }
 
         return $data;
@@ -32,40 +49,44 @@ class EditUser extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $companyId = auth()->user()?->currentCompanyId();
-        $roleId = $data['role_id'] ?? null;
+        $roleIds = array_values(array_unique(array_map('intval', $data['role_ids'] ?? [])));
+        $managerUserId = filled($data['manager_user_id'] ?? null) ? (int) $data['manager_user_id'] : null;
 
         if (! $companyId || ! $this->record->companies()
             ->where('companies.id', $companyId)
             ->exists()) {
             throw ValidationException::withMessages([
-                'role_id' => 'عضویت کاربر در شرکت جاری معتبر نیست.',
+                'role_ids' => 'عضویت کاربر در شرکت جاری معتبر نیست.',
             ]);
         }
 
-        if (! $roleId || ! Role::query()
+        if ($roleIds === [] || Role::query()
             ->where('company_id', $companyId)
-            ->whereKey($roleId)
-            ->exists()) {
+            ->whereIn('id', $roleIds)
+            ->count() !== count($roleIds)) {
             throw ValidationException::withMessages([
-                'role_id' => 'نقش انتخاب‌شده متعلق به شرکت جاری نیست.',
+                'role_ids' => 'حداقل یک نقش معتبر از شرکت جاری انتخاب کنید.',
             ]);
         }
 
         $this->companyId = (int) $companyId;
-        $this->roleId = (int) $roleId;
+        $this->roleIds = $roleIds;
+        $this->managerUserId = $managerUserId;
 
-        unset($data['role_id']);
+        unset($data['role_ids'], $data['manager_user_id']);
 
         return $data;
     }
 
     protected function afterSave(): void
     {
-        $this->record->companies()->syncWithoutDetaching([
-            $this->companyId => [
-                'role_id' => $this->roleId,
-            ],
-        ]);
+        app(UpdateCompanyMembership::class)->handle(
+            $this->companyId,
+            (int) $this->record->id,
+            $this->roleIds,
+            $this->managerUserId,
+            auth()->id(),
+        );
     }
 
     protected function getHeaderActions(): array
@@ -77,5 +98,8 @@ class EditUser extends EditRecord
 
     public ?int $companyId = null;
 
-    public ?int $roleId = null;
+    /** @var array<int, int> */
+    public array $roleIds = [];
+
+    public ?int $managerUserId = null;
 }
