@@ -243,15 +243,13 @@ label {
 }
 
 .hm-ref,
-.mf-page,
-.sc-page {
+.mf-page {
     color: var(--hm-ink);
     font-family: var(--hm-font);
 }
 
 .hm-ref *,
-.mf-page *,
-.sc-page * {
+.mf-page * {
     box-sizing: border-box;
 }
 
@@ -259,9 +257,7 @@ label {
 .hm-mcard,
 .mf-stat,
 .mf-col,
-.mf-card,
-.sc-card,
-.sc-option {
+.mf-card {
     border-color: var(--hm-border);
     border-radius: var(--hm-radius-md);
     background: var(--hm-surface);
@@ -270,8 +266,7 @@ label {
 }
 
 .hm-btn,
-.mf-btn,
-.sc-actions .fi-btn {
+.mf-btn {
     min-height: var(--hm-touch);
     border-radius: var(--hm-radius-sm);
     font-family: var(--hm-font);

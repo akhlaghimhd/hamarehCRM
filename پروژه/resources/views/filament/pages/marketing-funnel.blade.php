@@ -30,7 +30,7 @@
         <div class="-mx-1 overflow-x-auto pb-3">
             <div class="flex min-w-max items-start gap-3 px-1">
                 @foreach ($columns as $column)
-                    <section class="w-[ min(82vw,19rem)] w-[19rem] overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-950/60">
+                    <section class="w-[19rem] overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-950/60">
                         <header class="border-b border-gray-200 p-4 dark:border-gray-700">
                             <div class="flex items-start justify-between gap-3">
                                 <div class="min-w-0">
