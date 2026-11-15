@@ -22,18 +22,23 @@ class TaskTeamAccessTest extends TestCase
     {
         [$company, $manager, $staff, $outsider, $role] = $this->fixture();
         $this->grant($role, ['tasks.view', 'team.tasks.view']);
+        $grandchild = User::factory()->create();
+        $grandchild->companies()->attach($company->id, ['role_id' => $role->id, 'is_default' => true]);
         DB::table('company_user')->where('company_id', $company->id)->where('user_id', $staff->id)->update(['manager_user_id' => $manager->id]);
+        DB::table('company_user')->where('company_id', $company->id)->where('user_id', $grandchild->id)->update(['manager_user_id' => $staff->id]);
 
         $this->actingAs($manager);
         session(['current_company_id' => $company->id]);
 
         $own = Task::query()->create(['company_id' => $company->id, 'subject' => 'Mine', 'assignee_user_id' => $manager->id, 'reporter_user_id' => $manager->id]);
         $team = Task::query()->create(['company_id' => $company->id, 'subject' => 'Team', 'assignee_user_id' => $staff->id, 'reporter_user_id' => $manager->id]);
+        $indirect = Task::query()->create(['company_id' => $company->id, 'subject' => 'Indirect team', 'assignee_user_id' => $grandchild->id, 'reporter_user_id' => $manager->id]);
 
         $visibleIds = TaskResource::getEloquentQuery()->pluck('id');
         $this->assertContains($own->id, $visibleIds);
         $this->assertContains($team->id, $visibleIds);
-        $this->assertSame(2, $visibleIds->count());
+        $this->assertContains($indirect->id, $visibleIds);
+        $this->assertSame(3, $visibleIds->count());
     }
 
     public function test_task_assignment_cannot_cross_company_membership(): void
