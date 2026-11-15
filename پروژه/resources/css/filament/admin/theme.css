@@ -1,12 +1,7 @@
 @import 'tailwindcss';
 
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
-@import './hamareh-ds.css';
-@import './hamareh-ds-polish.css';
 @import './hamareh-ui-v2.css';
-
-/* Kinetics remains intentionally disabled until its navigation and layout
-   interactions are reviewed against the redesigned shell. */
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
