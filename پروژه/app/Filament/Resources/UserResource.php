@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\ChecksResourcePermission;
-
 use App\Filament\Resources\UserResource\Pages;
-use App\Models\Company;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Actions\BulkActionGroup;
@@ -19,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Hash;
 use UnitEnum;
 
@@ -53,9 +52,24 @@ class UserResource extends Resource
         return 'کاربران';
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $companyId = auth()->user()?->currentCompanyId();
+
+        if (! $companyId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereHas(
+            'companies',
+            fn (Builder $query) => $query->where('companies.id', $companyId),
+        );
+    }
+
     public static function form(Schema $schema): Schema
     {
-        $companyId = session('current_company_id') ?? Company::query()->value('id');
+        $companyId = auth()->user()?->currentCompanyId();
 
         return $schema
             ->components([
@@ -83,7 +97,7 @@ class UserResource extends Resource
                     ->label('نقش در شرکت جاری')
                     ->options(
                         Role::query()
-                            ->when($companyId, fn ($q) => $q->where('company_id', $companyId))
+                            ->where('company_id', $companyId ?? 0)
                             ->pluck('label', 'id')
                     )
                     ->searchable()
@@ -127,7 +141,6 @@ class UserResource extends Resource
                 ]),
             ]);
     }
-
 
     public static function getPages(): array
     {
