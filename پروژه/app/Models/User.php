@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Models;
+namespace App\\Models;
 
-use Database\Factories\UserFactory;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Database\\Factories\\UserFactory;
+use Filament\\Models\\Contracts\\FilamentUser;
+use Filament\\Panel;
+use Illuminate\\Database\\Eloquent\\Attributes\\Fillable;
+use Illuminate\\Database\\Eloquent\\Attributes\\Hidden;
+use Illuminate\\Database\\Eloquent\\Factories\\HasFactory;
+use Illuminate\\Database\\Eloquent\\Relations\\BelongsToMany;
+use Illuminate\\Database\\Eloquent\\SoftDeletes;
+use Illuminate\\Foundation\\Auth\\User as Authenticatable;
+use Illuminate\\Notifications\\Notifiable;
 
 #[Fillable(['name', 'username', 'email', 'password', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
@@ -43,8 +43,17 @@ class User extends Authenticatable implements FilamentUser
 
     public function currentCompanyId(): ?int
     {
-        return session('current_company_id')
-            ?? $this->defaultCompany()?->id;
+        $selectedCompanyId = session('current_company_id');
+
+        if ($selectedCompanyId !== null) {
+            return $this->companies()
+                ->where('companies.id', $selectedCompanyId)
+                ->exists()
+                    ? (int) $selectedCompanyId
+                    : null;
+        }
+
+        return $this->defaultCompany()?->id;
     }
 
     public function currentRole(): ?Role
@@ -59,7 +68,13 @@ class User extends Authenticatable implements FilamentUser
             ->where('companies.id', $companyId)
             ->first()?->pivot?->role_id;
 
-        return $roleId ? Role::query()->find($roleId) : null;
+        if (! $roleId) {
+            return null;
+        }
+
+        return Role::query()
+            ->where('company_id', $companyId)
+            ->find($roleId);
     }
 
     public function isCompanyAdmin(): bool
@@ -88,7 +103,6 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->companies()
             ->wherePivot('is_default', true)
-            ->first()
-            ?? $this->companies()->first();
+            ->first();
     }
 }
