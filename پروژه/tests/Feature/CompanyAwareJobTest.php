@@ -23,16 +23,16 @@ class CompanyAwareJobTest extends TestCase
         $job = new TestCompanyAwareJob($companyA->id);
         $seenCompanyId = null;
 
-        (new ResolveCompanyContext)->handle($job, function () use (&$seenCompanyId): string {
+        $result = (new ResolveCompanyContext)->handle($job, function () use (&$seenCompanyId): string {
             $seenCompanyId = app(CompanyContext::class)->requireCompanyId();
 
             return 'handled';
         });
 
-        $this->assertSame('handled', 'handled');
+        $this->assertSame('handled', $result);
         $this->assertSame($companyA->id, $seenCompanyId);
         $this->assertSame($companyB->id, session('current_company_id'));
-        $this->assertNull(app(CompanyContext::class)->currentCompanyId());
+        $this->assertSame($companyB->id, app(CompanyContext::class)->currentCompanyId());
     }
 
     public function test_job_context_is_restored_after_job_throws(): void
