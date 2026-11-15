@@ -12,14 +12,22 @@ trait BelongsToCompany
 {
     public static function bootBelongsToCompany(): void
     {
-        static::creating(function ($model): void {
+        static::saving(function ($model): void {
             $companyId = app(CompanyContext::class)->requireCompanyId();
 
-            if (! empty($model->company_id) && (int) $model->company_id !== $companyId) {
-                throw new RuntimeException('ثبت اطلاعات برای شرکتی غیر از شرکت جاری مجاز نیست.');
+            if (! $model->exists) {
+                if (! empty($model->company_id) && (int) $model->company_id !== $companyId) {
+                    throw new RuntimeException('ثبت اطلاعات برای شرکتی غیر از شرکت جاری مجاز نیست.');
+                }
+
+                $model->company_id = $companyId;
+
+                return;
             }
 
-            $model->company_id = $companyId;
+            if ((int) $model->company_id !== $companyId) {
+                throw new RuntimeException('ویرایش اطلاعات خارج از شرکت جاری مجاز نیست.');
+            }
         });
 
         static::addGlobalScope('company', function (Builder $builder): void {
