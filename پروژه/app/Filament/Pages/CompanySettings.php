@@ -38,6 +38,8 @@ class CompanySettings extends Page
 
     public bool $sensitive = false;
 
+    public string $validationRules = '';
+
     public static function canAccess(): bool
     {
         $user = auth()->user();
@@ -62,6 +64,7 @@ class CompanySettings extends Page
         $this->key = $setting->key;
         $this->type = $setting->type;
         $this->sensitive = (bool) $setting->is_sensitive;
+        $this->validationRules = json_encode($setting->validation_rules ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
         // Never put an existing secret back into the browser's Livewire state.
         $currentValue = $this->sensitive
@@ -86,6 +89,7 @@ class CompanySettings extends Page
             'key' => ['required', 'string', 'max:100', 'regex:/^[a-z][a-z0-9_.-]{1,99}$/'],
             'type' => ['required', 'in:string,integer,boolean,decimal,json'],
             'value' => ['required', 'string'],
+            'validationRules' => ['nullable', 'string'],
         ], [
             'key.regex' => 'کلید باید با حرف انگلیسی کوچک شروع شود و فقط شامل حروف کوچک، عدد، نقطه، خط تیره یا زیرخط باشد.',
             'type.in' => 'نوع داده انتخاب‌شده معتبر نیست.',
@@ -114,12 +118,29 @@ class CompanySettings extends Page
             return;
         }
 
+        try {
+            $validationRules = blank($this->validationRules)
+                ? []
+                : json_decode($this->validationRules, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException) {
+            $this->addError('validationRules', 'قواعد اعتبارسنجی باید JSON معتبر باشند.');
+
+            return;
+        }
+
+        if (! is_array($validationRules) || ! array_is_list($validationRules)
+            || collect($validationRules)->contains(fn ($rule) => ! is_string($rule) || trim($rule) === '')) {
+            $this->addError('validationRules', 'قواعد باید آرایه‌ای از رشته‌ها باشند.');
+
+            return;
+        }
+
         app(CompanySettingsService::class)->set(
             app(CompanyContext::class)->requireCompanyId(),
             $this->key,
             $this->type,
             $parsedValue,
-            [],
+            $validationRules,
             $this->sensitive,
         );
 
@@ -180,7 +201,7 @@ class CompanySettings extends Page
 
     private function resetEditor(): void
     {
-        $this->reset(['editingSettingId', 'key', 'value', 'sensitive']);
+        $this->reset(['editingSettingId', 'key', 'value', 'sensitive', 'validationRules']);
         $this->type = 'string';
         $this->resetValidation();
     }

@@ -91,6 +91,13 @@
                         @error('value') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
                     </div>
 
+                    <div>
+                        <label for="setting-validation-rules" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">قواعد اعتبارسنجی (اختیاری)</label>
+                        <textarea id="setting-validation-rules" wire:model="validationRules" rows="3" dir="ltr" placeholder='["min:1","max:100"]' class="w-full rounded-lg border-gray-300 bg-white font-mono text-left text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white"></textarea>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">قواعد را به‌شکل آرایه JSON از رشته‌های قواعد Laravel وارد کنید.</p>
+                        @error('validationRules') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
+                    </div>
+
                     <label class="flex items-start gap-3 rounded-xl border border-gray-200 p-3 dark:border-gray-700">
                         <input type="checkbox" wire:model="sensitive" class="mt-0.5 size-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
                         <span>
