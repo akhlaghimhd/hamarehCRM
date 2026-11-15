@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\Activity;
 use App\Models\Attachment;
+use App\Models\Order;
+use App\Models\Quote;
 use App\Models\Task;
 use App\Observers\AuditObserver;
 use App\Policies\ActivityPolicy;
@@ -27,9 +29,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(Activity::class, ActivityPolicy::class);
-        Gate::policy(Task::class, TaskPolicy::class);
         Gate::policy(Attachment::class, AttachmentPolicy::class);
+        Gate::policy(Task::class, TaskPolicy::class);
+
         Activity::observe(AuditObserver::class);
+        Order::observe(AuditObserver::class);
+        Quote::observe(AuditObserver::class);
         Task::observe(AuditObserver::class);
 
         FilamentView::registerRenderHook(

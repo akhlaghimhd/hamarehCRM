@@ -4,6 +4,8 @@ namespace App\Observers;
 
 use App\Models\Activity;
 use App\Models\AuditEvent;
+use App\Models\Order;
+use App\Models\Quote;
 use App\Models\Task;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -27,6 +29,16 @@ class AuditObserver
             'opportunity_id', 'opportunity_step_id', 'user_id', 'type',
             'subject', 'body', 'due_at', 'completed_at', 'is_done',
         ],
+        Quote::class => [
+            'customer_id', 'opportunity_id', 'owner_user_id', 'number',
+            'title', 'status', 'valid_until', 'subtotal', 'discount_amount',
+            'tax_amount', 'total', 'currency', 'accepted_at', 'converted_at',
+        ],
+        Order::class => [
+            'customer_id', 'quote_id', 'opportunity_id', 'owner_user_id',
+            'number', 'title', 'status', 'subtotal', 'discount_amount',
+            'tax_amount', 'total', 'currency', 'confirmed_at',
+        ],
     ];
 
     /** @var WeakMap<Model, array<string, mixed>>|null */
@@ -49,6 +61,7 @@ class AuditObserver
 
         if ($new === []) {
             unset(self::$before[$model]);
+
             return;
         }
 
