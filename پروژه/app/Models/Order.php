@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
+use App\Support\NumberSequence;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -87,20 +88,10 @@ class Order extends Model
     public static function nextNumber(int $companyId): string
     {
         $year = now()->format('Y');
-        $prefix = 'O-' . $year . '-';
-        $last = static::query()
-            ->where('company_id', $companyId)
-            ->where('number', 'like', $prefix . '%')
-            ->orderByDesc('number')
-            ->value('number');
 
-        $seq = 1;
-        if ($last && preg_match('/(\d+)$/', $last, $m)) {
-            $seq = (int) $m[1] + 1;
-        }
-
-        return $prefix . str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+        return app(NumberSequence::class)->next($companyId, 'order', 'O-'.$year.'-');
     }
+
 
     public static function fromQuote(Quote $quote): self
     {

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\QuoteResource\Pages;
 
 use App\Filament\Resources\QuoteResource;
 use App\Models\Quote;
+use App\Support\CompanyContext;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateQuote extends CreateRecord
@@ -16,11 +17,9 @@ class CreateQuote extends CreateRecord
     {
         $data['owner_user_id'] = $data['owner_user_id'] ?? auth()->id();
         $data['status'] = $data['status'] ?? Quote::STATUS_DRAFT;
-        $companyId = session('current_company_id') ?? auth()->user()?->currentCompanyId();
-        if ($companyId) {
-            $data['number'] = Quote::nextNumber((int) $companyId);
-            $data['company_id'] = $companyId;
-        }
+        $companyId = app(CompanyContext::class)->requireCompanyId();
+        $data['number'] = Quote::nextNumber($companyId);
+        $data['company_id'] = $companyId;
 
         return $data;
     }
