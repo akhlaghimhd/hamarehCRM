@@ -24,8 +24,12 @@ return new class extends Migration
             'other' => 'other',
         ];
 
-        // موقتاً به text برای JSON امن
-        DB::statement('ALTER TABLE opportunities MODIFY product_interest TEXT NULL');
+        // SQLite در تست‌ها از ALTER ... MODIFY پشتیبانی نمی‌کند؛ ستون متنی برای JSON کافی است.
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
+        if (! $isSqlite) {
+            DB::statement('ALTER TABLE opportunities MODIFY product_interest TEXT NULL');
+        }
 
         foreach ($rows as $row) {
             $raw = trim((string) $row->product_interest);
@@ -38,8 +42,10 @@ return new class extends Migration
             ]);
         }
 
-        // MariaDB / MySQL JSON
-        DB::statement('ALTER TABLE opportunities MODIFY product_interest JSON NULL');
+        // MariaDB / MySQL از نوع بومی JSON استفاده می‌کنند؛ SQLite مقدار JSON را در ستون متنی نگه می‌دارد.
+        if (! $isSqlite) {
+            DB::statement('ALTER TABLE opportunities MODIFY product_interest JSON NULL');
+        }
     }
 
     public function down(): void
@@ -50,7 +56,11 @@ return new class extends Migration
 
         $rows = DB::table('opportunities')->whereNotNull('product_interest')->get(['id', 'product_interest']);
 
-        DB::statement('ALTER TABLE opportunities MODIFY product_interest VARCHAR(255) NULL');
+        $isSqlite = DB::connection()->getDriverName() === 'sqlite';
+
+        if (! $isSqlite) {
+            DB::statement('ALTER TABLE opportunities MODIFY product_interest VARCHAR(255) NULL');
+        }
 
         foreach ($rows as $row) {
             $decoded = json_decode((string) $row->product_interest, true);
