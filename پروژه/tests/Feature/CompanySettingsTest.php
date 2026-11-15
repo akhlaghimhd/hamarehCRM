@@ -6,6 +6,7 @@ use App\Models\Company;
 use App\Models\CompanySetting;
 use App\Models\Role;
 use App\Models\User;
+use App\Filament\Pages\CompanySettings as CompanySettingsPage;
 use App\Support\CompanySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
@@ -99,6 +100,21 @@ class CompanySettingsTest extends TestCase
         $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
 
         app(CompanySettings::class)->set($company->id, 'sales.default_currency', 'string', 'IRR');
+    }
+
+    public function test_only_active_company_admin_can_access_settings_page(): void
+    {
+        [$company, , $admin] = $this->fixture();
+        $this->actingAs($admin);
+        session(['current_company_id' => $company->id]);
+
+        $this->assertTrue(CompanySettingsPage::canAccess());
+
+        $staff = User::factory()->create();
+        $staff->companies()->attach($company->id, ['is_default' => true]);
+        $this->actingAs($staff);
+
+        $this->assertFalse(CompanySettingsPage::canAccess());
     }
 
     private function fixture(): array
