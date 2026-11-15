@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Gate::policy(Activity::class, ActivityPolicy::class);
+        Gate::policy(Activity::class, ActivityPolicy::class);\n        Gate::policy(Task::class, TaskPolicy::class);\n        Activity::observe(ActivityAuditObserver::class);\n        Task::observe(AuditObserver::class);
 
         FilamentView::registerRenderHook(
             PanelsRenderHook::HEAD_END,

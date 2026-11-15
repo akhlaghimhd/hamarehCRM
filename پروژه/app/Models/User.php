@@ -219,6 +219,36 @@ class User extends Authenticatable implements FilamentUser
             && $this->managedUserIds()->contains($ownerUserId);
     }
 
+    public function canViewTaskOwner(int $ownerUserId): bool
+    {
+        $companyId = $this->currentCompanyId();
+        if (! $companyId || ! DB::table('company_user')->where('company_id', $companyId)->where('user_id', $ownerUserId)->exists()) {
+            return false;
+        }
+        if ($this->isCompanyAdmin()) {
+            return true;
+        }
+        if ($ownerUserId === (int) $this->id) {
+            return $this->hasPermission('tasks.view');
+        }
+        return $this->hasPermission('team.tasks.view') && $this->managedUserIds()->contains($ownerUserId);
+    }
+
+    public function canManageTaskOwner(int $ownerUserId): bool
+    {
+        $companyId = $this->currentCompanyId();
+        if (! $companyId || ! DB::table('company_user')->where('company_id', $companyId)->where('user_id', $ownerUserId)->exists()) {
+            return false;
+        }
+        if ($this->isCompanyAdmin()) {
+            return true;
+        }
+        if ($ownerUserId === (int) $this->id) {
+            return $this->hasPermission('tasks.update');
+        }
+        return $this->hasPermission('team.tasks.manage') && $this->managedUserIds()->contains($ownerUserId);
+    }
+
     public function defaultCompany(): ?Company
     {
         return $this->companies()

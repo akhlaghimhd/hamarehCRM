@@ -27,7 +27,7 @@ class FoundationSeeder extends Seeder
             ['name' => 'activities.view', 'label' => 'مشاهده فعالیت‌ها', 'group' => 'بازاریابی'],
             ['name' => 'activities.manage', 'label' => 'مدیریت فعالیت‌ها', 'group' => 'بازاریابی'],
             ['name' => 'team.activities.view', 'label' => 'مشاهده فعالیت‌های تیم', 'group' => 'مدیریت تیم'],
-            ['name' => 'team.activities.manage', 'label' => 'مدیریت فعالیت‌های تیم', 'group' => 'مدیریت تیم'],
+            ['name' => 'team.activities.manage', 'label' => 'مدیریت فعالیت‌های تیم', 'group' => 'مدیریت تیم'],\n            ['name' => 'tasks.view', 'label' => 'مشاهده کارهای من', 'group' => 'مدیریت تیم'],\n            ['name' => 'tasks.create', 'label' => 'ایجاد کار', 'group' => 'مدیریت تیم'],\n            ['name' => 'tasks.update', 'label' => 'ویرایش کارهای من', 'group' => 'مدیریت تیم'],\n            ['name' => 'team.tasks.view', 'label' => 'مشاهده کارهای تیم', 'group' => 'مدیریت تیم'],\n            ['name' => 'team.tasks.manage', 'label' => 'مدیریت کارهای تیم', 'group' => 'مدیریت تیم'],\n            ['name' => 'team.tasks.assign', 'label' => 'ارجاع کار به تیم', 'group' => 'مدیریت تیم'],
         ];
 
         foreach ($permissions as $permission) {
