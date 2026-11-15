@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Concerns\ChecksResourcePermission;
+use App\Filament\Resources\InsertGuidelineResource\Pages;
+use App\Models\InsertGuideline;
+use App\Models\ProductLine;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
+use UnitEnum;
+
+class InsertGuidelineResource extends Resource
+{
+public static function shouldRegisterNavigation(): bool
+    {
+        return true;
+    }
+
+
+    use ChecksResourcePermission;
+protected static ?string $permissionView = 'products.view';
+    protected static ?string $permissionManage = 'products.manage';
+    protected static ?string $model = InsertGuideline::class;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationLabel = 'راهنمای لت';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static ?string $modelLabel = 'راهنما';
+    protected static ?string $pluralModelLabel = 'راهنماهای لت';
+    protected static ?int $navigationSort = 9;
+
+    
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $notopiaId = \App\Models\ProductLine::query()->where('code', 'notopia')->value('id');
+        if ($notopiaId && in_array('product_line_id', (new (static::getModel()))->getFillable(), true)) {
+            $query->where('product_line_id', $notopiaId);
+        }
+        return $query;
+    }
+
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Select::make('product_line_id')->label('خط محصول')
+                ->options(fn () => ProductLine::query()->pluck('name', 'id')),
+            TextInput::make('title')->label('عنوان')->required(),
+            Textarea::make('body')->label('متن راهنما')->rows(6)->required()->columnSpanFull(),
+            Select::make('audience')->label('مخاطب')->options([
+                'sales' => 'فروش',
+                'design' => 'طراح',
+                'both' => 'هر دو',
+            ])->default('both'),
+            Toggle::make('is_active')->label('فعال')->default(true),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table->columns([
+            Tables\Columns\TextColumn::make('title')->label('عنوان')->searchable(),
+            Tables\Columns\TextColumn::make('audience')->label('مخاطب'),
+            Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
+        ])
+        ->recordActions([EditAction::make()->label('ویرایش')->visible(fn ($r) => static::canEdit($r))]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListInsertGuidelines::route('/'),
+            'create' => Pages\CreateInsertGuideline::route('/create'),
+            'edit' => Pages\EditInsertGuideline::route('/{record}/edit'),
+        ];
+    }
+}
