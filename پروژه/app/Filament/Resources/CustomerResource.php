@@ -6,6 +6,7 @@ use App\Filament\Concerns\ChecksResourcePermission;
 
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Models\Customer;
+use App\Support\Fa;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,6 +19,9 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -154,6 +158,13 @@ class CustomerResource extends Resource
                     ->visibleFrom('lg'),
                 Tables\Columns\TextColumn::make('national_id')
                     ->label('شناسه')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->visibleFrom('lg'),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('تاریخ ثبت')
+                    ->formatStateUsing(fn ($state): string => Fa::dateTime($state, 'Y/m/d'))
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('lg'),
                 Tables\Columns\IconColumn::make('is_active')
@@ -164,11 +175,35 @@ class CustomerResource extends Resource
                     ->trueColor('success')
                     ->falseColor('gray'),
             ])
+            ->filters([
+                SelectFilter::make('type')
+                    ->label('نوع مشتری')
+                    ->options([
+                        Customer::TYPE_INDIVIDUAL => 'حقیقی',
+                        Customer::TYPE_ORGANIZATION => 'حقوقی',
+                    ]),
+                TernaryFilter::make('is_active')
+                    ->label('وضعیت مشتری')
+                    ->placeholder('همه مشتریان')
+                    ->trueLabel('فعال')
+                    ->falseLabel('غیرفعال'),
+                TrashedFilter::make()
+                    ->label('وضعیت حذف'),
+            ])
+            ->recordUrl(null)
+            ->recordAction(null)
             ->defaultSort('id', 'desc')
+            ->paginated([10, 15, 25, 50, 100])
+            ->defaultPaginationPageOption(15)
             ->striped()
             ->emptyStateHeading('هنوز مشتری‌ای ثبت نشده است')
             ->emptyStateDescription('با ثبت اولین مشتری، ارتباطات و فرصت‌های فروش را در یک جا مدیریت کنید.')
             ->emptyStateIcon('heroicon-o-user-group')
+            ->emptyStateActions([
+                CreateAction::make()
+                    ->label('ثبت اولین مشتری')
+                    ->visible(fn () => static::canCreate()),
+            ])
             ->recordActions([
                 ViewAction::make()
                     ->label('مشاهده')
