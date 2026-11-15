@@ -1,23 +1,23 @@
 <?php
 
-namespace App\\Filament\\Resources;
+namespace App\Filament\Resources;
 
-use App\\Filament\\Concerns\\ChecksResourcePermission;
-use App\\Filament\\Resources\\TaskResource\\Pages;
-use App\\Models\\Task;
-use App\\Models\\User;
-use Filament\\Actions\\EditAction;
-use Filament\\Forms\\Components\\DateTimePicker;
-use Filament\\Forms\\Components\\Select;
-use Filament\\Forms\\Components\\Textarea;
-use Filament\\Forms\\Components\\TextInput;
-use Filament\\Resources\\Resource;
-use Filament\\Schemas\\Schema;
-use Filament\\Tables;
-use Filament\\Tables\\Filters\\Filter;
-use Filament\\Tables\\Filters\\SelectFilter;
-use Filament\\Tables\\Table;
-use Illuminate\\Database\\Eloquent\\Builder;
+use App\Filament\Concerns\ChecksResourcePermission;
+use App\Filament\Resources\TaskResource\Pages;
+use App\Models\Task;
+use App\Models\User;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class TaskResource extends Resource
@@ -27,7 +27,7 @@ class TaskResource extends Resource
     protected static ?string $permissionView = 'tasks.view';
     protected static ?string $permissionManage = 'tasks.create';
     protected static ?string $model = Task::class;
-    protected static string|\\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $modelLabel = 'کار';
     protected static ?string $pluralModelLabel = 'کارها';
     protected static ?string $navigationLabel = 'کارهای تیم';
@@ -109,9 +109,9 @@ class TaskResource extends Resource
 
         return $table
             ->columns([
-                Tables\\Columns\\TextColumn::make('subject')->label('عنوان')->searchable()->sortable()->limit(45),
-                Tables\\Columns\\TextColumn::make('assignee.name')->label('مسئول')->searchable()->sortable(),
-                Tables\\Columns\\TextColumn::make('priority')->label('اولویت')
+                Tables\Columns\TextColumn::make('subject')->label('عنوان')->searchable()->sortable()->limit(45),
+                Tables\Columns\TextColumn::make('assignee.name')->label('مسئول')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('priority')->label('اولویت')
                     ->formatStateUsing(fn (string $state) => Task::priorityOptions()[$state] ?? $state)
                     ->badge()->color(fn (string $state) => match ($state) {
                         Task::PRIORITY_URGENT => 'danger',
@@ -119,9 +119,9 @@ class TaskResource extends Resource
                         Task::PRIORITY_LOW => 'gray',
                         default => 'info',
                     }),
-                Tables\\Columns\\TextColumn::make('status')->label('وضعیت')
+                Tables\Columns\TextColumn::make('status')->label('وضعیت')
                     ->formatStateUsing(fn (string $state) => Task::statusOptions()[$state] ?? $state)->badge(),
-                Tables\\Columns\\TextColumn::make('due_at')->label('سررسید')->dateTime('Y/m/d H:i')->sortable()
+                Tables\Columns\TextColumn::make('due_at')->label('سررسید')->dateTime('Y/m/d H:i')->sortable()
                     ->color(fn (Task $record) => ! in_array($record->status, [Task::STATUS_DONE, Task::STATUS_CANCELLED], true)
                         && $record->due_at?->isPast() ? 'danger' : null),
             ])
@@ -148,9 +148,9 @@ class TaskResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\\ListTasks::route('/'),
-            'create' => Pages\\CreateTask::route('/create'),
-            'edit' => Pages\\EditTask::route('/{record}/edit'),
+            'index' => Pages\ListTasks::route('/'),
+            'create' => Pages\CreateTask::route('/create'),
+            'edit' => Pages\EditTask::route('/{record}/edit'),
         ];
     }
 }

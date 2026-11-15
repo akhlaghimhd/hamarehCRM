@@ -4,7 +4,11 @@ namespace App\Providers;
 
 use App\Models\Activity;
 use App\Models\Company;
+use App\Models\Task;
+use App\Observers\ActivityAuditObserver;
+use App\Observers\AuditObserver;
 use App\Policies\ActivityPolicy;
+use App\Policies\TaskPolicy;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +25,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Gate::policy(Activity::class, ActivityPolicy::class);\n        Gate::policy(Task::class, TaskPolicy::class);\n        Activity::observe(ActivityAuditObserver::class);\n        Task::observe(AuditObserver::class);
+        Gate::policy(Activity::class, ActivityPolicy::class);
+        Gate::policy(Task::class, TaskPolicy::class);
+        Activity::observe(ActivityAuditObserver::class);
+        Task::observe(AuditObserver::class);
 
         FilamentView::registerRenderHook(
             PanelsRenderHook::HEAD_END,
@@ -39,7 +46,6 @@ class AppServiceProvider extends ServiceProvider
                 $user = Auth::user();
                 $current = session('current_company_id');
 
-                // اگر شرکت نشست متعلق به کاربر نیست، پاک و پیش‌فرض بگذار
                 if ($current && method_exists($user, 'companies')) {
                     $allowed = $user->companies()->where('companies.id', $current)->exists();
                     if (! $allowed) {

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\\Filament\\Resources\\TaskResource\\Pages;
+namespace App\Filament\Resources\TaskResource\Pages;
 
-use App\\Actions\\Tasks\\SaveTask;
-use App\\Filament\\Resources\\TaskResource;
-use App\\Models\\Task;
-use Filament\\Resources\\Pages\\CreateRecord;
+use App\Actions\Tasks\SaveTask;
+use App\Filament\Resources\TaskResource;
+use App\Models\Task;
+use Filament\Resources\Pages\CreateRecord;
 
 class CreateTask extends CreateRecord
 {

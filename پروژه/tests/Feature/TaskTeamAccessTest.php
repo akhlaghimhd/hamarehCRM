@@ -1,17 +1,17 @@
 <?php
 
-namespace Tests\\Feature;
+namespace Tests\Feature;
 
-use App\\Actions\\Tasks\\SaveTask;
-use App\\Models\\Company;
-use App\\Models\\Permission;
-use App\\Models\\Role;
-use App\\Models\\Task;
-use App\\Models\\User;
-use Illuminate\\Foundation\\Testing\\RefreshDatabase;
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Validation\\ValidationException;
-use Tests\\TestCase;
+use App\Actions\Tasks\SaveTask;
+use App\Models\Company;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\Task;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Tests\TestCase;
 
 class TaskTeamAccessTest extends TestCase
 {
@@ -29,7 +29,7 @@ class TaskTeamAccessTest extends TestCase
         $own = Task::query()->create(['company_id' => $company->id, 'subject' => 'Mine', 'assignee_user_id' => $manager->id, 'reporter_user_id' => $manager->id]);
         $team = Task::query()->create(['company_id' => $company->id, 'subject' => 'Team', 'assignee_user_id' => $staff->id, 'reporter_user_id' => $manager->id]);
 
-        $visibleIds = Task::query()->whereIn('assignee_user_id', $manager->managedUserIds()->prepend($manager->id))->pluck('id');
+        $visibleIds = TaskResource::getEloquentQuery()->pluck('id');
         $this->assertContains($own->id, $visibleIds);
         $this->assertContains($team->id, $visibleIds);
         $this->assertSame(2, $visibleIds->count());

@@ -1,9 +1,9 @@
 <?php
 
-namespace App\\Policies;
+namespace App\Policies;
 
-use App\\Models\\Task;
-use App\\Models\\User;
+use App\Models\Task;
+use App\Models\User;
 
 class TaskPolicy
 {

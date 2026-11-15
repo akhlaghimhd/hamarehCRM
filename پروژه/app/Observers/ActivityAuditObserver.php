@@ -1,11 +1,11 @@
 <?php
 
-namespace App\\Observers;
+namespace App\Observers;
 
-use App\\Models\\Activity;
-use App\\Models\\AuditEvent;
-use Illuminate\\Support\\Arr;
-use Illuminate\\Support\\Facades\\Auth;
+use App\Models\Activity;
+use App\Models\AuditEvent;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use WeakMap;
 
 class ActivityAuditObserver

@@ -1,15 +1,15 @@
 <?php
 
-namespace App\\Models;
+namespace App\Models;
 
-use App\\Models\\Concerns\\BelongsToCompany;
-use Illuminate\\Database\\Eloquent\\Model;
-use Illuminate\\Database\\Eloquent\\Relations\\BelongsTo;
-use Illuminate\\Database\\Eloquent\\Relations\\MorphMany;
-use Illuminate\\Database\\Eloquent\\Relations\\MorphTo;
-use Illuminate\\Database\\Eloquent\\SoftDeletes;
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Validation\\ValidationException;
+use App\Models\Concerns\BelongsToCompany;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class Task extends Model
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\\Actions\\Tasks;
+namespace App\Actions\Tasks;
 
-use App\\Models\\Task;
-use App\\Models\\User;
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Validation\\ValidationException;
+use App\Models\Task;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class SaveTask
 {
@@ -17,6 +17,16 @@ class SaveTask
         }
 
         $isNew = ! $task?->exists;
+        if (! $isNew && (int) $task->company_id !== (int) $companyId) {
+            throw ValidationException::withMessages(['task' => 'این کار متعلق به شرکت جاری نیست.']);
+        }
+        $idempotencyKey = $data['idempotency_key'] ?? null;
+        if ($isNew && $idempotencyKey) {
+            $existing = Task::query()->where('company_id', $companyId)->where('idempotency_key', $idempotencyKey)->first();
+            if ($existing) {
+                return $existing;
+            }
+        }
         if ($isNew && ! $actor->hasPermission('tasks.create')) {
             throw ValidationException::withMessages(['subject' => 'مجوز ایجاد کار را ندارید.']);
         }
@@ -55,6 +65,7 @@ class SaveTask
                 'status' => $data['status'] ?? Task::STATUS_OPEN,
                 'due_at' => $data['due_at'] ?? null,
                 'completed_at' => ($data['status'] ?? null) === Task::STATUS_DONE ? ($task->completed_at ?? now()) : null,
+                'idempotency_key' => $data['idempotency_key'] ?? $task->idempotency_key,
             ]);
             $task->save();
             return $task->refresh();
