@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\UserResource;
 use App\Models\Company;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -120,6 +121,37 @@ class FilamentCompanyAccessTest extends TestCase
 
         $this->assertFalse(UserResource::canViewAny());
         $this->assertFalse(RoleResource::canViewAny());
+    }
+
+    public function test_role_bulk_delete_requires_company_role_management_permission(): void
+    {
+        [$companyA, $companyB] = $this->createCompanies();
+
+        $salesRole = $this->createRole($companyA, 'sales');
+        $user = User::factory()->create();
+        $user->companies()->attach($companyA->id, [
+            'role_id' => $salesRole->id,
+            'is_default' => true,
+        ]);
+
+        $permission = Permission::query()->create([
+            'name' => 'roles.manage',
+            'label' => 'مدیریت نقش‌ها',
+            'group' => 'system',
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $companyA->id]);
+
+        $this->assertFalse(RoleResource::canDeleteAny());
+
+        $salesRole->permissions()->attach($permission->id);
+
+        $this->assertTrue(RoleResource::canDeleteAny());
+
+        session(['current_company_id' => $companyB->id]);
+
+        $this->assertFalse(RoleResource::canDeleteAny());
     }
 
     /**
