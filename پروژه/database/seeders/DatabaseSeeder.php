@@ -10,6 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             FoundationSeeder::class,
+            TaskPermissionsSeeder::class,
             DemoAccessSeeder::class,
             CatalogArchitectureSeeder::class,
             MasterProductsSeeder::class,
