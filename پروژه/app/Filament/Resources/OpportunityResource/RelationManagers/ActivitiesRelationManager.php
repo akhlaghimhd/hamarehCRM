@@ -17,6 +17,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ActivitiesRelationManager extends RelationManager
 {
@@ -55,6 +56,29 @@ class ActivitiesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query): Builder {
+                $user = auth()->user();
+
+                if (! $user) {
+                    return $query->whereRaw('1 = 0');
+                }
+
+                if ($user->isCompanyAdmin()) {
+                    return $query;
+                }
+
+                $visibleOwnerIds = collect();
+
+                if ($user->hasPermission('activities.view')) {
+                    $visibleOwnerIds->push((int) $user->id);
+                }
+
+                if ($user->hasPermission('team.activities.view')) {
+                    $visibleOwnerIds = $visibleOwnerIds->merge($user->managedUserIds());
+                }
+
+                return $query->whereIn('activities.user_id', $visibleOwnerIds->unique()->values());
+            })
             ->columns([
                 Tables\Columns\TextColumn::make('type')
                     ->label('نوع')
@@ -89,7 +113,10 @@ class ActivitiesRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->label('فعالیت جدید')
+                    ->visible(fn (): bool => (bool) auth()->user()?->hasPermission('activities.manage'))
                     ->mutateFormDataUsing(function (array $data): array {
+                        abort_unless(auth()->user()?->hasPermission('activities.manage'), 403);
+
                         $data['user_id'] = auth()->id();
                         if (! empty($data['is_done'])) {
                             $data['completed_at'] = now();
@@ -103,13 +130,19 @@ class ActivitiesRelationManager extends RelationManager
                     ->label('انجام شد')
                     ->icon('heroicon-o-check')
                     ->color('success')
-                    ->visible(fn (Activity $record) => ! $record->is_done)
+                    ->visible(fn (Activity $record): bool => ! $record->is_done
+                        && (bool) auth()->user()?->canManageActivityOwner((int) $record->user_id))
                     ->action(function (Activity $record): void {
+                        abort_unless(auth()->user()?->canManageActivityOwner((int) $record->user_id), 403);
+
                         $record->markDone();
                         Notification::make()->title('فعالیت انجام شد')->success()->send();
                     }),
                 EditAction::make()->label('ویرایش')
-                    ->mutateFormDataUsing(function (array $data): array {
+                    ->visible(fn (Activity $record): bool => (bool) auth()->user()?->canManageActivityOwner((int) $record->user_id))
+                    ->mutateFormDataUsing(function (array $data, Activity $record): array {
+                        abort_unless(auth()->user()?->canManageActivityOwner((int) $record->user_id), 403);
+
                         if (! empty($data['is_done'])) {
                             $data['completed_at'] = $data['completed_at'] ?? now();
                         } else {
@@ -118,7 +151,8 @@ class ActivitiesRelationManager extends RelationManager
 
                         return $data;
                     }),
-                DeleteAction::make()->label('حذف'),
+                DeleteAction::make()->label('حذف')
+                    ->visible(fn (Activity $record): bool => (bool) auth()->user()?->canManageActivityOwner((int) $record->user_id)),
             ]);
     }
 }

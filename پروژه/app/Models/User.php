@@ -173,6 +173,52 @@ class User extends Authenticatable implements FilamentUser
         return $includeSelf ? $managed->prepend((int) $this->id)->unique()->values() : $managed;
     }
 
+    public function canViewActivityOwner(int $ownerUserId): bool
+    {
+        $companyId = $this->currentCompanyId();
+
+        if (! $companyId || ! DB::table('company_user')
+            ->where('company_id', $companyId)
+            ->where('user_id', $ownerUserId)
+            ->exists()) {
+            return false;
+        }
+
+        if ($this->isCompanyAdmin()) {
+            return true;
+        }
+
+        if ($ownerUserId === (int) $this->id) {
+            return $this->hasPermission('activities.view');
+        }
+
+        return $this->hasPermission('team.activities.view')
+            && $this->managedUserIds()->contains($ownerUserId);
+    }
+
+    public function canManageActivityOwner(int $ownerUserId): bool
+    {
+        $companyId = $this->currentCompanyId();
+
+        if (! $companyId || ! DB::table('company_user')
+            ->where('company_id', $companyId)
+            ->where('user_id', $ownerUserId)
+            ->exists()) {
+            return false;
+        }
+
+        if ($this->isCompanyAdmin()) {
+            return true;
+        }
+
+        if ($ownerUserId === (int) $this->id) {
+            return $this->hasPermission('activities.manage');
+        }
+
+        return $this->hasPermission('team.activities.manage')
+            && $this->managedUserIds()->contains($ownerUserId);
+    }
+
     public function defaultCompany(): ?Company
     {
         return $this->companies()

@@ -153,6 +153,48 @@ class UserRoleHierarchyTest extends TestCase
         $action->handle($company->id, $first->id, [$role->id], $second->id, $first->id);
     }
 
+    public function test_team_activity_permissions_separately_control_view_and_management(): void
+    {
+        $company = $this->createCompany('team');
+        $otherCompany = $this->createCompany('outside');
+        $managerRole = $this->createRole($company, 'manager');
+        $staffRole = $this->createRole($company, 'staff');
+
+        $viewPermission = $this->createPermission('activities.view');
+        $teamViewPermission = $this->createPermission('team.activities.view');
+        $teamManagePermission = $this->createPermission('team.activities.manage');
+
+        $managerRole->permissions()->attach([$viewPermission->id, $teamViewPermission->id, $teamManagePermission->id]);
+
+        $manager = User::factory()->create();
+        $staff = User::factory()->create();
+        $foreign = User::factory()->create();
+
+        $manager->companies()->attach($company->id, ['role_id' => $managerRole->id, 'is_default' => true]);
+        $staff->companies()->attach($company->id, ['role_id' => $staffRole->id, 'is_default' => true]);
+        $foreign->companies()->attach($otherCompany->id, ['is_default' => true]);
+
+        app(UpdateCompanyMembership::class)->handle(
+            $company->id,
+            $staff->id,
+            [$staffRole->id],
+            $manager->id,
+            $manager->id,
+        );
+
+        $this->actingAs($manager);
+        session(['current_company_id' => $company->id]);
+
+        $this->assertTrue($manager->canViewActivityOwner($staff->id));
+        $this->assertTrue($manager->canManageActivityOwner($staff->id));
+        $this->assertFalse($manager->canViewActivityOwner($foreign->id));
+
+        $managerRole->permissions()->detach($teamManagePermission->id);
+
+        $this->assertTrue($manager->canViewActivityOwner($staff->id));
+        $this->assertFalse($manager->canManageActivityOwner($staff->id));
+    }
+
     private function createCompany(string $suffix): Company
     {
         return Company::query()->create([

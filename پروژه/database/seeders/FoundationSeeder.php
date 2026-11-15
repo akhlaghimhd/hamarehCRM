@@ -26,6 +26,8 @@ class FoundationSeeder extends Seeder
             ['name' => 'opportunities.manage', 'label' => 'مدیریت فرصت‌ها', 'group' => 'بازاریابی'],
             ['name' => 'activities.view', 'label' => 'مشاهده فعالیت‌ها', 'group' => 'بازاریابی'],
             ['name' => 'activities.manage', 'label' => 'مدیریت فعالیت‌ها', 'group' => 'بازاریابی'],
+            ['name' => 'team.activities.view', 'label' => 'مشاهده فعالیت‌های تیم', 'group' => 'مدیریت تیم'],
+            ['name' => 'team.activities.manage', 'label' => 'مدیریت فعالیت‌های تیم', 'group' => 'مدیریت تیم'],
         ];
 
         foreach ($permissions as $permission) {
