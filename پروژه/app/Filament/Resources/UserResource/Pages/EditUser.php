@@ -4,7 +4,6 @@ namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Validation\ValidationException;
@@ -73,7 +72,6 @@ class EditUser extends EditRecord
     {
         return [
             ViewAction::make()->label('مشاهده'),
-            DeleteAction::make()->label('حذف'),
         ];
     }
 
