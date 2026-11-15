@@ -312,8 +312,7 @@ label {
 
     .hm-ref__intro,
     .hm-card,
-    .mf-col,
-    .sc-card {
+    .mf-col {
         border-radius: var(--hm-radius-md);
     }
 
