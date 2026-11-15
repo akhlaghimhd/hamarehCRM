@@ -113,7 +113,7 @@ class RoleResource extends Resource
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->label('حذف')
-                        ->visible(fn () => true),
+                        ->visible(fn () => static::canDeleteAny()),
                 ]),
             ]);
     }
