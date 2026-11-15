@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Actions\Identity\UpdateCompanyMembership;
+use Illuminate\Support\Facades\DB;
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
 use Filament\Resources\Pages\CreateRecord;
@@ -33,6 +34,10 @@ class CreateUser extends CreateRecord
             throw ValidationException::withMessages([
                 'role_ids' => 'حداقل یک نقش معتبر از شرکت جاری انتخاب کنید.',
             ]);
+        }
+
+        if ($managerUserId !== null) {
+            app(UpdateCompanyMembership::class)->assertValidManagerAssignment((int) $companyId, 0, $managerUserId);
         }
 
         $this->companyId = (int) $companyId;

@@ -43,38 +43,7 @@ class UpdateCompanyMembership
                 ]);
             }
 
-            if ($managerUserId !== null) {
-                if ($managerUserId === $userId || ! DB::table('company_user')
-                    ->join('users', 'users.id', '=', 'company_user.user_id')
-                    ->where('company_user.company_id', $companyId)
-                    ->where('company_user.user_id', $managerUserId)
-                    ->where('users.is_active', true)
-                    ->whereNull('users.deleted_at')
-                    ->exists()) {
-                    throw ValidationException::withMessages([
-                        'manager_user_id' => 'سرپرست باید کاربر فعال و عضو همین شرکت باشد و نمی‌تواند خود کاربر باشد.',
-                    ]);
-                }
-
-                $cursor = $managerUserId;
-                $visited = [];
-
-                while ($cursor !== null) {
-                    if ($cursor === $userId || in_array($cursor, $visited, true)) {
-                        throw ValidationException::withMessages([
-                            'manager_user_id' => 'این انتخاب باعث ایجاد چرخه در سلسله‌مراتب سرپرستی می‌شود.',
-                        ]);
-                    }
-
-                    $visited[] = $cursor;
-                    $nextManagerId = DB::table('company_user')
-                        ->where('company_id', $companyId)
-                        ->where('user_id', $cursor)
-                        ->value('manager_user_id');
-
-                    $cursor = $nextManagerId === null ? null : (int) $nextManagerId;
-                }
-            }
+            $this->assertValidManagerAssignment($companyId, $userId, $managerUserId);
 
             $oldManagerUserId = $membership->manager_user_id === null
                 ? null
@@ -119,4 +88,43 @@ class UpdateCompanyMembership
             }
         });
     }
+
+    public function assertValidManagerAssignment(int $companyId, int $userId, ?int $managerUserId): void
+    {
+        if ($managerUserId === null) {
+            return;
+        }
+
+        if ($managerUserId === $userId || ! DB::table('company_user')
+            ->join('users', 'users.id', '=', 'company_user.user_id')
+            ->where('company_user.company_id', $companyId)
+            ->where('company_user.user_id', $managerUserId)
+            ->where('users.is_active', true)
+            ->whereNull('users.deleted_at')
+            ->exists()) {
+            throw ValidationException::withMessages([
+                'manager_user_id' => 'سرپرست باید کاربر فعال و عضو همین شرکت باشد و نمی‌تواند خود کاربر باشد.',
+            ]);
+        }
+
+        $cursor = $managerUserId;
+        $visited = [];
+
+        while ($cursor !== null) {
+            if ($cursor === $userId || in_array($cursor, $visited, true)) {
+                throw ValidationException::withMessages([
+                    'manager_user_id' => 'این انتخاب باعث ایجاد چرخه در سلسله‌مراتب سرپرستی می‌شود.',
+                ]);
+            }
+
+            $visited[] = $cursor;
+            $nextManagerId = DB::table('company_user')
+                ->where('company_id', $companyId)
+                ->where('user_id', $cursor)
+                ->value('manager_user_id');
+
+            $cursor = $nextManagerId === null ? null : (int) $nextManagerId;
+        }
+    }
+
 }

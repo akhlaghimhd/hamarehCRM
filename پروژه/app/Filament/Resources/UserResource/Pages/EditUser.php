@@ -69,6 +69,8 @@ class EditUser extends EditRecord
             ]);
         }
 
+        app(UpdateCompanyMembership::class)->assertValidManagerAssignment((int) $companyId, (int) $this->record->id, $managerUserId);
+
         $this->companyId = (int) $companyId;
         $this->roleIds = $roleIds;
         $this->managerUserId = $managerUserId;
