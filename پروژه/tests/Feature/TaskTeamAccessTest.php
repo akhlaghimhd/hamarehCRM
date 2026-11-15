@@ -78,6 +78,33 @@ class TaskTeamAccessTest extends TestCase
         $this->assertSame(Task::STATUS_IN_PROGRESS, $event->new_values['status']);
     }
 
+    public function test_activity_changes_are_audited_with_before_after_values(): void
+    {
+        [$company, $manager] = array_slice($this->fixture(), 0, 2);
+        $this->actingAs($manager);
+        session(['current_company_id' => $company->id]);
+
+        $activity = \\App\\Models\\Activity::query()->create([
+            'company_id' => $company->id,
+            'user_id' => $manager->id,
+            'type' => \\App\\Models\\Activity::TYPE_NOTE,
+            'subject' => 'Initial subject',
+            'body' => 'Initial body',
+        ]);
+
+        $activity->update(['subject' => 'Updated subject']);
+
+        $event = DB::table('audit_events')
+            ->where('auditable_type', $activity->getMorphClass())
+            ->where('auditable_id', $activity->id)
+            ->where('event', 'updated')
+            ->first();
+
+        $this->assertNotNull($event);
+        $this->assertSame('Initial subject', json_decode($event->old_values, true)['subject']);
+        $this->assertSame('Updated subject', json_decode($event->new_values, true)['subject']);
+    }
+
     public function test_task_creation_is_idempotent_within_a_company(): void
     {
         [$company, $manager, $staff, $outsider, $role] = $this->fixture();
