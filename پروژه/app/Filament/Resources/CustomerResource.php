@@ -16,6 +16,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
 use Filament\Tables;
 use Filament\Tables\Table;
 use UnitEnum;
@@ -59,49 +60,70 @@ class CustomerResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
-                Select::make('type')
-                    ->label('نوع')
-                    ->options([
-                        Customer::TYPE_INDIVIDUAL => 'حقیقی',
-                        Customer::TYPE_ORGANIZATION => 'حقوقی',
-                    ])
-                    ->required()
-                    ->live(),
-                TextInput::make('name')
-                    ->label('نام / نام شرکت')
-                    ->required()
-                    ->maxLength(255),
-                TextInput::make('national_id')
-                    ->label('کد ملی / شناسه ملی')
-                    ->maxLength(50),
-                TextInput::make('economic_code')
-                    ->label('کد اقتصادی')
-                    ->maxLength(50)
-                    ->visible(fn ($get) => $get('type') === Customer::TYPE_ORGANIZATION),
-                TextInput::make('registration_number')
-                    ->label('شماره ثبت')
-                    ->maxLength(50)
-                    ->visible(fn ($get) => $get('type') === Customer::TYPE_ORGANIZATION),
-                TextInput::make('phone')
-                    ->label('تلفن')
-                    ->tel()
-                    ->maxLength(50),
-                TextInput::make('email')
-                    ->label('ایمیل')
-                    ->email()
-                    ->maxLength(255),
-                Textarea::make('address')
-                    ->label('آدرس')
-                    ->rows(3)
-                    ->columnSpanFull(),
-                Textarea::make('notes')
-                    ->label('یادداشت')
-                    ->rows(2)
-                    ->columnSpanFull(),
-                Toggle::make('is_active')
-                    ->label('فعال')
-                    ->default(true),
+                Section::make('اطلاعات اصلی')
+                    ->description('نوع و مشخصات هویتی مشتری را ثبت کنید.')
+                    ->icon('heroicon-o-identification')
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->schema([
+                        Select::make('type')
+                            ->label('نوع مشتری')
+                            ->options([
+                                Customer::TYPE_INDIVIDUAL => 'حقیقی',
+                                Customer::TYPE_ORGANIZATION => 'حقوقی',
+                            ])
+                            ->required()
+                            ->live()
+                            ->native(false),
+                        TextInput::make('name')
+                            ->label('نام / نام شرکت')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpan(['default' => 1, 'md' => 2]),
+                        TextInput::make('national_id')
+                            ->label('کد ملی / شناسه ملی')
+                            ->maxLength(50),
+                        TextInput::make('economic_code')
+                            ->label('کد اقتصادی')
+                            ->maxLength(50)
+                            ->visible(fn ($get) => $get('type') === Customer::TYPE_ORGANIZATION),
+                        TextInput::make('registration_number')
+                            ->label('شماره ثبت')
+                            ->maxLength(50)
+                            ->visible(fn ($get) => $get('type') === Customer::TYPE_ORGANIZATION),
+                        Toggle::make('is_active')
+                            ->label('مشتری فعال')
+                            ->default(true),
+                    ]),
+                Section::make('راه‌های ارتباطی')
+                    ->description('اطلاعات تماس و نشانی مشتری.')
+                    ->icon('heroicon-o-phone')
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->schema([
+                        TextInput::make('phone')
+                            ->label('تلفن')
+                            ->tel()
+                            ->maxLength(50),
+                        TextInput::make('email')
+                            ->label('ایمیل')
+                            ->email()
+                            ->maxLength(255),
+                        Textarea::make('address')
+                            ->label('نشانی')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
+                Section::make('یادداشت داخلی')
+                    ->description('توضیحات تکمیلی برای استفاده تیم.')
+                    ->icon('heroicon-o-document-text')
+                    ->collapsed()
+                    ->schema([
+                        Textarea::make('notes')
+                            ->label('یادداشت')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
@@ -109,35 +131,52 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('نام')
+                Tables\\Columns\\TextColumn::make('name')
+                    ->label('مشتری')
+                    ->description(fn (Customer $record): ?string => $record->phone ?: $record->email)
                     ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('type')
+                    ->sortable()
+                    ->weight('semibold')
+                    ->wrap(),
+                Tables\\Columns\\TextColumn::make('type')
                     ->label('نوع')
                     ->formatStateUsing(fn (string $state): string => $state === Customer::TYPE_ORGANIZATION ? 'حقوقی' : 'حقیقی')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('phone')
+                    ->badge()
+                    ->color(fn (string $state): string => $state === Customer::TYPE_ORGANIZATION ? 'info' : 'gray'),
+                Tables\\Columns\\TextColumn::make('phone')
                     ->label('تلفن')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
+                    ->searchable()
+                    ->visibleFrom('md'),
+                Tables\\Columns\\TextColumn::make('email')
                     ->label('ایمیل')
                     ->searchable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('national_id')
+                    ->toggleable()
+                    ->visibleFrom('lg'),
+                Tables\\Columns\\TextColumn::make('national_id')
                     ->label('شناسه')
-                    ->toggleable(),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('فعال')
-                    ->boolean(),
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->visibleFrom('lg'),
+                Tables\\Columns\\IconColumn::make('is_active')
+                    ->label('وضعیت')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-minus-circle')
+                    ->trueColor('success')
+                    ->falseColor('gray'),
             ])
             ->defaultSort('id', 'desc')
-            ->emptyStateHeading('مشتری‌ای یافت نشد')
-            ->emptyStateDescription('اولین مشتری را ایجاد کنید.')
+            ->striped()
+            ->emptyStateHeading('هنوز مشتری‌ای ثبت نشده است')
+            ->emptyStateDescription('با ثبت اولین مشتری، ارتباطات و فرصت‌های فروش را در یک جا مدیریت کنید.')
+            ->emptyStateIcon('heroicon-o-user-group')
             ->recordActions([
-                ViewAction::make()->label('مشاهده')
+                ViewAction::make()
+                    ->label('مشاهده')
+                    ->icon('heroicon-o-eye')
                     ->visible(fn ($record) => static::canView($record)),
-                EditAction::make()->label('ویرایش')
+                EditAction::make()
+                    ->label('ویرایش')
+                    ->icon('heroicon-o-pencil-square')
                     ->visible(fn ($record) => static::canEdit($record)),
             ])
             ->toolbarActions([
