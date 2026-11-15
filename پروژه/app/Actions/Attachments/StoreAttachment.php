@@ -33,7 +33,7 @@ class StoreAttachment
 
         Gate::forUser($actor)->authorize('update', $attachable);
 
-        $disk = 'local';
+        $disk = (string) config('filesystems.attachments_disk', 'local');
         $extension = $file->guessExtension() ?: 'bin';
         $path = "companies/{$companyId}/attachments/".Str::uuid().".{$extension}";
         $storedPath = Storage::disk($disk)->putFileAs(dirname($path), $file, basename($path));

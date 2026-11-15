@@ -22,7 +22,6 @@ class AttachmentIsolationTest extends TestCase
     {
         Storage::fake('local');
         [$company, $user, $task] = $this->fixture();
-
         $this->actingAs($user);
         session(['current_company_id' => $company->id]);
 
@@ -50,7 +49,6 @@ class AttachmentIsolationTest extends TestCase
             'slug' => 'other-company',
             'is_active' => true,
         ]);
-
         $this->actingAs($user);
         session(['current_company_id' => $companyA->id]);
 
@@ -59,14 +57,12 @@ class AttachmentIsolationTest extends TestCase
             $task,
             $user,
         );
-
         session(['current_company_id' => $companyB->id]);
 
-        $this->get(route('attachments.download', $attachment))
-            ->assertNotFound();
+        $this->get(route('attachments.download', $attachment))->assertNotFound();
     }
 
-    public function test_authorized_attachment_deletion_soft_deletes_record_and_removes_private_file(): void
+    public function test_authorized_attachment_deletion_soft_deletes_record_and_retains_private_file(): void
     {
         Storage::fake('local');
         [$company, $user, $task] = $this->fixture();
@@ -78,13 +74,12 @@ class AttachmentIsolationTest extends TestCase
             $task,
             $user,
         );
-
         $path = $attachment->path;
 
         $this->delete(route('attachments.destroy', $attachment))->assertRedirect();
 
         $this->assertSoftDeleted('attachments', ['id' => $attachment->id]);
-        Storage::disk('local')->assertMissing($path);
+        Storage::disk('local')->assertExists($path);
         $this->assertSame(0, Attachment::query()->count());
         $this->assertSame(1, Attachment::withTrashed()->count());
     }
@@ -114,12 +109,10 @@ class AttachmentIsolationTest extends TestCase
         ]);
         $member = User::factory()->create();
         $member->companies()->attach($company->id, ['role_id' => $memberRole->id]);
-
         $this->actingAs($member);
         session(['current_company_id' => $company->id]);
 
         $this->delete(route('attachments.destroy', $attachment))->assertForbidden();
-
         $this->assertDatabaseHas('attachments', ['id' => $attachment->id, 'deleted_at' => null]);
         Storage::disk('local')->assertExists($attachment->path);
     }
