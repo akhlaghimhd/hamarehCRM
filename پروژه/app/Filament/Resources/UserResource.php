@@ -6,8 +6,6 @@ use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\Role;
 use App\Models\User;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
@@ -133,12 +131,6 @@ class UserResource extends Resource
                     ->visible(fn ($record) => static::canView($record)),
                 EditAction::make()->label('ویرایش')
                     ->visible(fn ($record) => static::canEdit($record)),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()->label('حذف انتخاب‌شده‌ها')
-                        ->visible(fn () => static::canDeleteAny()),
-                ]),
             ]);
     }
 
