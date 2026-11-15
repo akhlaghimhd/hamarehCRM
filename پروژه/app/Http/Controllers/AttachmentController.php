@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Attachments\DeleteAttachment;
 use App\Models\Attachment;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -20,5 +22,12 @@ class AttachmentController
             $attachment->original_name,
             ['Content-Type' => $attachment->mime_type],
         );
+    }
+
+    public function destroy(Attachment $attachment, DeleteAttachment $action): RedirectResponse
+    {
+        $action->handle($attachment);
+
+        return back()->with('status', 'پیوست حذف شد.');
     }
 }
