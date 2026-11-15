@@ -131,32 +131,32 @@ class CustomerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\\Columns\\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('name')
                     ->label('مشتری')
                     ->description(fn (Customer $record): ?string => $record->phone ?: $record->email)
                     ->searchable()
                     ->sortable()
                     ->weight('semibold')
                     ->wrap(),
-                Tables\\Columns\\TextColumn::make('type')
+                Tables\Columns\TextColumn::make('type')
                     ->label('نوع')
                     ->formatStateUsing(fn (string $state): string => $state === Customer::TYPE_ORGANIZATION ? 'حقوقی' : 'حقیقی')
                     ->badge()
                     ->color(fn (string $state): string => $state === Customer::TYPE_ORGANIZATION ? 'info' : 'gray'),
-                Tables\\Columns\\TextColumn::make('phone')
+                Tables\Columns\TextColumn::make('phone')
                     ->label('تلفن')
                     ->searchable()
                     ->visibleFrom('md'),
-                Tables\\Columns\\TextColumn::make('email')
+                Tables\Columns\TextColumn::make('email')
                     ->label('ایمیل')
                     ->searchable()
                     ->toggleable()
                     ->visibleFrom('lg'),
-                Tables\\Columns\\TextColumn::make('national_id')
+                Tables\Columns\TextColumn::make('national_id')
                     ->label('شناسه')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->visibleFrom('lg'),
-                Tables\\Columns\\IconColumn::make('is_active')
+                Tables\Columns\IconColumn::make('is_active')
                     ->label('وضعیت')
                     ->boolean()
                     ->trueIcon('heroicon-o-check-circle')
