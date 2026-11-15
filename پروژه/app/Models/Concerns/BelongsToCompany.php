@@ -3,6 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Models\Company;
+use App\Support\CompanyContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RuntimeException;
@@ -11,48 +12,29 @@ trait BelongsToCompany
 {
     public static function bootBelongsToCompany(): void
     {
-        static::creating(function ($model) {
-            if (auth()->check()) {
-                $user = auth()->user();
-                $companyId = $user->currentCompanyId();
+        static::creating(function ($model): void {
+            $companyId = app(CompanyContext::class)->requireCompanyId();
 
-                if (! $companyId) {
-                    throw new RuntimeException('شرکت جاری معتبر نیست یا کاربر عضو آن نیست.');
-                }
-
-                if (! empty($model->company_id) && (int) $model->company_id !== $companyId) {
-                    throw new RuntimeException('کاربر مجاز به ثبت اطلاعات برای این شرکت نیست.');
-                }
-
-                $model->company_id = $companyId;
-
-                return;
+            if (! empty($model->company_id) && (int) $model->company_id !== $companyId) {
+                throw new RuntimeException('ثبت اطلاعات برای شرکتی غیر از شرکت جاری مجاز نیست.');
             }
 
-            if (empty($model->company_id)) {
-                throw new RuntimeException('company_id برای ثبت اطلاعات الزامی است.');
-            }
+            $model->company_id = $companyId;
         });
 
-        static::addGlobalScope('company', function (Builder $builder) {
-            if (app()->runningInConsole() && ! auth()->check() && ! session()->has('current_company_id')) {
-                return;
-            }
+        static::addGlobalScope('company', function (Builder $builder): void {
+            $companyId = app(CompanyContext::class)->currentCompanyId();
 
-            $companyId = auth()->check()
-                ? auth()->user()->currentCompanyId()
-                : null;
-
-            if ($companyId) {
-                $builder->where(
-                    $builder->getModel()->getTable() . '.company_id',
-                    $companyId
-                );
+            if ($companyId === null) {
+                $builder->whereRaw('1 = 0');
 
                 return;
             }
 
-            $builder->whereRaw('1 = 0');
+            $builder->where(
+                $builder->getModel()->getTable() . '.company_id',
+                $companyId
+            );
         });
     }
 

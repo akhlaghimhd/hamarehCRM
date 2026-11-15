@@ -2,11 +2,14 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\User;
+use App\Support\CompanyContext;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class SwitchCompany extends Page
 {
@@ -31,23 +34,13 @@ class SwitchCompany extends Page
     {
         $user = Auth::user();
 
-        if (! $user) {
-            return;
-        }
-
-        // تک‌شرکتی: اصلاً این صفحه معنا ندارد
-        if ($this->membershipCount((int) $user->id) < 2) {
+        if (! $user instanceof User || $this->membershipCount((int) $user->id) < 2) {
             $this->redirect(Dashboard::getUrl());
 
             return;
         }
 
-        $allowedIds = $this->allowedCompanyIds((int) $user->id);
-        $current = (int) (session('current_company_id') ?? 0);
-
-        $this->company_id = in_array($current, $allowedIds, true)
-            ? $current
-            : ($allowedIds[0] ?? null);
+        $this->company_id = app(CompanyContext::class)->currentCompanyId($user);
     }
 
     /**
@@ -57,7 +50,7 @@ class SwitchCompany extends Page
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (! $user instanceof User) {
             return $this->emptyViewData();
         }
 
@@ -65,6 +58,8 @@ class SwitchCompany extends Page
             ->join('companies as c', 'c.id', '=', 'cu.company_id')
             ->leftJoin('roles as r', 'r.id', '=', 'cu.role_id')
             ->where('cu.user_id', $user->id)
+            ->where('c.is_active', true)
+            ->whereNull('c.deleted_at')
             ->orderBy('c.name')
             ->get([
                 'c.id',
@@ -79,8 +74,8 @@ class SwitchCompany extends Page
                 'r.name as role_name',
             ]);
 
-        $currentId = (int) (session('current_company_id') ?? $this->company_id ?? 0);
-        $current = $memberships->firstWhere('id', $currentId) ?? $memberships->first();
+        $currentId = app(CompanyContext::class)->currentCompanyId($user);
+        $current = $currentId === null ? null : $memberships->firstWhere('id', $currentId);
 
         return [
             'userMeta' => [
@@ -116,26 +111,26 @@ class SwitchCompany extends Page
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (! $user instanceof User) {
             return;
         }
 
-        $companyId = (int) $this->company_id;
-        $allowedIds = $this->allowedCompanyIds((int) $user->id);
-
-        if (! in_array($companyId, $allowedIds, true)) {
+        try {
+            app(CompanyContext::class)->selectForUser($user, (int) $this->company_id);
+        } catch (RuntimeException) {
             Notification::make()
                 ->title('عدم دسترسی')
-                ->body('شما به این شرکت دسترسی ندارید.')
+                ->body('شرکت انتخاب‌شده فعال نیست یا شما عضو آن نیستید.')
                 ->danger()
                 ->send();
 
             return;
         }
 
-        session(['current_company_id' => $companyId]);
-
-        $name = DB::table('companies')->where('id', $companyId)->value('name') ?? 'شرکت';
+        $name = DB::table('companies')
+            ->where('id', $this->company_id)
+            ->where('is_active', true)
+            ->value('name') ?? 'شرکت';
 
         Notification::make()
             ->title('شرکت جاری تغییر کرد')
@@ -146,22 +141,14 @@ class SwitchCompany extends Page
         $this->redirect(Dashboard::getUrl());
     }
 
-    /**
-     * @return list<int>
-     */
-    private function allowedCompanyIds(int $userId): array
-    {
-        return DB::table('company_user')
-            ->where('user_id', $userId)
-            ->pluck('company_id')
-            ->map(fn ($id) => (int) $id)
-            ->values()
-            ->all();
-    }
-
     private function membershipCount(int $userId): int
     {
-        return (int) DB::table('company_user')->where('user_id', $userId)->count();
+        return (int) DB::table('company_user as cu')
+            ->join('companies as c', 'c.id', '=', 'cu.company_id')
+            ->where('cu.user_id', $userId)
+            ->where('c.is_active', true)
+            ->whereNull('c.deleted_at')
+            ->count();
     }
 
     /**
@@ -185,10 +172,15 @@ class SwitchCompany extends Page
     {
         $user = Auth::user();
 
-        if (! $user) {
+        if (! $user instanceof User || ! (bool) $user->is_active) {
             return false;
         }
 
-        return DB::table('company_user')->where('user_id', $user->id)->count() > 1;
+        return DB::table('company_user as cu')
+            ->join('companies as c', 'c.id', '=', 'cu.company_id')
+            ->where('cu.user_id', $user->id)
+            ->where('c.is_active', true)
+            ->whereNull('c.deleted_at')
+            ->count() > 1;
     }
 }

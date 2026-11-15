@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Company;
+use App\Support\CompanyContext;
 use App\Models\CoverColor;
 use App\Models\CoverMaterial;
 use App\Models\CoverStructure;
@@ -13,14 +14,20 @@ class CoverMasterSeeder extends Seeder
 {
     public function run(): void
     {
-        $company = Company::query()->first();
-        $line = ProductLine::query()->where('code', 'notopia')->first();
-        if (! $company || ! $line) {
-            $this->command?->error('company/notopia missing');
+        $company = Company::query()->where('is_active', true)->first();
+        if (! $company) {
+            $this->command?->error('active company missing');
             return;
         }
-        $cid = $company->id;
-        $lid = $line->id;
+        $cid = (int) $company->id;
+
+        app(CompanyContext::class)->runForCompany($cid, function () use ($cid): void {
+            $line = ProductLine::query()->where('code', 'notopia')->first();
+            if (! $line) {
+                $this->command?->error('company/notopia missing');
+                return;
+            }
+            $lid = $line->id;
 
         $materials = [
             ['code' => 'leather', 'name' => 'چرم', 'sort' => 1],
@@ -68,5 +75,6 @@ class CoverMasterSeeder extends Seeder
         }
 
         $this->command?->info('Cover master data seeded');
+        });
     }
 }

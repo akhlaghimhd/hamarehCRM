@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\CompanyContext;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -45,17 +46,7 @@ class User extends Authenticatable implements FilamentUser
 
     public function currentCompanyId(): ?int
     {
-        $selectedCompanyId = session('current_company_id');
-
-        if ($selectedCompanyId !== null) {
-            return $this->companies()
-                ->where('companies.id', $selectedCompanyId)
-                ->exists()
-                    ? (int) $selectedCompanyId
-                    : null;
-        }
-
-        return $this->defaultCompany()?->id;
+        return app(CompanyContext::class)->currentCompanyId($this);
     }
 
     /**
@@ -253,6 +244,7 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->companies()
             ->wherePivot('is_default', true)
+            ->where('companies.is_active', true)
             ->first();
     }
 }

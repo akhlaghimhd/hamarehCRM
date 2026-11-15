@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToCompany;
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -43,21 +42,4 @@ class CatalogSeason extends Model
     {
         return $this->hasMany(ProductModel::class);
     }
-
-    protected static function booted(): void
-    {
-        static::creating(function (self $model): void {
-            if ($model->company_id) {
-                return;
-            }
-            $user = auth()->user();
-            if ($user && ! empty($user->company_id)) {
-                $model->company_id = $user->company_id;
-                return;
-            }
-            // fallback: اولین شرکت (تک‌شرکتی عملیاتی)
-            $model->company_id = \App\Models\Company::query()->value('id');
-        });
-    }
-
 }

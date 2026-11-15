@@ -3,12 +3,12 @@
 namespace App\Providers;
 
 use App\Models\Activity;
-use App\Models\Company;
 use App\Models\Task;
 use App\Observers\ActivityAuditObserver;
 use App\Observers\AuditObserver;
 use App\Policies\ActivityPolicy;
 use App\Policies\TaskPolicy;
+use App\Support\CompanyContext;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->scoped(CompanyContext::class);
     }
 
     public function boot(): void
@@ -44,23 +44,18 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 $user = Auth::user();
-                $current = session('current_company_id');
+                $context = app(CompanyContext::class);
+                $selectedCompanyId = session('current_company_id');
 
-                if ($current && method_exists($user, 'companies')) {
-                    $allowed = $user->companies()->where('companies.id', $current)->exists();
-                    if (! $allowed) {
-                        session()->forget('current_company_id');
-                        $current = null;
-                    }
+                if ($selectedCompanyId !== null && ! $context->isAvailableTo($user, (int) $selectedCompanyId)) {
+                    $context->clearSelection();
                 }
 
-                if (! $current) {
-                    $company = method_exists($user, 'defaultCompany')
-                        ? $user->defaultCompany()
-                        : null;
+                if (session('current_company_id') === null) {
+                    $defaultCompanyId = $context->defaultCompanyId($user);
 
-                    if ($company) {
-                        session(['current_company_id' => $company->id]);
+                    if ($defaultCompanyId !== null) {
+                        session(['current_company_id' => $defaultCompanyId]);
                     }
                 }
             });

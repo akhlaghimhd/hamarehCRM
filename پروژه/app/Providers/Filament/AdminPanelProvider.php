@@ -20,9 +20,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -59,17 +57,7 @@ class AdminPanelProvider extends PanelProvider
                     ->label('تعویض شرکت')
                     ->icon('heroicon-o-building-office-2')
                     ->url(fn (): string => SwitchCompany::getUrl())
-                    ->visible(function (): bool {
-                        $user = Auth::user();
-
-                        if (! $user) {
-                            return false;
-                        }
-
-                        return DB::table('company_user')
-                            ->where('user_id', $user->id)
-                            ->count() > 1;
-                    })
+                    ->visible(fn (): bool => SwitchCompany::canAccess())
                     ->sort(10),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')

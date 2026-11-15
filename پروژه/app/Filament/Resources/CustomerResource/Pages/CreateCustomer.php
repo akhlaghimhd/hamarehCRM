@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\CustomerResource\Pages;
 
 use App\Filament\Resources\CustomerResource;
-use App\Models\Company;
+use App\Support\CompanyContext;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateCustomer extends CreateRecord
@@ -14,16 +14,7 @@ class CreateCustomer extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $companyId = session('current_company_id');
-
-        if (! $companyId) {
-            $companyId = Company::query()->value('id');
-            if ($companyId) {
-                session(['current_company_id' => $companyId]);
-            }
-        }
-
-        $data['company_id'] = $companyId;
+        $data['company_id'] = app(CompanyContext::class)->requireCompanyId();
 
         return $data;
     }
