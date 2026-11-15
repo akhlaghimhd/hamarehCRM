@@ -4,6 +4,8 @@ namespace App\Support;
 
 use App\Models\AuditEvent;
 use App\Models\CompanySetting;
+use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -25,11 +27,11 @@ class CompanySettings
             return $default;
         }
 
-        $raw = $setting->is_sensitive
-            ? Crypt::decryptString((string) $setting->value)
-            : (string) $setting->value;
+        if ($setting->is_sensitive) {
+            $this->assertCanManage();
+        }
 
-        return json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        return $this->decodeValue($setting);
     }
 
     public function set(
@@ -41,6 +43,7 @@ class CompanySettings
         bool $sensitive = false,
     ): CompanySetting {
         $this->assertCompanyContext($companyId);
+        $this->assertCanManage();
         $this->assertKey($key);
 
         if (! in_array($type, self::TYPES, true)) {
@@ -104,6 +107,7 @@ class CompanySettings
     public function forget(int $companyId, string $key): bool
     {
         $this->assertCompanyContext($companyId);
+        $this->assertCanManage();
 
         return DB::transaction(function () use ($companyId, $key) {
             $setting = CompanySetting::query()->where('key', $key)->lockForUpdate()->first();
@@ -139,6 +143,15 @@ class CompanySettings
     {
         if ($companyId < 1 || app(CompanyContext::class)->requireCompanyId() !== $companyId) {
             throw new RuntimeException('تنظیمات فقط در زمینه شرکت جاری قابل دسترسی است.');
+        }
+    }
+
+    private function assertCanManage(): void
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User || ! $user->isCompanyAdmin()) {
+            throw new AuthorizationException('فقط مدیر شرکت مجاز به مدیریت تنظیمات است.');
         }
     }
 

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Company;
 use App\Models\CompanySetting;
+use App\Models\Role;
 use App\Models\User;
 use App\Support\CompanySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,6 +26,7 @@ class CompanySettingsTest extends TestCase
         $settings->set($companyA->id, 'sales.default_currency', 'string', 'IRR');
 
         $this->assertSame('IRR', $settings->get($companyA->id, 'sales.default_currency'));
+        session(['current_company_id' => $companyB->id]);
         $this->assertNull($settings->get($companyB->id, 'sales.default_currency'));
     }
 
@@ -40,7 +42,7 @@ class CompanySettingsTest extends TestCase
         $stored = CompanySetting::query()->where('key', 'integration.api_token')->first();
 
         $this->assertNotSame('secret-token', $stored->value);
-        $this->assertSame('secret-token', Crypt::decryptString($stored->value));
+        $this->assertSame('secret-token', json_decode(Crypt::decryptString($stored->value), true));
         $this->assertSame('secret-token', $settings->get($company->id, 'integration.api_token'));
     }
 
@@ -85,12 +87,27 @@ class CompanySettingsTest extends TestCase
         app(CompanySettings::class)->set($companyB->id, 'sales.default_currency', 'string', 'IRR');
     }
 
+    public function test_non_admin_cannot_manage_company_settings(): void
+    {
+        [$company] = $this->fixture();
+        $staff = User::factory()->create();
+        $staff->companies()->attach($company->id, ['is_default' => true]);
+
+        $this->actingAs($staff);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
+
+        app(CompanySettings::class)->set($company->id, 'sales.default_currency', 'string', 'IRR');
+    }
+
     private function fixture(): array
     {
         $companyA = Company::query()->create(['name' => 'Settings A', 'slug' => 'settings-a', 'is_active' => true]);
         $companyB = Company::query()->create(['name' => 'Settings B', 'slug' => 'settings-b', 'is_active' => true]);
         $user = User::factory()->create();
-        $user->companies()->attach($companyA->id, ['is_default' => true]);
+        $adminRole = Role::query()->create(['company_id' => $companyA->id, 'name' => 'admin', 'label' => 'Admin']);
+        $user->companies()->attach($companyA->id, ['role_id' => $adminRole->id, 'is_default' => true]);
         $user->companies()->attach($companyB->id, ['is_default' => false]);
 
         return [$companyA, $companyB, $user];
