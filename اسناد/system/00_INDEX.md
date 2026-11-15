@@ -16,6 +16,7 @@
 - 04_DYNAMIC_PRODUCT_CONFIGURATION.md — موتور عمومی محصول و پیکربندی پویا
 - 05_WORKFLOW_ORDER_PRODUCTION.md — گردش‌کار، سفارش و تولید
 - 06_PLATFORM_INFRASTRUCTURE.md — زیرساخت عملیاتی
+- 07_IMPLEMENTATION_ROADMAP.md — تطبیق معماری با کد و فازبندی اجرای آینده
 - modules/M00 تا M11 — قرارداد هر ماژول
 
 اسناد مکمل: ../AGENT_RULES.md، ../CATALOG_ARCHITECTURE.md، ../PAGE_DESIGN_STANDARDS.md، ../TABLE_STANDARDS.md.
