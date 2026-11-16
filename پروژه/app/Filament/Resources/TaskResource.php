@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\TaskResource\Pages;
+use App\Filament\Resources\TaskResource\RelationManagers;
 use App\Models\Task;
 use App\Models\User;
 use Filament\Actions\EditAction;
@@ -143,6 +144,13 @@ class TaskResource extends Resource
             ->recordActions([
                 EditAction::make()->label('ویرایش')->visible(fn (Task $record) => static::canEdit($record)),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\\AttachmentsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
