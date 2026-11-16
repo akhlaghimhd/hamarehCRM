@@ -66,6 +66,9 @@
 - مقدار پیش‌فرض عضویت در کل حساب یکتا نگه داشته می‌شود؛ عضویت پیش‌فرض در شرکت غیرفعال یا حذف نرم‌شده هنگام ایجاد/افزودن شرکت جدید نادیده گرفته نمی‌شود.
 - وضعیت `User.is_active` سراسری است؛ تغییر آن از پنل شرکت برای حساب چندشرکتی، خود کاربر یا مدیر دارای زیرمجموعه مستقیم مجاز نیست.
 - UpdateRoleHierarchy: کنترل چرخه نقش‌ها و کپی مستقل مجوزها.
+- DeleteCompanyRole: جلوگیری از حذف نقش سیستمی، نقش تخصیص‌یافته یا نقش والد.
+- UpdateUserAccount: کنترل تغییر وضعیت سراسری حساب و جلوگیری از غیرفعال‌سازی مدیر دارای زیرمجموعه یا حساب چندشرکتی.
+- DeleteCompanyForUser: حذف نرم شرکت فقط توسط مدیر قابل بازیابی همان شرکت.
 - CompanyTheme: پالت آماده/دلخواه، رنگ اصلی و ثانویه و تراکم در کلید رزروشده ui.theme از سرویس تنظیمات شرکت استفاده می‌کند؛ جدول تنظیمات موازی ندارد.
 
 ### داده آزمایشی
@@ -82,6 +85,8 @@ FoundationSeeder دو شرکت نمونه myoffice و demo-co را همراه ن
 - RemoveUserFromCompanyTest
 - UserRoleHierarchyTest
 - DeleteCompanyRoleTest
+- DeleteCompanyForUserTest
+- UpdateUserAccountTest
 - CompanyIsolationTest
 - FilamentCompanyAccessTest
 - CompanySettingsTest
