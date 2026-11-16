@@ -35,8 +35,11 @@ class AttachmentPreviewTest extends TestCase
 
         $response->assertOk()
             ->assertHeader('Content-Type', 'image/png')
-            ->assertHeader('X-Content-Type-Options', 'nosniff')
-            ->assertHeader('Cache-Control', 'private, no-store');
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+
+        $cacheControl = $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('private', $cacheControl);
+        $this->assertStringContainsString('no-store', $cacheControl);
 
         $this->assertStringStartsWith('inline;', $response->headers->get('Content-Disposition'));
     }
