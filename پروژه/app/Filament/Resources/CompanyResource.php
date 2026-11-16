@@ -99,7 +99,9 @@ class CompanyResource extends Resource
                     ->columnSpanFull(),
                 Toggle::make('is_active')
                     ->label('فعال')
-                    ->default(true),
+                    ->default(true)
+                    ->disabled(fn (): bool => ! (auth()->user()?->isCompanyAdmin() ?? false))
+                    ->helperText('تغییر وضعیت شرکت فقط برای مدیر شرکت مجاز است.'),
             ]);
     }
 
