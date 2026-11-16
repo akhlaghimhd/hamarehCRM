@@ -65,8 +65,14 @@ class Role extends Model
                 break;
             }
 
+            $permissionQuery = $role->permissions();
+
+            if (! ($this->is_system && $this->name === 'admin')) {
+                $permissionQuery->where('permissions.group', '<>', 'سیستم');
+            }
+
             $permissionIds = $permissionIds->merge(
-                $role->permissions()->pluck('permissions.id')
+                $permissionQuery->pluck('permissions.id')
             );
 
             if (! $role->inherit_permissions || ! $role->parent_role_id) {
