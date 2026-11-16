@@ -65,7 +65,10 @@ class UpdateUserAccountTest extends TestCase
     {
         [$company, $actor] = $this->companyWithAdmin('two-admins');
 
-        $adminRole = $this->createRole($company, 'admin');
+        $adminRole = Role::query()
+            ->where('company_id', $company->id)
+            ->where('name', 'admin')
+            ->firstOrFail();
         $target = User::factory()->create();
         $target->companies()->attach($company->id, [
             'role_id' => $adminRole->id,
