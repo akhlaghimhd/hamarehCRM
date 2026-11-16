@@ -217,6 +217,44 @@ class CreateCompanyForUserTest extends TestCase
     }
 
 
+
+    public function test_company_manager_with_company_permission_cannot_create_another_company(): void
+    {
+        $creator = User::factory()->create();
+        $existingCompany = Company::query()->create([
+            'name' => 'شرکت مدیر اجرایی',
+            'slug' => 'company-manager-create',
+            'is_active' => true,
+        ]);
+        $managerRole = Role::query()->create([
+            'company_id' => $existingCompany->id,
+            'name' => 'company-manager',
+            'label' => 'مدیر اجرایی',
+            'is_system' => false,
+        ]);
+        $permission = Permission::query()->create([
+            'name' => 'companies.manage',
+            'label' => 'مدیریت شرکت‌ها',
+            'group' => 'شرکت',
+        ]);
+        $managerRole->permissions()->attach($permission);
+        $creator->companies()->attach($existingCompany->id, [
+            'role_id' => $managerRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($creator);
+        session(['current_company_id' => $existingCompany->id]);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(CreateCompanyForUser::class)->handle([
+            'name' => 'شرکت دوم',
+            'slug' => 'company-manager-second',
+            'is_active' => true,
+        ], $creator);
+    }
+
     public function test_inactive_user_cannot_create_a_company(): void
     {
         $creator = User::factory()->create(['is_active' => false]);
