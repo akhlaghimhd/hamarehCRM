@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Actions\Identity\RemoveUserFromCompany;
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\Role;
 use App\Models\User;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
