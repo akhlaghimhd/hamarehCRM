@@ -98,10 +98,7 @@ class EditUser extends EditRecord
         return $data;
     }
 
-    protected function hasDatabaseTransactions(): bool
-    {
-        return true;
-    }
+    protected ?bool $hasDatabaseTransactions = true;
 
     protected function afterSave(): void
     {

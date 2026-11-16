@@ -35,11 +35,17 @@ class UpdateUserAccount
             ]);
         }
 
-        if (! array_key_exists('is_active', $data) || (bool) $data['is_active'] || ! (bool) $target->is_active) {
+        if (! array_key_exists('is_active', $data)) {
             return;
         }
 
-        if ((int) $target->id === (int) $actor->id) {
+        $requestedStatus = (bool) $data['is_active'];
+
+        if ($requestedStatus === (bool) $target->is_active) {
+            return;
+        }
+
+        if (! $requestedStatus && (int) $target->id === (int) $actor->id) {
             throw ValidationException::withMessages([
                 'is_active' => 'غیرفعال‌سازی حساب خودتان از داخل شرکت مجاز نیست.',
             ]);
@@ -52,7 +58,7 @@ class UpdateUserAccount
 
         if ($hasOtherCompanyMembership) {
             throw ValidationException::withMessages([
-                'is_active' => 'این حساب عضو شرکت‌های دیگری نیز هست؛ برای محدودکردن دسترسی، عضویت را فقط از شرکت جاری حذف کنید.',
+                'is_active' => 'تغییر وضعیت حساب سراسری کاربر چندشرکتی از داخل یک شرکت مجاز نیست؛ عضویت شرکت جاری را جداگانه مدیریت کنید.',
             ]);
         }
     }

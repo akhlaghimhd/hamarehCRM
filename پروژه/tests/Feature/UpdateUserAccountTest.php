@@ -37,6 +37,28 @@ class UpdateUserAccountTest extends TestCase
         );
     }
 
+
+    public function test_company_admin_cannot_reactivate_a_multi_company_account_globally(): void
+    {
+        [$company, $actor] = $this->companyWithAdmin('account-reactivation-a');
+        $otherCompany = $this->createCompany('account-reactivation-b');
+        $target = User::factory()->create(['is_active' => false]);
+        $target->companies()->attach($company->id);
+        $target->companies()->attach($otherCompany->id);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+
+        app(UpdateUserAccount::class)->assertCanChangeStatus(
+            $target,
+            ['is_active' => true],
+            $actor,
+            $company->id,
+        );
+    }
+
     public function test_company_admin_can_deactivate_an_account_that_belongs_only_to_current_company(): void
     {
         [$company, $actor] = $this->companyWithAdmin('account-status-single');

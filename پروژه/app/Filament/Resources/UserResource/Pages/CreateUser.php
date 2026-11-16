@@ -49,10 +49,7 @@ class CreateUser extends CreateRecord
         return $data;
     }
 
-    protected function hasDatabaseTransactions(): bool
-    {
-        return true;
-    }
+    protected ?bool $hasDatabaseTransactions = true;
 
     protected function afterCreate(): void
     {
