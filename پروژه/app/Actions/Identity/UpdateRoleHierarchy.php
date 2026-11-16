@@ -46,12 +46,18 @@ class UpdateRoleHierarchy
             }
 
             if ($parentRoleId !== null) {
-                if ($parentRoleId === (int) $lockedRole->id || ! Role::query()
+                $parentRole = Role::query()
                     ->where('company_id', $lockedRole->company_id)
                     ->whereKey($parentRoleId)
-                    ->exists()) {
+                    ->first();
+
+                if (
+                    $parentRoleId === (int) $lockedRole->id
+                    || ! $parentRole
+                    || $parentRole->name === 'admin'
+                ) {
                     throw ValidationException::withMessages([
-                        'parent_role_id' => 'نقش والد باید متعلق به همین شرکت باشد و نمی‌تواند خود نقش باشد.',
+                        'parent_role_id' => 'نقش والد باید متعلق به همین شرکت باشد؛ نقش مدیر شرکت نمی‌تواند والد نقش دیگری باشد.',
                     ]);
                 }
 
