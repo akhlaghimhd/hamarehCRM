@@ -96,15 +96,28 @@ class UserResource extends Resource
                     ->maxLength(255),
                 Select::make('role_ids')
                     ->label('نقش‌های کاربر در شرکت جاری')
-                    ->options(
-                        Role::query()
-                            ->where('company_id', $companyId ?? 0)
-                            ->orderBy('label')
-                            ->pluck('label', 'id')
-                    )
+                    ->options(function (?User $record) use ($companyId): array {
+                        $query = Role::query()->where('company_id', $companyId ?? 0);
+                        $actor = auth()->user();
+                        $canManageAdministratorRole = $actor?->isCompanyAdmin() ?? false;
+                        $recordAlreadyHasAdministratorRole = $record !== null
+                            && $companyId !== null
+                            && static::membershipHasAdminRole($record, (int) $companyId);
+
+                        if (! $canManageAdministratorRole && ! $recordAlreadyHasAdministratorRole) {
+                            $query->where('name', '<>', 'admin');
+                        }
+
+                        return $query->orderBy('label')->pluck('label', 'id')->all();
+                    })
                     ->multiple()
                     ->searchable()
                     ->preload()
+                    ->disabled(fn (?User $record): bool => $record !== null
+                        && $companyId !== null
+                        && ! (auth()->user()?->isCompanyAdmin() ?? false)
+                        && static::membershipHasAdminRole($record, (int) $companyId))
+                    ->dehydrated()
                     ->required(),
                 Select::make('manager_user_id')
                     ->label('مدیر مستقیم')
@@ -179,6 +192,35 @@ class UserResource extends Resource
                     ->successNotificationTitle('عضویت کاربر از شرکت جاری حذف شد')
                     ->visible(fn ($record) => static::canDelete($record)),
             ]);
+    }
+
+
+    private static function membershipHasAdminRole(User $user, int $companyId): bool
+    {
+        $membership = DB::table('company_user')
+            ->where('company_id', $companyId)
+            ->where('user_id', $user->id)
+            ->first(['id', 'role_id']);
+
+        if (! $membership) {
+            return false;
+        }
+
+        $roleIds = DB::table('company_user_role')
+            ->where('company_user_id', $membership->id)
+            ->pluck('role_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
+        if ($roleIds === [] && $membership->role_id !== null) {
+            $roleIds = [(int) $membership->role_id];
+        }
+
+        return Role::query()
+            ->where('company_id', $companyId)
+            ->whereIn('id', $roleIds)
+            ->where('name', 'admin')
+            ->exists();
     }
 
     public static function getPages(): array
