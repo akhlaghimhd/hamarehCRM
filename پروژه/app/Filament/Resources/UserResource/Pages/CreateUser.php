@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Actions\Identity\UpdateCompanyMembership;
+use App\Models\AuditEvent;
 use Illuminate\Support\Facades\DB;
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
@@ -58,6 +59,22 @@ class CreateUser extends CreateRecord
                 'role_id' => $this->roleIds[0],
                 'is_default' => true,
             ],
+        ]);
+
+        AuditEvent::query()->create([
+            'company_id' => $this->companyId,
+            'auditable_type' => $this->record->getMorphClass(),
+            'auditable_id' => $this->record->id,
+            'actor_user_id' => auth()->id(),
+            'event' => 'membership_added',
+            'old_values' => [],
+            'new_values' => [
+                'role_ids' => $this->roleIds,
+                'manager_user_id' => $this->managerUserId,
+                'is_default' => true,
+            ],
+            'metadata' => ['source' => 'user_creation'],
+            'occurred_at' => now(),
         ]);
 
         app(UpdateCompanyMembership::class)->handle(
