@@ -2,13 +2,17 @@
 
 namespace App\Filament\Pages;
 
+use App\Actions\Identity\ActivateCompanyForMember;
+use App\Models\Role;
 use App\Models\User;
 use App\Support\CompanyContext;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Pages\Page;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 class SwitchCompany extends Page
@@ -43,15 +47,17 @@ class SwitchCompany extends Page
         $companyContext = app(CompanyContext::class);
         $currentCompanyId = $companyContext->currentCompanyId($user);
         $activeMembershipCount = $this->membershipCount((int) $user->id);
+        $canRecoverCompany = app(ActivateCompanyForMember::class)->hasRecoverableCompany($user);
 
-        if ($activeMembershipCount === 0 || ($currentCompanyId !== null && $activeMembershipCount < 2)) {
+        if (
+            ($activeMembershipCount === 0 && ! $canRecoverCompany)
+            || ($currentCompanyId !== null && $activeMembershipCount < 2 && ! $canRecoverCompany)
+        ) {
             $this->redirect(Dashboard::getUrl());
 
             return;
         }
 
-        // Keep this page available when the previous company became inactive
-        // and the user needs to select one of their remaining active memberships.
         $this->company_id = $currentCompanyId;
     }
 
@@ -68,12 +74,12 @@ class SwitchCompany extends Page
 
         $memberships = DB::table('company_user as cu')
             ->join('companies as c', 'c.id', '=', 'cu.company_id')
-            ->leftJoin('roles as r', 'r.id', '=', 'cu.role_id')
             ->where('cu.user_id', $user->id)
-            ->where('c.is_active', true)
-            ->whereNull('c.deleted_at')
             ->orderBy('c.name')
             ->get([
+                'cu.id as membership_id',
+                'cu.role_id',
+                'cu.is_default',
                 'c.id',
                 'c.name',
                 'c.slug',
@@ -81,13 +87,48 @@ class SwitchCompany extends Page
                 'c.phone',
                 'c.email',
                 'c.is_active',
-                'cu.is_default',
-                'r.label as role_label',
-                'r.name as role_name',
+                'c.deleted_at',
             ]);
 
         $currentId = app(CompanyContext::class)->currentCompanyId($user);
-        $current = $currentId === null ? null : $memberships->firstWhere('id', $currentId);
+
+        $companyOptions = $memberships->map(function ($row) use ($user, $currentId): array {
+            $roleIds = DB::table('company_user_role')
+                ->where('company_user_id', $row->membership_id)
+                ->orderBy('id')
+                ->pluck('role_id');
+
+            if ($roleIds->isEmpty() && $row->role_id !== null) {
+                $roleIds = collect([(int) $row->role_id]);
+            }
+
+            $roles = Role::query()
+                ->where('company_id', $row->id)
+                ->whereIn('id', $roleIds)
+                ->get(['name', 'label']);
+
+            $roleLabel = $roles
+                ->map(fn (Role $role): string => (string) ($role->label ?: $role->name))
+                ->filter()
+                ->implode('، ');
+
+            return [
+                'id' => (int) $row->id,
+                'name' => (string) $row->name,
+                'slug' => (string) ($row->slug ?? ''),
+                'national_id' => (string) ($row->national_id ?: '—'),
+                'phone' => (string) ($row->phone ?: ''),
+                'email' => (string) ($row->email ?: '—'),
+                'role_label' => $roleLabel !== '' ? $roleLabel : '—',
+                'is_default' => (bool) $row->is_default,
+                'is_active' => (bool) $row->is_active,
+                'is_deleted' => $row->deleted_at !== null,
+                'is_current' => (int) $row->id === $currentId,
+                'can_activate' => app(ActivateCompanyForMember::class)->canActivate($user, (int) $row->id),
+            ];
+        })->values();
+
+        $current = $currentId === null ? null : $companyOptions->firstWhere('id', $currentId);
 
         return [
             'userMeta' => [
@@ -96,26 +137,8 @@ class SwitchCompany extends Page
                 'username' => (string) ($user->username ?? '—'),
                 'email' => (string) ($user->email ?? '—'),
             ],
-            'currentCompany' => $current ? [
-                'id' => (int) $current->id,
-                'name' => (string) $current->name,
-                'slug' => (string) ($current->slug ?? '—'),
-                'national_id' => (string) ($current->national_id ?: '—'),
-                'phone' => (string) ($current->phone ?: '—'),
-                'email' => (string) ($current->email ?: '—'),
-                'is_active' => (bool) $current->is_active,
-                'role_label' => (string) ($current->role_label ?: $current->role_name ?: '—'),
-            ] : null,
-            'companyOptions' => $memberships->map(fn ($row) => [
-                'id' => (int) $row->id,
-                'name' => (string) $row->name,
-                'slug' => (string) ($row->slug ?? ''),
-                'phone' => (string) ($row->phone ?: ''),
-                'role_label' => (string) ($row->role_label ?: $row->role_name ?: '—'),
-                'is_default' => (bool) $row->is_default,
-                'is_active' => (bool) $row->is_active,
-                'is_current' => (int) $row->id === $currentId,
-            ])->values()->all(),
+            'currentCompany' => $current,
+            'companyOptions' => $companyOptions->all(),
         ];
     }
 
@@ -142,11 +165,41 @@ class SwitchCompany extends Page
         $name = DB::table('companies')
             ->where('id', $this->company_id)
             ->where('is_active', true)
+            ->whereNull('deleted_at')
             ->value('name') ?? 'شرکت';
 
         Notification::make()
             ->title('شرکت جاری تغییر کرد')
             ->body($name)
+            ->success()
+            ->send();
+
+        $this->redirect(Dashboard::getUrl());
+    }
+
+    public function activateCompany(int $companyId): void
+    {
+        $user = Auth::user();
+
+        if (! $user instanceof User) {
+            return;
+        }
+
+        try {
+            app(ActivateCompanyForMember::class)->handle($companyId, $user);
+        } catch (AuthorizationException | ValidationException | RuntimeException) {
+            Notification::make()
+                ->title('فعال‌سازی انجام نشد')
+                ->body('فقط مدیر همان شرکت می‌تواند شرکت عضو‌شده را دوباره فعال کند.')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        Notification::make()
+            ->title('شرکت دوباره فعال شد')
+            ->body('اکنون وارد فضای کاری این شرکت شده‌اید.')
             ->success()
             ->send();
 
@@ -198,6 +251,7 @@ class SwitchCompany extends Page
         $currentCompanyId = app(CompanyContext::class)->currentCompanyId($user);
 
         return $activeMembershipCount > 1
-            || ($currentCompanyId === null && $activeMembershipCount > 0);
+            || ($currentCompanyId === null && $activeMembershipCount > 0)
+            || app(ActivateCompanyForMember::class)->hasRecoverableCompany($user);
     }
 }
