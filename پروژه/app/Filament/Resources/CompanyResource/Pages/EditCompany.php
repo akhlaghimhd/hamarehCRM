@@ -33,7 +33,11 @@ class EditCompany extends EditRecord
 
     protected function getRedirectUrl(): ?string
     {
-        if (! $this->record->is_active) {
+        $isActive = Company::query()
+            ->whereKey($this->record->getKey())
+            ->value('is_active');
+
+        if (! (bool) $isActive) {
             return SwitchCompany::getUrl();
         }
 
