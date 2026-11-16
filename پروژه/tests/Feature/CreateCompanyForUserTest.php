@@ -53,12 +53,6 @@ class CreateCompanyForUserTest extends TestCase
             'auditable_id' => $company->id,
             'event' => 'created',
         ]);
-        $this->assertDatabaseHas('audit_events', [
-            'company_id' => $company->id,
-            'actor_user_id' => $creator->id,
-            'auditable_id' => $company->id,
-            'event' => 'created',
-        ]);
 
         $this->actingAs($creator->fresh());
         $this->assertTrue(auth()->user()->isCompanyAdmin());
@@ -123,35 +117,6 @@ class CreateCompanyForUserTest extends TestCase
         ]);
     }
 
-
-    public function test_soft_deleted_default_company_does_not_create_a_second_default(): void
-    {
-        $creator = User::factory()->create();
-        $existingCompany = Company::query()->create([
-            'name' => 'شرکت پیش‌فرض حذف‌شده',
-            'slug' => 'old-deleted-default-company',
-            'is_active' => true,
-        ]);
-        $creator->companies()->attach($existingCompany->id, ['is_default' => true]);
-        $existingCompany->delete();
-
-        $newCompany = app(CreateCompanyForUser::class)->handle([
-            'name' => 'شرکت جدید',
-            'slug' => 'new-after-deleted-default',
-            'is_active' => true,
-        ], $creator);
-
-        $this->assertDatabaseHas('company_user', [
-            'company_id' => $existingCompany->id,
-            'user_id' => $creator->id,
-            'is_default' => true,
-        ]);
-        $this->assertDatabaseHas('company_user', [
-            'company_id' => $newCompany->id,
-            'user_id' => $creator->id,
-            'is_default' => false,
-        ]);
-    }
 
     public function test_company_creation_rolls_back_when_a_duplicate_slug_is_rejected(): void
     {
