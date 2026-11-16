@@ -6,6 +6,7 @@ use App\Actions\Identity\DeleteCompanyRole;
 use App\Actions\Identity\SyncCompanyRolePermissions;
 use App\Actions\Identity\UpdateRoleHierarchy;
 use App\Models\AuditEvent;
+use App\Models\Permission;
 use App\Filament\Resources\RoleResource;
 use App\Models\Role;
 use Filament\Actions\DeleteAction;
