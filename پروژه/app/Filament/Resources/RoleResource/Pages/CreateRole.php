@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\RoleResource\Pages;
 
 use App\Actions\Identity\UpdateRoleHierarchy;
+use App\Models\AuditEvent;
 use App\Filament\Resources\RoleResource;
 use App\Models\Role;
 use Filament\Resources\Pages\CreateRecord;
@@ -75,6 +76,8 @@ class CreateRole extends CreateRecord
         return $data;
     }
 
+    protected ?bool $hasDatabaseTransactions = true;
+
     protected function afterCreate(): void
     {
         app(UpdateRoleHierarchy::class)->handle(
@@ -83,6 +86,26 @@ class CreateRole extends CreateRecord
             $this->inheritPermissions,
             $this->copyPermissionsFromRoleId,
         );
+
+        $role = $this->record->fresh();
+
+        AuditEvent::query()->create([
+            'company_id' => $this->companyId,
+            'auditable_type' => $role->getMorphClass(),
+            'auditable_id' => $role->getKey(),
+            'actor_user_id' => auth()->id(),
+            'event' => 'created',
+            'old_values' => [],
+            'new_values' => [
+                'name' => $role->name,
+                'label' => $role->label,
+                'parent_role_id' => $role->parent_role_id,
+                'inherit_permissions' => (bool) $role->inherit_permissions,
+                'permission_ids' => $role->permissions()->pluck('permissions.id')->map(fn ($id): int => (int) $id)->all(),
+            ],
+            'metadata' => ['source' => 'role_management'],
+            'occurred_at' => now(),
+        ]);
     }
 
     public ?int $companyId = null;
