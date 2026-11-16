@@ -45,3 +45,46 @@
 - نماینده داخلی فقط از عضویت فعال همان شرکت مشتق می‌شود.
 - کد نمایندگی، قرارداد، انتساب و سیاست پورسانت در محدوده شرکت معتبر می‌شوند؛ قاعده یکتایی کد پیش از Migration نهایی شود.
 - Switch شرکت باید شبکه نمایندگان، مشتریان تحت پوشش و اسناد پورسانت همان شرکت را جایگزین کند.
+
+
+## وضعیت پیاده‌سازی و مسیرهای مرجع — 2026-11-16
+
+این بخش مسیرهای واقعی کد را مشخص می‌کند؛ وجود تست در مخزن به معنی اجرای موفق آن در محیط جاری نیست.
+
+### رابط‌ها
+- CompanyResource و صفحات ListCompanies، CreateCompany، ViewCompany و EditCompany: پروفایل و چرخه عمر شرکت جاری.
+- SwitchCompany: انتخاب فضای کاری، بازیابی شرکت غیرفعال/حذف نرم‌شده توسط مدیر همان شرکت.
+- UserResource: افزودن حساب موجود، ایجاد کاربر، نقش‌های چندگانه، مدیر مستقیم و حذف عضویت فقط از شرکت جاری.
+- RoleResource: نقش‌ها، مجوزهای مستقیم، نقش والد و ارث‌بری مجوز.
+- CompanySettings: تنظیمات عمومی نوع‌دار و پوسته شرکت.
+
+### منطق دامنه
+- CreateCompanyForUser: ایجاد شرکت، نقش مدیر، عضویت سازنده و انتخاب شرکت در یک تراکنش.
+- UpdateCompanyProfile: اعتبارسنجی، یکتایی slug و ثبت Audit تغییرات پروفایل.
+- ActivateCompanyForMember: بازیابی فقط برای مدیر عضو همان شرکت.
+- AddExistingUserToCompany، UpdateCompanyMembership و RemoveUserFromCompany: مدیریت عضویت و زنجیره سرپرستی در مرز شرکت.
+- UpdateRoleHierarchy: کنترل چرخه نقش‌ها و کپی مستقل مجوزها.
+- CompanyTheme: پالت آماده/دلخواه، رنگ اصلی و ثانویه و تراکم در کلید رزروشده ui.theme از سرویس تنظیمات شرکت استفاده می‌کند؛ جدول تنظیمات موازی ندارد.
+
+### داده آزمایشی
+FoundationSeeder دو شرکت نمونه myoffice و demo-co را همراه نقش‌های اولیه و کاربران آزمایشی ایجاد می‌کند.
+
+### پوشش تست موجود
+- CreateCompanyForUserTest
+- UpdateCompanyProfileTest
+- ActivateCompanyForMemberTest
+- SwitchCompanyTest
+- AddExistingUserToCompanyTest
+- RemoveUserFromCompanyTest
+- UserRoleHierarchyTest
+- CompanyIsolationTest
+- FilamentCompanyAccessTest
+- CompanySettingsTest
+- CompanyThemeTest
+- CompanySettingsPageTest
+
+### موارد لازم پیش از اعلام تکمیل
+- اجرای تست‌های بالا و کل مجموعه Feature روی محیط واقعی پروژه.
+- بررسی دستی فرم‌ها و جدول‌ها در موبایل و دسکتاپ، RTL، پوسته روشن/تیره و تغییر شرکت.
+- بررسی بازیابی شرکت غیرفعال، حذف عضویت مدیر، تغییر نقش مدیر و جلوگیری از حذف آخرین مدیر فعال.
+- DoD اصلی این ماژول تا زمان اجرای موفق تست‌ها و بازبینی رابط، نباید صرفاً بر اساس وجود کد تیک بخورد.
