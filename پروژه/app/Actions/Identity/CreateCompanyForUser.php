@@ -36,6 +36,18 @@ class CreateCompanyForUser
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            if (! $lockedCreator->is_active) {
+                throw new AuthorizationException('حساب کاربری غیرفعال اجازه ایجاد شرکت ندارد.');
+            }
+
+            $hasMembership = DB::table('company_user')
+                ->where('user_id', $lockedCreator->id)
+                ->exists();
+
+            if ($hasMembership && ! $lockedCreator->hasPermission('companies.manage')) {
+                throw new AuthorizationException('برای ایجاد شرکت جدید باید در شرکت جاری مجوز مدیریت شرکت داشته باشید.');
+            }
+
             $company = Company::query()->create($attributes);
 
             $adminRole = Role::query()->create([
