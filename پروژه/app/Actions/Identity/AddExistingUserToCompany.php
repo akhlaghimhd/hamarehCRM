@@ -21,7 +21,7 @@ class AddExistingUserToCompany
         ?int $managerUserId,
         User $actor,
     ): void {
-        if ((int) $actor->currentCompanyId() !== $companyId || ! $actor->hasPermission('users.manage')) {
+        if (! $actor->is_active || (int) $actor->currentCompanyId() !== $companyId || ! $actor->hasPermission('users.manage')) {
             throw ValidationException::withMessages([
                 'user_id' => 'اجازه افزودن کاربر به این شرکت را ندارید.',
             ]);
@@ -66,12 +66,17 @@ class AddExistingUserToCompany
                 $managerUserId,
             );
 
+            $hasDefaultCompany = $user->companies()
+                ->wherePivot('is_default', true)
+                ->where('companies.is_active', true)
+                ->exists();
+
             $membershipId = DB::table('company_user')->insertGetId([
                 'company_id' => $companyId,
                 'user_id' => $userId,
                 'role_id' => $roleIds[0],
                 'manager_user_id' => $managerUserId,
-                'is_default' => false,
+                'is_default' => ! $hasDefaultCompany,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
