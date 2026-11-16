@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Identity\CreateCompanyForUser;
+use App\Filament\Resources\CompanyResource\Pages\CreateCompany;
 use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
@@ -11,6 +12,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class CreateCompanyForUserTest extends TestCase
@@ -58,6 +60,29 @@ class CreateCompanyForUserTest extends TestCase
 
         $this->actingAs($creator->fresh());
         $this->assertTrue(auth()->user()->isCompanyAdmin());
+    }
+
+
+    public function test_first_company_can_be_created_from_the_filament_resource_page(): void
+    {
+        $creator = User::factory()->create();
+
+        $this->actingAs($creator);
+        session()->forget('current_company_id');
+
+        Livewire::test(CreateCompany::class)
+            ->fillForm([
+                'name' => 'شرکت آغازین',
+                'slug' => 'first-company-ui',
+                'is_active' => true,
+            ])
+            ->call('create')
+            ->assertHasNoErrors();
+
+        $company = Company::query()->where('slug', 'first-company-ui')->firstOrFail();
+
+        $this->assertSame($company->id, (int) session('current_company_id'));
+        $this->assertTrue($creator->fresh()->isCompanyAdmin());
     }
 
     public function test_new_company_does_not_replace_existing_default_membership(): void
