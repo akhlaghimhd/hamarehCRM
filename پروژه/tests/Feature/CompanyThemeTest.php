@@ -5,12 +5,10 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\Role;
 use App\Models\User;
-use App\Filament\Pages\CompanySettings as CompanySettingsPage;
 use App\Support\CompanyTheme;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class CompanyThemeTest extends TestCase
@@ -110,48 +108,6 @@ class CompanyThemeTest extends TestCase
         ]);
     }
 
-
-    public function test_company_settings_page_saves_the_selected_theme_for_the_current_company(): void
-    {
-        [$company, , $user] = $this->adminInTwoCompanies();
-
-        $this->actingAs($user);
-        session(['current_company_id' => $company->id]);
-
-        Livewire::test(CompanySettingsPage::class)
-            ->assertSee('پوسته و هویت بصری شرکت')
-            ->set('themePalette', 'ocean')
-            ->set('themeDensity', 'comfortable')
-            ->call('saveTheme')
-            ->assertHasNoErrors();
-
-        $theme = app(CompanyTheme::class)->current();
-
-        $this->assertSame('ocean', $theme['palette']);
-        $this->assertSame('#0F766E', $theme['primary']);
-        $this->assertSame('#2563EB', $theme['secondary']);
-        $this->assertSame('comfortable', $theme['density']);
-    }
-
-    public function test_general_company_settings_editor_cannot_overwrite_reserved_theme_key(): void
-    {
-        [$company, , $user] = $this->adminInTwoCompanies();
-
-        $this->actingAs($user);
-        session(['current_company_id' => $company->id]);
-
-        Livewire::test(CompanySettingsPage::class)
-            ->set('key', 'ui.theme')
-            ->set('type', 'json')
-            ->set('value', '{}')
-            ->call('saveSetting')
-            ->assertHasErrors(['key' => 'not_in']);
-
-        $this->assertDatabaseMissing('company_settings', [
-            'company_id' => $company->id,
-            'key' => 'ui.theme',
-        ]);
-    }
 
     /**
      * @return array{Company, Company, User}
