@@ -18,6 +18,23 @@ class EditRole extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        $name = trim((string) ($data['name'] ?? $this->record->name));
+
+        if ($this->record->is_system && $name !== $this->record->name) {
+            throw ValidationException::withMessages([
+                'name' => 'نام نقش سیستمی قابل تغییر نیست.',
+            ]);
+        }
+
+        if (! $this->record->is_system && strtolower($name) === 'admin') {
+            throw ValidationException::withMessages([
+                'name' => 'نام admin رزرو شده و فقط برای نقش مدیر سیستمی شرکت استفاده می‌شود.',
+            ]);
+        }
+
+        $data['name'] = strtolower($name);
+        unset($data['is_system']);
+
         $parentRoleId = filled($data['parent_role_id'] ?? null) ? (int) $data['parent_role_id'] : null;
 
         if ($parentRoleId !== null) {

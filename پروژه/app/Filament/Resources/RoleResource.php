@@ -70,7 +70,9 @@ class RoleResource extends Resource
                     ->label('نام سیستمی')
                     ->required()
                     ->maxLength(100)
-                    ->helperText('مثلاً: sales, warehouse'),
+                    ->rules(fn (?Role $record): array => $record?->is_system ? [] : ['not_in:admin'])
+                    ->disabled(fn (?Role $record): bool => (bool) $record?->is_system)
+                    ->helperText('نام admin رزرو شده است؛ برای نقش‌های اختصاصی نامی مانند sales یا warehouse انتخاب کنید.'),
                 TextInput::make('label')
                     ->label('عنوان نمایشی')
                     ->required()
@@ -104,8 +106,9 @@ class RoleResource extends Resource
                     ->helperText('فقط یک کپی مستقل در زمان ایجاد انجام می‌شود؛ تغییرات بعدی منبع منتقل نمی‌شوند.'),
                 Toggle::make('is_system')
                     ->label('نقش سیستمی')
-                    ->helperText('نقش‌های سیستمی معمولاً حذف نمی‌شوند')
-                    ->disabled(fn (?Role $record) => $record?->is_system),
+                    ->default(false)
+                    ->disabled()
+                    ->helperText('وضعیت سیستمی فقط توسط کد و Seed رسمی مدیریت می‌شود.'),
                 CheckboxList::make('permissions')
                     ->label('مجوزهای مستقیم')
                     ->relationship('permissions', 'label')

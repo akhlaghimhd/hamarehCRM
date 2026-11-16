@@ -16,6 +16,17 @@ class CreateRole extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
+        $name = trim((string) ($data['name'] ?? ''));
+
+        if (strtolower($name) === 'admin') {
+            throw ValidationException::withMessages([
+                'name' => 'نام admin رزرو شده و فقط برای نقش مدیر سیستمی شرکت استفاده می‌شود.',
+            ]);
+        }
+
+        $data['name'] = strtolower($name);
+        $data['is_system'] = false;
+
         $companyId = auth()->user()?->currentCompanyId();
         $parentRoleId = filled($data['parent_role_id'] ?? null) ? (int) $data['parent_role_id'] : null;
         $copyPermissionsFromRoleId = filled($data['copy_permissions_from_role_id'] ?? null)
