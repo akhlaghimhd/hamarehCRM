@@ -9,7 +9,6 @@ use App\Models\Role;
 use App\Models\User;
 use App\Support\CompanyTheme;
 use App\Support\CompanySettings;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -114,19 +113,13 @@ class CompanySettingsPageTest extends TestCase
 
         $this->assertNull(CompanySetting::query()->find($setting->id));
 
-        try {
-            Livewire::test(CompanySettingsPage::class)->call('editSetting', $setting->id);
-            $this->fail('A company admin must not read a setting from another company.');
-        } catch (ModelNotFoundException) {
-            // The company global scope must make foreign settings indistinguishable from missing settings.
-        }
+        Livewire::test(CompanySettingsPage::class)
+            ->call('editSetting', $setting->id)
+            ->assertStatus(404);
 
-        try {
-            Livewire::test(CompanySettingsPage::class)->call('deleteSetting', $setting->id);
-            $this->fail('A company admin must not delete a setting from another company.');
-        } catch (ModelNotFoundException) {
-            // The company global scope must prevent ID-based cross-company deletion.
-        }
+        Livewire::test(CompanySettingsPage::class)
+            ->call('deleteSetting', $setting->id)
+            ->assertStatus(404);
 
         $this->assertDatabaseHas('company_settings', [
             'id' => $setting->id,
