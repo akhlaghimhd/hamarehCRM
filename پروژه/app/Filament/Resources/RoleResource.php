@@ -66,7 +66,7 @@ class RoleResource extends Resource
             return false;
         }
 
-        if ($record->is_system && $record->name === 'admin') {
+        if ($record->name === 'admin') {
             $user = auth()->user();
 
             return $user !== null
@@ -82,6 +82,7 @@ class RoleResource extends Resource
     {
         return $record instanceof Role
             && ! $record->is_system
+            && $record->name !== 'admin'
             && static::allowed('roles.manage');
     }
 
@@ -104,7 +105,7 @@ class RoleResource extends Resource
                         'regex:/^[a-z][a-z0-9_-]{0,99}$/',
                         ...($record?->is_system ? [] : ['not_in:admin']),
                     ])
-                    ->disabled(fn (?Role $record): bool => (bool) $record?->is_system)
+                    ->disabled(fn (?Role $record): bool => (bool) ($record?->is_system || $record?->name === 'admin'))
                     ->helperText('نام admin رزرو شده است؛ برای نقش‌های اختصاصی نامی مانند sales یا warehouse انتخاب کنید.'),
                 TextInput::make('label')
                     ->label('عنوان نمایشی')
@@ -148,7 +149,7 @@ class RoleResource extends Resource
                     ->relationship(
                         'permissions',
                         'label',
-                        fn (Builder $query, ?Role $record): Builder => $record?->is_system && $record->name === 'admin'
+                        fn (Builder $query, ?Role $record): Builder => $record?->name === 'admin'
                             ? $query
                             : $query->where('permissions.group', '<>', 'سیستم'),
                     )
