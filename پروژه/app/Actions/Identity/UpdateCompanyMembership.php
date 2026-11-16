@@ -83,7 +83,7 @@ class UpdateCompanyMembership
             $wasAdministrator = $adminRoleId !== null && in_array((int) $adminRoleId, $oldRoleIds, true);
             $willBeAdministrator = $adminRoleId !== null && in_array((int) $adminRoleId, $roleIds, true);
 
-            if ($wasAdministrator !== $willBeAdministrator && ! $actor->isCompanyAdmin()) {
+            if (($wasAdministrator || $willBeAdministrator) && ! $actor->isCompanyAdmin()) {
                 throw new AuthorizationException('فقط مدیر شرکت می‌تواند نقش مدیر شرکت را به کاربر واگذار یا از او سلب کند.');
             }
 
