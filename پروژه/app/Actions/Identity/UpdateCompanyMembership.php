@@ -2,6 +2,7 @@
 
 namespace App\Actions\Identity;
 
+use App\Models\AuditEvent;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -70,6 +71,42 @@ class UpdateCompanyMembership
             $oldManagerUserId = $membership->manager_user_id === null
                 ? null
                 : (int) $membership->manager_user_id;
+
+            $oldRoleIds = DB::table('company_user_role')
+                ->where('company_user_id', $membership->id)
+                ->orderBy('id')
+                ->pluck('role_id')
+                ->map(fn ($id): int => (int) $id)
+                ->all();
+
+            if ($oldRoleIds === [] && $membership->role_id !== null) {
+                $oldRoleIds = [(int) $membership->role_id];
+            }
+
+            $oldRoleIdsForCompare = $oldRoleIds;
+            $newRoleIdsForCompare = $roleIds;
+            sort($oldRoleIdsForCompare);
+            sort($newRoleIdsForCompare);
+
+            if ($oldRoleIdsForCompare !== $newRoleIdsForCompare || $oldManagerUserId !== $managerUserId) {
+                AuditEvent::query()->create([
+                    'company_id' => $companyId,
+                    'auditable_type' => User::class,
+                    'auditable_id' => $userId,
+                    'actor_user_id' => $changedByUserId,
+                    'event' => 'membership_updated',
+                    'old_values' => [
+                        'role_ids' => $oldRoleIds,
+                        'manager_user_id' => $oldManagerUserId,
+                    ],
+                    'new_values' => [
+                        'role_ids' => $roleIds,
+                        'manager_user_id' => $managerUserId,
+                    ],
+                    'metadata' => ['source' => 'company_membership', 'membership_id' => (int) $membership->id],
+                    'occurred_at' => now(),
+                ]);
+            }
 
             if ($oldManagerUserId !== $managerUserId) {
                 DB::table('manager_membership_histories')->insert([

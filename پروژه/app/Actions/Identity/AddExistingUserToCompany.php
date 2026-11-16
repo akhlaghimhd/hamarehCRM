@@ -2,6 +2,7 @@
 
 namespace App\Actions\Identity;
 
+use App\Models\AuditEvent;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -79,9 +80,10 @@ class AddExistingUserToCompany
                 $managerUserId,
             );
 
-            $hasDefaultCompany = $user->companies()
-                ->wherePivot('is_default', true)
-                ->where('companies.is_active', true)
+            // Preserve a single default even if its company is inactive or soft-deleted.
+            $hasDefaultCompany = DB::table('company_user')
+                ->where('user_id', $userId)
+                ->where('is_default', true)
                 ->exists();
 
             $membershipId = DB::table('company_user')->insertGetId([
@@ -104,6 +106,22 @@ class AddExistingUserToCompany
                 ],
                 $roleIds,
             ));
+
+            AuditEvent::query()->create([
+                'company_id' => $companyId,
+                'auditable_type' => $user->getMorphClass(),
+                'auditable_id' => $userId,
+                'actor_user_id' => $actor->id,
+                'event' => 'membership_added',
+                'old_values' => [],
+                'new_values' => [
+                    'role_ids' => $roleIds,
+                    'manager_user_id' => $managerUserId,
+                    'is_default' => ! $hasDefaultCompany,
+                ],
+                'metadata' => ['source' => 'company_membership', 'membership_id' => $membershipId],
+                'occurred_at' => now(),
+            ]);
         });
     }
 }

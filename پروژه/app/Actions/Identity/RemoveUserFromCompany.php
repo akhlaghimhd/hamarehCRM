@@ -2,6 +2,7 @@
 
 namespace App\Actions\Identity;
 
+use App\Models\AuditEvent;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,7 @@ class RemoveUserFromCompany
             ]);
         }
 
-        DB::transaction(function () use ($companyId, $userId): void {
+        DB::transaction(function () use ($companyId, $userId, $actor): void {
             $company = DB::table('companies')
                 ->where('id', $companyId)
                 ->where('is_active', true)
@@ -88,7 +89,10 @@ class RemoveUserFromCompany
                     ->whereNull('users.deleted_at')
                     ->where(function ($query): void {
                         $query->where('assigned_roles.name', 'admin')
-                            ->orWhere('legacy_roles.name', 'admin');
+                            ->orWhere(function ($fallback): void {
+                                $fallback->whereNull('membership_roles.id')
+                                    ->where('legacy_roles.name', 'admin');
+                            });
                     })
                     ->exists();
 
@@ -99,6 +103,22 @@ class RemoveUserFromCompany
                 }
             }
 
+            AuditEvent::query()->create([
+                'company_id' => $companyId,
+                'auditable_type' => User::class,
+                'auditable_id' => $userId,
+                'actor_user_id' => $actor->id,
+                'event' => 'membership_removed',
+                'old_values' => [
+                    'role_ids' => array_map('intval', $roleIds->all()),
+                    'manager_user_id' => $membership->manager_user_id,
+                    'is_default' => (bool) $membership->is_default,
+                ],
+                'new_values' => [],
+                'metadata' => ['source' => 'company_membership', 'membership_id' => (int) $membership->id],
+                'occurred_at' => now(),
+            ]);
+
             DB::table('company_user_role')
                 ->where('company_user_id', $membership->id)
                 ->delete();
@@ -108,6 +128,13 @@ class RemoveUserFromCompany
                 ->delete();
 
             if ((bool) $membership->is_default) {
+                DB::table('company_user')
+                    ->where('user_id', $userId)
+                    ->update([
+                        'is_default' => false,
+                        'updated_at' => now(),
+                    ]);
+
                 $nextDefaultMembership = DB::table('company_user')
                     ->join('companies', 'companies.id', '=', 'company_user.company_id')
                     ->where('company_user.user_id', $userId)
