@@ -6,6 +6,7 @@ use App\Filament\Pages\SwitchCompany;
 use Filament\Pages\Dashboard;
 use App\Models\Company;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use App\Support\CompanyContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
