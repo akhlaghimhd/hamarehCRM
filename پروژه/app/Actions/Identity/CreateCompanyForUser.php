@@ -17,6 +17,17 @@ class CreateCompanyForUser
      */
     public function handle(array $attributes, User $creator): Company
     {
+        $attributes = Validator::make($attributes, [
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'unique:companies,slug'],
+            'national_id' => ['nullable', 'string', 'max:50'],
+            'registration_number' => ['nullable', 'string', 'max:50'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'address' => ['nullable', 'string', 'max:2000'],
+            'is_active' => ['required', 'boolean'],
+        ])->validate();
+
         $company = DB::transaction(function () use ($attributes, $creator): Company {
             $lockedCreator = User::query()
                 ->whereKey($creator->id)
