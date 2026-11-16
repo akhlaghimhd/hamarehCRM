@@ -142,8 +142,7 @@ class RoleResource extends Resource
             ->defaultSort('id')
             ->recordActions([
                 EditAction::make()->label('ویرایش'),
-            ])
-            ;
+            ]);
     }
 
     public static function getPages(): array
