@@ -30,13 +30,19 @@ class ListUsers extends ListRecords
                     return [
                         Select::make('user_id')
                             ->label('کاربر')
-                            ->options(fn () => User::query()
+                            ->searchable()
+                            ->getSearchResultsUsing(fn (string $search): array => User::query()
                                 ->where('is_active', true)
                                 ->whereDoesntHave('companies', fn (Builder $query) => $query->where('companies.id', $companyId ?? 0))
+                                ->where(fn (Builder $query) => $query
+                                    ->where('name', 'like', "%{$search}%")
+                                    ->orWhere('username', 'like', "%{$search}%")
+                                    ->orWhere('email', 'like', "%{$search}%"))
                                 ->orderBy('name')
-                                ->limit(100)
-                                ->pluck('name', 'id'))
-                            ->searchable()
+                                ->limit(50)
+                                ->pluck('name', 'id')
+                                ->all())
+                            ->getOptionLabelUsing(fn ($value): ?string => User::query()->find($value)?->name)
                             ->required(),
 
                         Select::make('role_ids')
