@@ -61,9 +61,15 @@ class RoleResource extends Resource
         return $query->where('company_id', $companyId);
     }
 
+    public static function canView($record): bool
+    {
+        return static::belongsToCurrentCompany($record)
+            && static::allowed(static::$permissionView ?? null);
+    }
+
     public static function canEdit($record): bool
     {
-        if (! $record instanceof Role) {
+        if (! static::belongsToCurrentCompany($record)) {
             return false;
         }
 
@@ -81,10 +87,19 @@ class RoleResource extends Resource
 
     public static function canDelete($record): bool
     {
-        return $record instanceof Role
+        return static::belongsToCurrentCompany($record)
             && ! $record->is_system
             && $record->name !== 'admin'
             && static::allowed('roles.manage');
+    }
+
+    protected static function belongsToCurrentCompany(mixed $record): bool
+    {
+        $companyId = auth()->user()?->currentCompanyId();
+
+        return $record instanceof Role
+            && $companyId !== null
+            && (int) $record->company_id === (int) $companyId;
     }
 
     public static function canDeleteAny(): bool
