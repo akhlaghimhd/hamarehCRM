@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -67,7 +68,18 @@ class CreateCompanyForUserTest extends TestCase
             'slug' => 'old-company',
             'is_active' => true,
         ]);
-        $creator->companies()->attach($existingCompany->id, ['is_default' => true]);
+        $adminRole = Role::query()->create([
+            'company_id' => $existingCompany->id,
+            'name' => 'admin',
+            'label' => 'مدیر شرکت',
+            'is_system' => true,
+        ]);
+        $creator->companies()->attach($existingCompany->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+        $this->actingAs($creator);
+        session(['current_company_id' => $existingCompany->id]);
 
         $newCompany = app(CreateCompanyForUser::class)->handle([
             'name' => 'شرکت جدید',
@@ -97,8 +109,35 @@ class CreateCompanyForUserTest extends TestCase
             'slug' => 'old-deleted-default-company',
             'is_active' => true,
         ]);
-        $creator->companies()->attach($existingCompany->id, ['is_default' => true]);
+        $existingAdminRole = Role::query()->create([
+            'company_id' => $existingCompany->id,
+            'name' => 'admin',
+            'label' => 'مدیر شرکت',
+            'is_system' => true,
+        ]);
+        $creator->companies()->attach($existingCompany->id, [
+            'role_id' => $existingAdminRole->id,
+            'is_default' => true,
+        ]);
         $existingCompany->delete();
+
+        $activeCompany = Company::query()->create([
+            'name' => 'شرکت فعال',
+            'slug' => 'active-company',
+            'is_active' => true,
+        ]);
+        $activeAdminRole = Role::query()->create([
+            'company_id' => $activeCompany->id,
+            'name' => 'admin',
+            'label' => 'مدیر شرکت',
+            'is_system' => true,
+        ]);
+        $creator->companies()->attach($activeCompany->id, [
+            'role_id' => $activeAdminRole->id,
+            'is_default' => false,
+        ]);
+        $this->actingAs($creator);
+        session(['current_company_id' => $activeCompany->id]);
 
         $newCompany = app(CreateCompanyForUser::class)->handle([
             'name' => 'شرکت جدید',
@@ -119,6 +158,38 @@ class CreateCompanyForUserTest extends TestCase
     }
 
 
+
+
+    public function test_non_admin_member_cannot_create_another_company(): void
+    {
+        $creator = User::factory()->create();
+        $existingCompany = Company::query()->create([
+            'name' => 'شرکت کارمند',
+            'slug' => 'staff-company-create',
+            'is_active' => true,
+        ]);
+        $staffRole = Role::query()->create([
+            'company_id' => $existingCompany->id,
+            'name' => 'staff',
+            'label' => 'کارمند',
+            'is_system' => false,
+        ]);
+        $creator->companies()->attach($existingCompany->id, [
+            'role_id' => $staffRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($creator);
+        session(['current_company_id' => $existingCompany->id]);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(CreateCompanyForUser::class)->handle([
+            'name' => 'شرکت غیرمجاز',
+            'slug' => 'unauthorized-company',
+            'is_active' => true,
+        ], $creator);
+    }
 
     public function test_company_creation_rejects_non_latin_slug_before_creating_records(): void
     {
