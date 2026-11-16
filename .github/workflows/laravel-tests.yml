@@ -39,5 +39,8 @@ jobs:
       - name: Generate application key
         run: php artisan key:generate --force
 
+      - name: Lint PHP source
+        run: find app database tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
       - name: Run test suite
         run: php artisan test
