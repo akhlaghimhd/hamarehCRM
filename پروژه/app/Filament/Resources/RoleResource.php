@@ -5,8 +5,6 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\RoleResource\Pages;
 use App\Models\Role;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
@@ -145,13 +143,7 @@ class RoleResource extends Resource
             ->recordActions([
                 EditAction::make()->label('ویرایش'),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make()
-                        ->label('حذف')
-                        ->visible(fn () => static::canDeleteAny()),
-                ]),
-            ]);
+            ;
     }
 
     public static function getPages(): array
