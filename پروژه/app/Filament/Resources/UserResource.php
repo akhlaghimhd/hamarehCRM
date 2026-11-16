@@ -67,7 +67,7 @@ class UserResource extends Resource
             return false;
         }
 
-        if (static::hasAdministratorMembership($record) && ! $actor->isCompanyAdmin()) {
+        if (static::membershipHasAdminRole($record, (int) $actor->currentCompanyId()) && ! $actor->isCompanyAdmin()) {
             return false;
         }
 
@@ -99,38 +99,6 @@ class UserResource extends Resource
                 ->where('company_id', $companyId)
                 ->where('user_id', $record->id)
                 ->exists();
-    }
-
-    protected static function hasAdministratorMembership(User $record): bool
-    {
-        $companyId = auth()->user()?->currentCompanyId();
-
-        if (! $companyId) {
-            return false;
-        }
-
-        $membership = DB::table('company_user')
-            ->where('company_id', $companyId)
-            ->where('user_id', $record->id)
-            ->first();
-
-        if (! $membership) {
-            return false;
-        }
-
-        $roleIds = DB::table('company_user_role')
-            ->where('company_user_id', $membership->id)
-            ->pluck('role_id');
-
-        if ($roleIds->isEmpty() && $membership->role_id !== null) {
-            $roleIds = collect([(int) $membership->role_id]);
-        }
-
-        return DB::table('roles')
-            ->where('company_id', $companyId)
-            ->whereIn('id', $roleIds)
-            ->where('name', 'admin')
-            ->exists();
     }
 
     public static function getEloquentQuery(): Builder
