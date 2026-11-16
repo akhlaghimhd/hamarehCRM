@@ -134,6 +134,12 @@ class UserRoleHierarchyTest extends TestCase
             ->where('company_id', $company->id)
             ->where('user_id', $employee->id)
             ->count());
+        $this->assertDatabaseHas('audit_events', [
+            'company_id' => $company->id,
+            'actor_user_id' => $manager->id,
+            'auditable_id' => $employee->id,
+            'event' => 'membership_updated',
+        ]);
         $this->assertSame([], $manager->fresh()->managedUserIds()->all());
     }
 
@@ -292,17 +298,23 @@ class UserRoleHierarchyTest extends TestCase
 
         $this->actingAs($manager);
         session(['current_company_id' => $company->id]);
-        $admin->update(['is_active' => false]);
+        try {
+            DB::transaction(function () use ($admin, $company, $adminRole, $manager): void {
+                $admin->update(['is_active' => false]);
 
-        $this->expectException(ValidationException::class);
+                app(UpdateCompanyMembership::class)->handle(
+                    $company->id,
+                    $admin->id,
+                    [$adminRole->id],
+                    null,
+                    $manager->id,
+                );
+            });
 
-        app(UpdateCompanyMembership::class)->handle(
-            $company->id,
-            $admin->id,
-            [$adminRole->id],
-            null,
-            $manager->id,
-        );
+            $this->fail('The last active company administrator should not be deactivated.');
+        } catch (ValidationException) {
+            $this->assertTrue($admin->fresh()->is_active);
+        }
     }
 
     private function createCompany(string $suffix): Company

@@ -17,7 +17,7 @@ class CreateCompanyForUser
      */
     public function handle(array $attributes, User $creator): Company
     {
-        return DB::transaction(function () use ($attributes, $creator): Company {
+        $company = DB::transaction(function () use ($attributes, $creator): Company {
             $company = Company::query()->create($attributes);
 
             $adminRole = Role::query()->create([
@@ -30,9 +30,10 @@ class CreateCompanyForUser
 
             $adminRole->permissions()->sync(Permission::query()->pluck('id'));
 
-            $hasDefaultCompany = $creator->companies()
-                ->wherePivot('is_default', true)
-                ->where('companies.is_active', true)
+            // Preserve the default flag even when its company is inactive or soft-deleted.
+            $hasDefaultCompany = DB::table('company_user')
+                ->where('user_id', $creator->id)
+                ->where('is_default', true)
                 ->exists();
 
             $creator->companies()->attach($company->id, [
@@ -72,9 +73,11 @@ class CreateCompanyForUser
                 'updated_at' => $now,
             ]);
 
-            session(['current_company_id' => $company->id]);
-
             return $company;
         });
+
+        session(['current_company_id' => $company->id]);
+
+        return $company;
     }
 }
