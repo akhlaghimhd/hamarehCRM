@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\RoleResource\Pages\CreateRole;
 use App\Filament\Resources\RoleResource\Pages\EditRole;
+use App\Actions\Identity\SyncCompanyRolePermissions;
 use App\Actions\Identity\UpdateRoleHierarchy;
 use App\Models\Company;
 use App\Models\Permission;
@@ -70,6 +71,43 @@ class RoleResourceProtectionTest extends TestCase
         ]);
     }
 
+
+
+    public function test_central_permissions_can_only_be_synced_to_system_admin_role(): void
+    {
+        [$company, $admin] = $this->companyAdmin('central-permission-sync');
+        $systemPermission = Permission::query()->create([
+            'name' => 'roles.manage',
+            'label' => 'مدیریت نقش‌ها',
+            'group' => 'سیستم',
+        ]);
+        $customRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'operations',
+            'label' => 'عملیات',
+            'is_system' => false,
+            'inherit_permissions' => false,
+        ]);
+        $salesSystemRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'sales',
+            'label' => 'فروش',
+            'is_system' => true,
+            'inherit_permissions' => false,
+        ]);
+        $adminRole = Role::query()
+            ->where('company_id', $company->id)
+            ->where('name', 'admin')
+            ->firstOrFail();
+
+        app(SyncCompanyRolePermissions::class)->handle($customRole, [$systemPermission->id]);
+        app(SyncCompanyRolePermissions::class)->handle($salesSystemRole, [$systemPermission->id]);
+        app(SyncCompanyRolePermissions::class)->handle($adminRole, [$systemPermission->id]);
+
+        $this->assertFalse($customRole->permissions()->whereKey($systemPermission->id)->exists());
+        $this->assertFalse($salesSystemRole->permissions()->whereKey($systemPermission->id)->exists());
+        $this->assertTrue($adminRole->permissions()->whereKey($systemPermission->id)->exists());
+    }
 
     public function test_copying_admin_permissions_does_not_grant_central_permissions_to_custom_roles(): void
     {
