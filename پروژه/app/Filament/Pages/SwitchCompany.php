@@ -13,7 +13,7 @@ use RuntimeException;
 
 class SwitchCompany extends Page
 {
-    protected static string|\\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
     protected static ?string $navigationLabel = 'تعویض شرکت';
 
