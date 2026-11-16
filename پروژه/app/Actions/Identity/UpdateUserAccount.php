@@ -73,6 +73,58 @@ class UpdateUserAccount
                     'is_active' => 'ابتدا مدیر مستقیم اعضای زیرمجموعه این کاربر را تغییر دهید.',
                 ]);
             }
+
+            $membership = DB::table('company_user')
+                ->where('company_id', $companyId)
+                ->where('user_id', $target->id)
+                ->lockForUpdate()
+                ->first();
+
+            $roleIds = DB::table('company_user_role')
+                ->where('company_user_id', $membership->id)
+                ->pluck('role_id');
+
+            if ($roleIds->isEmpty() && $membership->role_id !== null) {
+                $roleIds = collect([(int) $membership->role_id]);
+            }
+
+            $isCompanyAdmin = DB::table('roles')
+                ->where('company_id', $companyId)
+                ->whereIn('id', $roleIds)
+                ->where('name', 'admin')
+                ->exists();
+
+            if ($isCompanyAdmin) {
+                $anotherActiveAdminExists = DB::table('company_user as memberships')
+                    ->join('users', 'users.id', '=', 'memberships.user_id')
+                    ->leftJoin('company_user_role as assigned_roles', 'assigned_roles.company_user_id', '=', 'memberships.id')
+                    ->leftJoin('roles as assigned_role', function ($join) use ($companyId): void {
+                        $join->on('assigned_role.id', '=', 'assigned_roles.role_id')
+                            ->where('assigned_role.company_id', '=', $companyId);
+                    })
+                    ->leftJoin('roles as legacy_role', function ($join) use ($companyId): void {
+                        $join->on('legacy_role.id', '=', 'memberships.role_id')
+                            ->where('legacy_role.company_id', '=', $companyId);
+                    })
+                    ->where('memberships.company_id', $companyId)
+                    ->where('memberships.user_id', '<>', $target->id)
+                    ->where('users.is_active', true)
+                    ->whereNull('users.deleted_at')
+                    ->where(function ($query): void {
+                        $query->where('assigned_role.name', 'admin')
+                            ->orWhere(function ($query): void {
+                                $query->whereNull('assigned_roles.id')
+                                    ->where('legacy_role.name', 'admin');
+                            });
+                    })
+                    ->exists();
+
+                if (! $anotherActiveAdminExists) {
+                    throw ValidationException::withMessages([
+                        'is_active' => 'غیرفعال‌سازی مجاز نیست؛ شرکت باید حداقل یک مدیر فعال داشته باشد.',
+                    ]);
+                }
+            }
         }
     }
 
