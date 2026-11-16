@@ -18,13 +18,21 @@ class CreateRole extends CreateRecord
     {
         $name = trim((string) ($data['name'] ?? ''));
 
-        if (strtolower($name) === 'admin') {
+        $name = strtolower($name);
+
+        if ($name === 'admin') {
             throw ValidationException::withMessages([
                 'name' => 'نام admin رزرو شده و فقط برای نقش مدیر سیستمی شرکت استفاده می‌شود.',
             ]);
         }
 
-        $data['name'] = strtolower($name);
+        if (! preg_match('/^[a-z][a-z0-9_-]{0,99}$/', $name)) {
+            throw ValidationException::withMessages([
+                'name' => 'نام سیستمی نقش باید با حرف انگلیسی کوچک شروع شود و فقط شامل حروف کوچک، عدد، خط تیره یا زیرخط باشد.',
+            ]);
+        }
+
+        $data['name'] = $name;
         $data['is_system'] = false;
 
         $companyId = auth()->user()?->currentCompanyId();
@@ -36,6 +44,12 @@ class CreateRole extends CreateRecord
         if (! $companyId) {
             throw ValidationException::withMessages([
                 'name' => 'شرکت جاری معتبر نیست؛ ابتدا شرکت مجاز را انتخاب کنید.',
+            ]);
+        }
+
+        if (Role::query()->where('company_id', $companyId)->where('name', $name)->exists()) {
+            throw ValidationException::withMessages([
+                'name' => 'این نام سیستمی قبلاً در شرکت جاری استفاده شده است.',
             ]);
         }
 
