@@ -13,7 +13,7 @@ class DeleteCompanyForUser
 {
     public function handle(Company $record, User $actor): void
     {
-        if (! $actor->is_active || ! $actor->hasPermission('companies.manage')) {
+        if (! $actor->is_active || ! $actor->isCompanyAdmin()) {
             throw new AuthorizationException('اجازه حذف شرکت را ندارید.');
         }
 
