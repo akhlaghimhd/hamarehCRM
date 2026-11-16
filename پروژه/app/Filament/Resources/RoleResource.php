@@ -114,10 +114,16 @@ class RoleResource extends Resource
                     ->helperText('وضعیت سیستمی فقط توسط کد و Seed رسمی مدیریت می‌شود.'),
                 CheckboxList::make('permissions')
                     ->label('مجوزهای مستقیم')
-                    ->relationship('permissions', 'label')
+                    ->relationship(
+                        'permissions',
+                        'label',
+                        fn (Builder $query, ?Role $record): Builder => $record?->is_system && $record->name === 'admin'
+                            ? $query
+                            : $query->where('permissions.group', '<>', 'سیستم'),
+                    )
                     ->columns(2)
                     ->bulkToggleable()
-                    ->helperText('مجوزهای مستقیم مستقل از مجوزهای ارث‌رسیده هستند.'),
+                    ->helperText('مجوزهای مرکزی سیستم فقط برای نقش مدیر سیستمی قابل تخصیص هستند؛ مجوزهای مستقیم مستقل از مجوزهای ارث‌رسیده‌اند.'),
             ]);
     }
 
