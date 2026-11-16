@@ -4,6 +4,7 @@ namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Actions\Identity\UpdateCompanyMembership;
 use App\Actions\Identity\UpdateUserAccount;
+use App\Models\AuditEvent;
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
@@ -86,6 +87,11 @@ class EditUser extends EditRecord
         );
 
         $this->wasActive = (bool) $this->record->is_active;
+        $this->originalProfile = [
+            'name' => $this->record->name,
+            'username' => $this->record->username,
+            'email' => $this->record->email,
+        ];
 
         app(UpdateCompanyMembership::class)->assertValidManagerAssignment((int) $companyId, (int) $this->record->id, $managerUserId);
 
@@ -115,6 +121,35 @@ class EditUser extends EditRecord
             $this->companyId,
         );
 
+        $newProfile = [
+            'name' => $this->record->name,
+            'username' => $this->record->username,
+            'email' => $this->record->email,
+        ];
+        $oldProfileValues = [];
+        $newProfileValues = [];
+
+        foreach ($newProfile as $key => $value) {
+            if (($this->originalProfile[$key] ?? null) !== $value) {
+                $oldProfileValues[$key] = $this->originalProfile[$key] ?? null;
+                $newProfileValues[$key] = $value;
+            }
+        }
+
+        if ($newProfileValues !== []) {
+            AuditEvent::query()->create([
+                'company_id' => $this->companyId,
+                'auditable_type' => $this->record->getMorphClass(),
+                'auditable_id' => $this->record->id,
+                'actor_user_id' => $actor->id,
+                'event' => 'profile_updated',
+                'old_values' => $oldProfileValues,
+                'new_values' => $newProfileValues,
+                'metadata' => ['source' => 'company_user_management'],
+                'occurred_at' => now(),
+            ]);
+        }
+
         app(UpdateCompanyMembership::class)->handle(
             $this->companyId,
             (int) $this->record->id,
@@ -134,6 +169,9 @@ class EditUser extends EditRecord
     public ?int $companyId = null;
 
     public bool $wasActive = true;
+
+    /** @var array<string, string|null> */
+    public array $originalProfile = [];
 
     /** @var array<int, int> */
     public array $roleIds = [];
