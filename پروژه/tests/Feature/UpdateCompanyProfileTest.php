@@ -105,6 +105,28 @@ class UpdateCompanyProfileTest extends TestCase
         ], $user);
     }
 
+
+    public function test_company_admin_cannot_set_a_non_latin_slug(): void
+    {
+        [$company, $user] = $this->companyWithAdmin();
+
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+
+        app(UpdateCompanyProfile::class)->handle($company, [
+            'name' => $company->name,
+            'slug' => 'شرکت-جدید',
+            'national_id' => $company->national_id,
+            'registration_number' => $company->registration_number,
+            'phone' => $company->phone,
+            'email' => $company->email,
+            'address' => $company->address,
+            'is_active' => true,
+        ], $user);
+    }
+
     public function test_company_admin_cannot_assign_a_duplicate_slug(): void
     {
         [$company, $user] = $this->companyWithAdmin();
