@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class CreateCompanyForUserTest extends TestCase
@@ -118,6 +119,27 @@ class CreateCompanyForUserTest extends TestCase
     }
 
 
+
+    public function test_company_creation_rejects_non_latin_slug_before_creating_records(): void
+    {
+        $creator = User::factory()->create();
+
+        try {
+            app(CreateCompanyForUser::class)->handle([
+                'name' => 'شرکت تازه',
+                'slug' => 'شرکت-تازه',
+                'is_active' => true,
+            ], $creator);
+
+            $this->fail('Expected invalid company slug to be rejected.');
+        } catch (ValidationException) {
+            $this->assertSame(0, Company::query()->count());
+            $this->assertDatabaseMissing('company_user', [
+                'user_id' => $creator->id,
+            ]);
+        }
+    }
+
     public function test_company_creation_rolls_back_when_a_duplicate_slug_is_rejected(): void
     {
         $creator = User::factory()->create();
@@ -135,7 +157,7 @@ class CreateCompanyForUserTest extends TestCase
             ], $creator);
 
             $this->fail('Expected duplicate company slug to be rejected.');
-        } catch (\Illuminate\Database\QueryException) {
+        } catch (ValidationException) {
             $this->assertSame(1, Company::query()->where('slug', 'duplicate-company')->count());
             $this->assertDatabaseMissing('company_user', [
                 'user_id' => $creator->id,
