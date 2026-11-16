@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Filament\Resources\RoleResource\Pages\CreateRole;
 use App\Filament\Resources\RoleResource\Pages\EditRole;
+use App\Actions\Identity\UpdateRoleHierarchy;
 use App\Models\Company;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,6 +68,49 @@ class RoleResourceProtectionTest extends TestCase
             'name' => 'sales',
             'is_system' => false,
         ]);
+    }
+
+
+    public function test_copying_admin_permissions_does_not_grant_central_permissions_to_custom_roles(): void
+    {
+        [$company, $admin] = $this->companyAdmin('central-permission-copy');
+        $adminRole = Role::query()
+            ->where('company_id', $company->id)
+            ->where('name', 'admin')
+            ->firstOrFail();
+
+        $systemPermission = Permission::query()->create([
+            'name' => 'companies.manage',
+            'label' => 'مدیریت شرکت‌ها',
+            'group' => 'سیستم',
+        ]);
+        $ordinaryPermission = Permission::query()->create([
+            'name' => 'customers.view',
+            'label' => 'مشاهده مشتریان',
+            'group' => 'مشتریان',
+        ]);
+        $adminRole->permissions()->attach([$systemPermission->id, $ordinaryPermission->id]);
+
+        $customRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'operations',
+            'label' => 'عملیات',
+            'is_system' => false,
+            'inherit_permissions' => false,
+        ]);
+
+        $this->actingAs($admin);
+        session(['current_company_id' => $company->id]);
+
+        app(UpdateRoleHierarchy::class)->handle(
+            $customRole,
+            null,
+            false,
+            $adminRole->id,
+        );
+
+        $this->assertTrue($customRole->permissions()->whereKey($ordinaryPermission->id)->exists());
+        $this->assertFalse($customRole->permissions()->whereKey($systemPermission->id)->exists());
     }
 
     /**
