@@ -28,6 +28,12 @@ class DeleteCompanyRoleTest extends TestCase
         app(DeleteCompanyRole::class)->handle($role, $admin);
 
         $this->assertDatabaseMissing('roles', ['id' => $role->id]);
+        $this->assertDatabaseHas('audit_events', [
+            'company_id' => $company->id,
+            'actor_user_id' => $admin->id,
+            'auditable_id' => $role->id,
+            'event' => 'deleted',
+        ]);
     }
 
     public function test_assigned_role_cannot_be_deleted(): void
