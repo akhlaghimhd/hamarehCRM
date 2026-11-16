@@ -97,6 +97,20 @@ class AddExistingUserToCompany
             ]);
 
             $now = now();
+
+            if ($managerUserId !== null) {
+                DB::table('manager_membership_histories')->insert([
+                    'company_id' => $companyId,
+                    'user_id' => $userId,
+                    'old_manager_user_id' => null,
+                    'new_manager_user_id' => $managerUserId,
+                    'changed_by_user_id' => $actor->id,
+                    'changed_at' => $now,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+
             DB::table('company_user_role')->insert(array_map(
                 fn (int $roleId): array => [
                     'company_user_id' => $membershipId,
