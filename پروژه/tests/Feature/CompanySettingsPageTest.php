@@ -56,6 +56,82 @@ class CompanySettingsPageTest extends TestCase
         ]);
     }
 
+
+    public function test_company_settings_page_cannot_read_or_delete_another_company_setting_by_id(): void
+    {
+        $companyA = Company::query()->create([
+            'name' => 'شرکت الف',
+            'slug' => 'settings-company-a',
+            'is_active' => true,
+        ]);
+        $companyB = Company::query()->create([
+            'name' => 'شرکت ب',
+            'slug' => 'settings-company-b',
+            'is_active' => true,
+        ]);
+
+        $roleA = Role::query()->create([
+            'company_id' => $companyA->id,
+            'name' => 'admin',
+            'label' => 'مدیر شرکت',
+        ]);
+        $roleB = Role::query()->create([
+            'company_id' => $companyB->id,
+            'name' => 'admin',
+            'label' => 'مدیر شرکت',
+        ]);
+
+        $user = User::factory()->create();
+        $user->companies()->attach($companyA->id, [
+            'role_id' => $roleA->id,
+            'is_default' => true,
+        ]);
+        $user->companies()->attach($companyB->id, [
+            'role_id' => $roleB->id,
+            'is_default' => false,
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $companyA->id]);
+
+        $setting = app(\\App\\Support\\CompanySettings::class)->set(
+            $companyA->id,
+            'private.company_a',
+            'string',
+            'secret-a',
+        );
+
+        session(['current_company_id' => $companyB->id]);
+
+        $this->assertDatabaseHas('company_settings', [
+            'id' => $setting->id,
+            'company_id' => $companyA->id,
+            'key' => 'private.company_a',
+        ]);
+
+        $this->assertNull(\\App\\Models\\CompanySetting::query()->find($setting->id));
+
+        try {
+            Livewire::test(CompanySettingsPage::class)->call('editSetting', $setting->id);
+            $this->fail('A company admin must not read a setting from another company.');
+        } catch (\\Illuminate\\Database\\Eloquent\\ModelNotFoundException) {
+            // The company global scope must make foreign settings indistinguishable from missing settings.
+        }
+
+        try {
+            Livewire::test(CompanySettingsPage::class)->call('deleteSetting', $setting->id);
+            $this->fail('A company admin must not delete a setting from another company.');
+        } catch (\\Illuminate\\Database\\Eloquent\\ModelNotFoundException) {
+            // The company global scope must prevent ID-based cross-company deletion.
+        }
+
+        $this->assertDatabaseHas('company_settings', [
+            'id' => $setting->id,
+            'company_id' => $companyA->id,
+            'key' => 'private.company_a',
+        ]);
+    }
+
     private function companyWithAdmin(): array
     {
         $company = Company::query()->create([
