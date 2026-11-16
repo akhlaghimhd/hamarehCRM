@@ -142,6 +142,30 @@ class RemoveUserFromCompanyTest extends TestCase
         app(RemoveUserFromCompany::class)->handle($company->id, $actor->id, $actor);
     }
 
+    public function test_member_without_user_management_permission_cannot_remove_memberships(): void
+    {
+        $company = $this->createCompany('no-permission');
+        $staffRole = $this->createRole($company, 'staff');
+        $actor = User::factory()->create();
+        $target = User::factory()->create();
+
+        $actor->companies()->attach($company->id, [
+            'role_id' => $staffRole->id,
+            'is_default' => true,
+        ]);
+        $target->companies()->attach($company->id, [
+            'role_id' => $staffRole->id,
+            'is_default' => false,
+        ]);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+
+        app(RemoveUserFromCompany::class)->handle($company->id, $target->id, $actor);
+    }
+
     public function test_actor_cannot_remove_membership_outside_current_company_context(): void
     {
         [$company, $actor, $role] = $this->companyAdmin('scope');
