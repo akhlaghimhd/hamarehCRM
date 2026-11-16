@@ -63,6 +63,19 @@ class UpdateUserAccount
         }
 
         if (! $requestedStatus) {
+            $company = DB::table('companies')
+                ->where('id', $companyId)
+                ->where('is_active', true)
+                ->whereNull('deleted_at')
+                ->lockForUpdate()
+                ->first();
+
+            if (! $company || (int) $actor->currentCompanyId() !== $companyId) {
+                throw ValidationException::withMessages([
+                    'is_active' => 'شرکت جاری دیگر فعال یا در دسترس نیست.',
+                ]);
+            }
+
             $hasDirectReports = DB::table('company_user')
                 ->where('company_id', $companyId)
                 ->where('manager_user_id', $target->id)
@@ -79,6 +92,12 @@ class UpdateUserAccount
                 ->where('user_id', $target->id)
                 ->lockForUpdate()
                 ->first();
+
+            if (! $membership) {
+                throw ValidationException::withMessages([
+                    'is_active' => 'عضویت کاربر در شرکت جاری دیگر وجود ندارد.',
+                ]);
+            }
 
             $roleIds = DB::table('company_user_role')
                 ->where('company_user_id', $membership->id)
