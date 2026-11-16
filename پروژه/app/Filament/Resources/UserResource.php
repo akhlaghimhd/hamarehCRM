@@ -130,12 +130,12 @@ class UserResource extends Resource
                             ->where('user_id', $record->id)
                             ->where('company_id', '<>', $companyId ?? 0)
                             ->exists()
-                        || DB::table('company_user')
+                        || ($record->is_active && DB::table('company_user')
                             ->where('company_id', $companyId ?? 0)
                             ->where('manager_user_id', $record->id)
-                            ->exists()
+                            ->exists())
                     ))
-                    ->helperText('وضعیت حساب سراسری است؛ کاربر چندشرکتی یا دارای زیرمجموعه مستقیم را از اینجا غیرفعال نکنید.'),
+                    ->helperText('وضعیت حساب سراسری است؛ کاربر چندشرکتی یا مدیر دارای زیرمجموعه را از اینجا غیرفعال نکنید. حساب غیرفعال مدیر پس از بررسی می‌تواند دوباره فعال شود.'),
             ]);
     }
 
