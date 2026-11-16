@@ -13,6 +13,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -75,6 +76,70 @@ class RoleResourceProtectionTest extends TestCase
 
 
 
+
+
+    public function test_system_admin_role_cannot_be_selected_as_parent(): void
+    {
+        [$company, $admin] = $this->companyAdmin('admin-parent');
+        $adminRole = Role::query()
+            ->where('company_id', $company->id)
+            ->where('name', 'admin')
+            ->firstOrFail();
+        $customRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'operations',
+            'label' => 'عملیات',
+            'is_system' => false,
+            'inherit_permissions' => true,
+        ]);
+
+        $this->actingAs($admin);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+        app(UpdateRoleHierarchy::class)->handle(
+            $customRole,
+            $adminRole->id,
+            true,
+            null,
+            $admin,
+        );
+    }
+
+
+    public function test_legacy_admin_parent_does_not_leak_central_permissions_to_custom_role(): void
+    {
+        [$company] = $this->companyAdmin('legacy-admin-parent');
+        $adminRole = Role::query()
+            ->where('company_id', $company->id)
+            ->where('name', 'admin')
+            ->firstOrFail();
+        $systemPermission = Permission::query()->create([
+            'name' => 'companies.manage',
+            'label' => 'مدیریت شرکت‌ها',
+            'group' => 'سیستم',
+        ]);
+        $ordinaryPermission = Permission::query()->create([
+            'name' => 'orders.view',
+            'label' => 'مشاهده سفارش‌ها',
+            'group' => 'فروش',
+        ]);
+        $adminRole->permissions()->attach([$systemPermission->id, $ordinaryPermission->id]);
+
+        $customRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'legacy-child',
+            'label' => 'نقش فرزند قدیمی',
+            'parent_role_id' => $adminRole->id,
+            'inherit_permissions' => true,
+            'is_system' => false,
+        ]);
+
+        $effectiveIds = $customRole->effectivePermissionIds();
+
+        $this->assertTrue($effectiveIds->contains($ordinaryPermission->id));
+        $this->assertFalse($effectiveIds->contains($systemPermission->id));
+    }
 
     public function test_role_manager_cannot_edit_or_change_system_admin_role(): void
     {
