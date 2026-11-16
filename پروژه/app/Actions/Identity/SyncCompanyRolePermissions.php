@@ -40,7 +40,7 @@ class SyncCompanyRolePermissions
                 ->firstOrFail();
 
             if (
-                ($lockedRole->is_system && $lockedRole->name === 'admin' && ! $actor->isCompanyAdmin())
+                ($lockedRole->name === 'admin' && ! $actor->isCompanyAdmin())
                 || (! ($lockedRole->is_system && $lockedRole->name === 'admin') && ! $actor->hasPermission('roles.manage'))
             ) {
                 throw new AuthorizationException('مجوز کافی برای تغییر دسترسی‌های این نقش را ندارید.');
