@@ -95,6 +95,24 @@ class RemoveUserFromCompany
             DB::table('company_user')
                 ->where('id', $membership->id)
                 ->delete();
+
+            if ((bool) $membership->is_default) {
+                $nextDefaultMembership = DB::table('company_user')
+                    ->join('companies', 'companies.id', '=', 'company_user.company_id')
+                    ->where('company_user.user_id', $userId)
+                    ->where('companies.is_active', true)
+                    ->orderBy('company_user.id')
+                    ->first(['company_user.id']);
+
+                if ($nextDefaultMembership) {
+                    DB::table('company_user')
+                        ->where('id', $nextDefaultMembership->id)
+                        ->update([
+                            'is_default' => true,
+                            'updated_at' => now(),
+                        ]);
+                }
+            }
         });
     }
 }
