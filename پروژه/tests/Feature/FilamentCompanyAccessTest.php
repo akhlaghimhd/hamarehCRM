@@ -40,7 +40,7 @@ class FilamentCompanyAccessTest extends TestCase
         [$companyA] = $this->createCompanies();
 
         $user = User::factory()->create();
-        $user->companies()->attach($companyA->id, ['is_default' => true]);
+        $user->companies()->attach($companyA->id, ['is_default' => false]);
 
         $this->actingAs($user);
         session(['current_company_id' => null]);
