@@ -1,13 +1,13 @@
 <?php
 
-namespace App\\Http\\Controllers;
+namespace App\Http\Controllers;
 
-use App\\Actions\\Attachments\\DeleteAttachment;
-use App\\Models\\Attachment;
-use Illuminate\\Http\\RedirectResponse;
-use Illuminate\\Support\\Facades\\Gate;
-use Illuminate\\Support\\Facades\\Storage;
-use Symfony\\Component\\HttpFoundation\\StreamedResponse;
+use App\Actions\Attachments\DeleteAttachment;
+use App\Models\Attachment;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AttachmentController
 {
