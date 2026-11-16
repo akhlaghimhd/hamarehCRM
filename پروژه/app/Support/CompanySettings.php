@@ -42,6 +42,31 @@ class CompanySettings
         array $validationRules = [],
         bool $sensitive = false,
     ): CompanySetting {
+        if ($key === 'ui.theme') {
+            throw new InvalidArgumentException('تنظیم پوسته رزرو شده است و فقط از طریق CompanyTheme قابل تغییر است.');
+        }
+
+        return $this->persist($companyId, $key, $type, $value, $validationRules, $sensitive);
+    }
+
+    /**
+     * Persist a company theme through its dedicated domain service.
+     *
+     * @param array<string, mixed> $value
+     */
+    public function setTheme(int $companyId, array $value): CompanySetting
+    {
+        return $this->persist($companyId, 'ui.theme', 'json', $value);
+    }
+
+    private function persist(
+        int $companyId,
+        string $key,
+        string $type,
+        mixed $value,
+        array $validationRules = [],
+        bool $sensitive = false,
+    ): CompanySetting {
         $this->assertCompanyContext($companyId);
         $this->assertCanManage();
         $this->assertKey($key);
