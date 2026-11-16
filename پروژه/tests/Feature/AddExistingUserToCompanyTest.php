@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -142,6 +143,27 @@ class AddExistingUserToCompanyTest extends TestCase
             'new_manager_user_id' => $actor->id,
             'changed_by_user_id' => $actor->id,
         ]);
+    }
+
+
+    public function test_non_admin_manager_cannot_assign_administrator_role_to_existing_user(): void
+    {
+        [$company, $actor] = $this->companyAdmin('admin-assignment');
+        $adminRole = $this->createRole($company, 'admin');
+        $target = User::factory()->create();
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(AddExistingUserToCompany::class)->handle(
+            $company->id,
+            $target->id,
+            [$adminRole->id],
+            null,
+            $actor,
+        );
     }
 
     public function test_duplicate_membership_is_rejected(): void
