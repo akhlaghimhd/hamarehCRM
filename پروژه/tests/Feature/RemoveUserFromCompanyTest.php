@@ -29,6 +29,11 @@ class RemoveUserFromCompanyTest extends TestCase
             'is_default' => true,
         ]);
 
+        $membershipId = DB::table('company_user')
+            ->where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->value('id');
+
         $this->actingAs($actor);
         session(['current_company_id' => $company->id]);
 
@@ -45,10 +50,7 @@ class RemoveUserFromCompanyTest extends TestCase
         ]);
         $this->assertDatabaseHas('users', ['id' => $user->id]);
         $this->assertDatabaseMissing('company_user_role', [
-            'company_user_id' => DB::table('company_user')
-                ->where('company_id', $company->id)
-                ->where('user_id', $user->id)
-                ->value('id'),
+            'company_user_id' => $membershipId,
         ]);
     }
 
