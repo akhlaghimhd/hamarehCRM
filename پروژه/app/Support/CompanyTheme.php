@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
+use JsonException;
 use RuntimeException;
 
 class CompanyTheme
@@ -57,7 +59,7 @@ class CompanyTheme
 
         try {
             $stored = app(CompanySettings::class)->get($companyId, 'ui.theme', []);
-        } catch (RuntimeException) {
+        } catch (RuntimeException | AuthorizationException | JsonException) {
             return $defaults;
         }
 

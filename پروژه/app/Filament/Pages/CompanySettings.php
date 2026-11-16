@@ -143,6 +143,7 @@ class CompanySettings extends Page
         $this->authorizeAdmin();
 
         $setting = CompanySetting::query()->findOrFail($settingId);
+        abort_if($setting->key === 'ui.theme', 404);
         $this->editingSettingId = (int) $setting->id;
         $this->key = $setting->key;
         $this->type = $setting->type;
@@ -169,12 +170,13 @@ class CompanySettings extends Page
         $this->authorizeAdmin();
 
         $this->validate([
-            'key' => ['required', 'string', 'max:100', 'regex:/^[a-z][a-z0-9_.-]{1,99}$/'],
+            'key' => ['required', 'string', 'max:100', 'not_in:ui.theme', 'regex:/^[a-z][a-z0-9_.-]{1,99}$/'],
             'type' => ['required', 'in:string,integer,boolean,decimal,json'],
             'value' => ['required', 'string'],
             'validationRules' => ['nullable', 'string'],
         ], [
             'key.regex' => 'کلید باید با حرف انگلیسی کوچک شروع شود و فقط شامل حروف کوچک، عدد، نقطه، خط تیره یا زیرخط باشد.',
+            'key.not_in' => 'کلید ui.theme رزرو شده و از بخش پوسته شرکت مدیریت می‌شود.',
             'type.in' => 'نوع داده انتخاب‌شده معتبر نیست.',
             'value.required' => 'مقدار تنظیم را وارد کنید.',
         ]);
@@ -239,6 +241,7 @@ class CompanySettings extends Page
         $this->authorizeAdmin();
 
         $setting = CompanySetting::query()->findOrFail($settingId);
+        abort_if($setting->key === 'ui.theme', 404);
         app(CompanySettingsService::class)->forget(
             app(CompanyContext::class)->requireCompanyId(),
             $setting->key,
