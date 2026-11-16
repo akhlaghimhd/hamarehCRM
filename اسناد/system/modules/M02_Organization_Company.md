@@ -77,6 +77,7 @@ FoundationSeeder دو شرکت نمونه myoffice و demo-co را همراه ن
 - AddExistingUserToCompanyTest
 - RemoveUserFromCompanyTest
 - UserRoleHierarchyTest
+- DeleteCompanyRoleTest
 - CompanyIsolationTest
 - FilamentCompanyAccessTest
 - CompanySettingsTest

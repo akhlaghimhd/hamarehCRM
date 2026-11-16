@@ -47,6 +47,36 @@ class DeleteCompanyRoleTest extends TestCase
         app(DeleteCompanyRole::class)->handle($role, $admin);
     }
 
+
+    public function test_role_assigned_through_multi_role_membership_cannot_be_deleted(): void
+    {
+        [$company, $admin] = $this->companyAdmin('multi-role-assignment');
+        $role = $this->createRole($company, 'secondary-role');
+        $member = User::factory()->create();
+        $member->companies()->attach($company->id, [
+            'role_id' => null,
+            'is_default' => true,
+        ]);
+
+        $membershipId = DB::table('company_user')
+            ->where('company_id', $company->id)
+            ->where('user_id', $member->id)
+            ->value('id');
+
+        DB::table('company_user_role')->insert([
+            'company_user_id' => $membershipId,
+            'role_id' => $role->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($admin);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+        app(DeleteCompanyRole::class)->handle($role, $admin);
+    }
+
     public function test_role_with_child_roles_cannot_be_deleted(): void
     {
         [$company, $admin] = $this->companyAdmin('parent-role');
