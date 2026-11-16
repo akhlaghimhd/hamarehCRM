@@ -61,11 +61,22 @@ class CompanyResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn ($state, callable $set) => $set('slug', Str::slug($state))),
+                    ->afterStateUpdated(function ($state, callable $set, callable $get): void {
+                        if (filled($get('slug'))) {
+                            return;
+                        }
+
+                        $suggestedSlug = Str::slug((string) $state);
+
+                        if ($suggestedSlug !== '') {
+                            $set('slug', $suggestedSlug);
+                        }
+                    }),
                 TextInput::make('slug')
                     ->label('اسلاگ')
                     ->required()
                     ->maxLength(255)
+                    ->helperText('شناسه یکتای لاتین شرکت؛ پس از ثبت بهتر است تغییر نکند.')
                     ->unique(ignoreRecord: true),
                 TextInput::make('national_id')
                     ->label('شناسه ملی / اقتصادی')

@@ -31,9 +31,8 @@ class ActivateCompanyForMemberTest extends TestCase
         $this->assertTrue(SwitchCompany::canAccess());
 
         Livewire::test(SwitchCompany::class)
-            ->assertSee('فعال‌سازی و ورود');
-
-        app(ActivateCompanyForMember::class)->handle($company->id, $user);
+            ->assertSee('فعال‌سازی و ورود')
+            ->call('activateCompany', $company->id);
 
         $this->assertDatabaseHas('companies', [
             'id' => $company->id,
