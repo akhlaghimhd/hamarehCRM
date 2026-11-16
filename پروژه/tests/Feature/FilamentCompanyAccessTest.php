@@ -184,6 +184,27 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertFalse(RoleResource::canViewAny());
     }
 
+
+    public function test_company_admin_cannot_edit_or_delete_a_role_from_another_company_by_record_id(): void
+    {
+        [$companyA, $companyB] = $this->createCompanies();
+        $adminRole = $this->createRole($companyA, 'admin');
+        $adminRole->forceFill(['is_system' => true])->save();
+        $foreignRole = $this->createRole($companyB, 'foreign-role');
+        $user = User::factory()->create();
+        $user->companies()->attach($companyA->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $companyA->id]);
+
+        $this->assertFalse(RoleResource::canView($foreignRole));
+        $this->assertFalse(RoleResource::canEdit($foreignRole));
+        $this->assertFalse(RoleResource::canDelete($foreignRole));
+    }
+
     public function test_role_delete_permission_is_scoped_to_current_company(): void
     {
         [$companyA, $companyB] = $this->createCompanies();
