@@ -108,13 +108,15 @@ class CompanyResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('نام')
+                    ->description(fn (Company $record): string => (string) $record->slug)
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('national_id')
                     ->label('شناسه ملی')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('phone')
-                    ->label('تلفن'),
+                    ->label('تلفن')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('فعال')
                     ->boolean(),

@@ -366,3 +366,13 @@ html[data-hm-density="comfortable"] {
     --hm-density-section-padding: 1.25rem;
     --hm-density-control-height: 2.65rem;
 }
+
+
+/* Preserve comfortable touch targets on mobile, even with compact company density. */
+@media (max-width: 1023px) {
+    .fi-btn,
+    .fi-input-wrp,
+    .fi-select-input {
+        min-height: max(var(--hm-density-control-height, 2.4rem), var(--hm-touch, 2.75rem));
+    }
+}

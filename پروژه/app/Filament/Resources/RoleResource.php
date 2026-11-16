@@ -128,16 +128,20 @@ class RoleResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->label('نام سیستمی')
-                    ->badge(),
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('parentRole.label')
                     ->label('نقش والد')
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('permissions_count')
                     ->counts('permissions')
-                    ->label('تعداد مجوز مستقیم'),
+                    ->label('تعداد مجوز مستقیم')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('inherit_permissions')
                     ->label('ارث‌بری')
-                    ->boolean(),
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('is_system')
                     ->label('سیستمی')
                     ->boolean(),
