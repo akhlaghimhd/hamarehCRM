@@ -29,8 +29,12 @@ class DeleteCompanyForUser
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ((int) $company->getKey() !== $companyId) {
-                throw new AuthorizationException('حذف شرکتی خارج از فضای کاری جاری مجاز نیست.');
+            if (
+                (int) $company->getKey() !== $companyId
+                || ! $company->is_active
+                || (int) $actor->currentCompanyId() !== $companyId
+            ) {
+                throw new AuthorizationException('شرکت جاری دیگر فعال یا در دسترس نیست.');
             }
 
             $deletedAt = now();
