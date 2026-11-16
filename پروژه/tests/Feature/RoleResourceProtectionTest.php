@@ -152,7 +152,7 @@ class RoleResourceProtectionTest extends TestCase
         $this->assertTrue($user->hasPermission('orders.view'));
     }
 
-    public function test_role_manager_cannot_edit_or_change_system_admin_role(): void
+    public function test_role_manager_cannot_edit_or_change_legacy_admin_role(): void
     {
         $company = Company::query()->create([
             'name' => 'شرکت مدیر نقش',
@@ -163,7 +163,7 @@ class RoleResourceProtectionTest extends TestCase
             'company_id' => $company->id,
             'name' => 'admin',
             'label' => 'مدیر شرکت',
-            'is_system' => true,
+            'is_system' => false,
             'inherit_permissions' => false,
         ]);
         $managerRole = Role::query()->create([
