@@ -120,7 +120,7 @@ class UpdateCompanyProfileTest extends TestCase
         $permission = Permission::query()->create([
             'name' => 'companies.manage',
             'label' => 'مدیریت شرکت‌ها',
-            'group' => 'system',
+            'group' => 'شرکت',
         ]);
         $role->permissions()->attach($permission);
 
@@ -160,7 +160,7 @@ class UpdateCompanyProfileTest extends TestCase
         $permission = Permission::query()->create([
             'name' => 'companies.manage',
             'label' => 'مدیریت شرکت‌ها',
-            'group' => 'system',
+            'group' => 'شرکت',
         ]);
         $role->permissions()->attach($permission);
 
