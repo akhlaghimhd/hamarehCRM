@@ -30,6 +30,13 @@ class DeleteCompanyRoleTest extends TestCase
         $this->assertDatabaseMissing('roles', ['id' => $role->id]);
         $this->assertDatabaseHas('audit_events', [
             'company_id' => $company->id,
+            'auditable_type' => $role->getMorphClass(),
+            'auditable_id' => $role->id,
+            'actor_user_id' => $admin->id,
+            'event' => 'role_deleted',
+        ]);
+        $this->assertDatabaseHas('audit_events', [
+            'company_id' => $company->id,
             'actor_user_id' => $admin->id,
             'auditable_id' => $role->id,
             'event' => 'deleted',
