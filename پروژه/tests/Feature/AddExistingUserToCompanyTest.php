@@ -57,6 +57,29 @@ class AddExistingUserToCompanyTest extends TestCase
         ]);
     }
 
+    public function test_first_company_membership_becomes_the_users_default_company(): void
+    {
+        [$company, $actor, $role] = $this->companyAdmin('first-default');
+        $user = User::factory()->create();
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        app(AddExistingUserToCompany::class)->handle(
+            $company->id,
+            $user->id,
+            [$role->id],
+            null,
+            $actor,
+        );
+
+        $this->assertDatabaseHas('company_user', [
+            'company_id' => $company->id,
+            'user_id' => $user->id,
+            'is_default' => true,
+        ]);
+    }
+
     public function test_duplicate_membership_is_rejected(): void
     {
         [$company, $actor, $role] = $this->companyAdmin('duplicate');
