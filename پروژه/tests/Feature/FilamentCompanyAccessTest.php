@@ -123,6 +123,38 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertSame([], CompanyResource::getEloquentQuery()->pluck('companies.id')->all());
     }
 
+
+    public function test_non_admin_manager_cannot_edit_or_remove_an_administrator_account(): void
+    {
+        [$companyA] = $this->createCompanies();
+        $managerRole = $this->createRole($companyA, 'user-manager');
+        $managerRole->permissions()->attach(Permission::query()->create([
+            'name' => 'users.manage',
+            'label' => 'مدیریت کاربران',
+            'group' => 'کاربران',
+        ]));
+        $adminRole = $this->createRole($companyA, 'admin');
+        $adminRole->forceFill(['is_system' => true])->save();
+
+        $manager = User::factory()->create();
+        $administrator = User::factory()->create();
+        $manager->companies()->attach($companyA->id, [
+            'role_id' => $managerRole->id,
+            'is_default' => true,
+        ]);
+        $administrator->companies()->attach($companyA->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => false,
+        ]);
+
+        $this->actingAs($manager);
+        session(['current_company_id' => $companyA->id]);
+
+        $this->assertTrue(UserResource::canView($administrator));
+        $this->assertFalse(UserResource::canEdit($administrator));
+        $this->assertFalse(UserResource::canDelete($administrator));
+    }
+
     public function test_user_resource_only_lists_members_of_the_current_company(): void
     {
         [$companyA, $companyB] = $this->createCompanies();
