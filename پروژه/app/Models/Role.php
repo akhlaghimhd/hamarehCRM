@@ -67,7 +67,7 @@ class Role extends Model
 
             $permissionQuery = $role->permissions();
 
-            if (! ($this->is_system && $this->name === 'admin')) {
+            if ($this->name !== 'admin') {
                 $permissionQuery->where('permissions.group', '<>', 'سیستم');
             }
 
