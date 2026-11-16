@@ -13,7 +13,7 @@ use RuntimeException;
 
 class SwitchCompany extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+    protected static string|\\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
     protected static ?string $navigationLabel = 'تعویض شرکت';
 
@@ -34,13 +34,25 @@ class SwitchCompany extends Page
     {
         $user = Auth::user();
 
-        if (! $user instanceof User || $this->membershipCount((int) $user->id) < 2) {
+        if (! $user instanceof User) {
             $this->redirect(Dashboard::getUrl());
 
             return;
         }
 
-        $this->company_id = app(CompanyContext::class)->currentCompanyId($user);
+        $companyContext = app(CompanyContext::class);
+        $currentCompanyId = $companyContext->currentCompanyId($user);
+        $activeMembershipCount = $this->membershipCount((int) $user->id);
+
+        if ($activeMembershipCount === 0 || ($currentCompanyId !== null && $activeMembershipCount < 2)) {
+            $this->redirect(Dashboard::getUrl());
+
+            return;
+        }
+
+        // Keep this page available when the previous company became inactive
+        // and the user needs to select one of their remaining active memberships.
+        $this->company_id = $currentCompanyId;
     }
 
     /**
@@ -176,11 +188,16 @@ class SwitchCompany extends Page
             return false;
         }
 
-        return DB::table('company_user as cu')
+        $activeMembershipCount = DB::table('company_user as cu')
             ->join('companies as c', 'c.id', '=', 'cu.company_id')
             ->where('cu.user_id', $user->id)
             ->where('c.is_active', true)
             ->whereNull('c.deleted_at')
-            ->count() > 1;
+            ->count();
+
+        $currentCompanyId = app(CompanyContext::class)->currentCompanyId($user);
+
+        return $activeMembershipCount > 1
+            || ($currentCompanyId === null && $activeMembershipCount > 0);
     }
 }
