@@ -186,6 +186,10 @@ class UserRoleHierarchyTest extends TestCase
         $first->companies()->attach($company->id, ['role_id' => $role->id, 'is_default' => true]);
         $second->companies()->attach($company->id, ['role_id' => $role->id, 'is_default' => true]);
 
+        $role->permissions()->attach($this->createPermission('users.manage'));
+        $this->actingAs($first);
+        session(['current_company_id' => $company->id]);
+
         $action = app(UpdateCompanyMembership::class);
         $action->handle($company->id, $second->id, [$role->id], $first->id, $first->id);
 
@@ -215,6 +219,9 @@ class UserRoleHierarchyTest extends TestCase
         $staff->companies()->attach($company->id, ['role_id' => $staffRole->id, 'is_default' => true]);
         $foreign->companies()->attach($otherCompany->id, ['is_default' => true]);
 
+        $this->actingAs($manager);
+        session(['current_company_id' => $company->id]);
+
         app(UpdateCompanyMembership::class)->handle(
             $company->id,
             $staff->id,
@@ -222,9 +229,6 @@ class UserRoleHierarchyTest extends TestCase
             $manager->id,
             $manager->id,
         );
-
-        $this->actingAs($manager);
-        session(['current_company_id' => $company->id]);
 
         $this->assertTrue($manager->canViewActivityOwner($staff->id));
         $this->assertTrue($manager->canManageActivityOwner($staff->id));
