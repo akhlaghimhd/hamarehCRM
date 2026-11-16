@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\Identity\UpdateCompanyProfile;
 use App\Filament\Pages\SwitchCompany;
+use App\Filament\Resources\CompanyResource\Pages\EditCompany;
 use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
@@ -13,6 +14,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class UpdateCompanyProfileTest extends TestCase
@@ -56,6 +58,29 @@ class UpdateCompanyProfileTest extends TestCase
 
         $this->assertSame('شرکت قدیمی', json_decode($event->old_values, true)['name']);
         $this->assertSame('شرکت هم‌ره نو', json_decode($event->new_values, true)['name']);
+    }
+
+
+    public function test_deactivating_company_redirects_admin_to_company_recovery_page(): void
+    {
+        [$company, $user] = $this->companyWithAdmin();
+
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        Livewire::test(EditCompany::class, ['record' => $company->getRouteKey()])
+            ->fillForm([
+                'name' => $company->name,
+                'slug' => $company->slug,
+                'national_id' => $company->national_id,
+                'registration_number' => $company->registration_number,
+                'phone' => $company->phone,
+                'email' => $company->email,
+                'address' => $company->address,
+                'is_active' => false,
+            ])
+            ->call('save')
+            ->assertRedirect(SwitchCompany::getUrl());
     }
 
     public function test_company_admin_can_deactivate_current_company_and_recover_it_later(): void
