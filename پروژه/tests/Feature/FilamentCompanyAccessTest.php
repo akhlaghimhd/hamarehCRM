@@ -208,11 +208,11 @@ class FilamentCompanyAccessTest extends TestCase
 
         $salesRole->permissions()->attach($permission->id);
 
-        $this->assertTrue(RoleResource::canDeleteAny());
+        $this->assertTrue(RoleResource::canDelete($salesRole));
 
         session(['current_company_id' => $companyB->id]);
 
-        $this->assertFalse(RoleResource::canDeleteAny());
+        $this->assertFalse(RoleResource::canDelete($salesRole));
     }
 
     /**
