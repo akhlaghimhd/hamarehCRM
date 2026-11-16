@@ -69,6 +69,28 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertFalse(CompanyResource::canCreate());
     }
 
+
+    public function test_company_admin_cannot_access_another_company_record_directly(): void
+    {
+        [$companyA, $companyB] = $this->createCompanies();
+        $adminRole = $this->createRole($companyA, 'admin');
+        $adminRole->forceFill(['is_system' => true])->save();
+        $user = User::factory()->create();
+        $user->companies()->attach($companyA->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $companyA->id]);
+
+        $this->assertTrue(CompanyResource::canView($companyA));
+        $this->assertTrue(CompanyResource::canEdit($companyA));
+        $this->assertFalse(CompanyResource::canView($companyB));
+        $this->assertFalse(CompanyResource::canEdit($companyB));
+        $this->assertFalse(CompanyResource::canDelete($companyB));
+    }
+
     public function test_company_resource_only_exposes_the_current_company(): void
     {
         [$companyA, $companyB] = $this->createCompanies();
