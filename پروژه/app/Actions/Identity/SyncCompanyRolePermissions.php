@@ -49,7 +49,9 @@ class SyncCompanyRolePermissions
             $query = Permission::query()->whereIn('id', $permissionIds);
 
             if (! ($lockedRole->is_system && $lockedRole->name === 'admin')) {
-                $query->where('group', '<>', 'سیستم');
+                $query
+                    ->whereNotIn('group', Permission::SYSTEM_GROUPS)
+                    ->whereNotIn('name', Permission::SYSTEM_NAMES);
             }
 
             $allowedPermissionIds = $query
