@@ -62,9 +62,10 @@
 - CreateCompanyForUser: ایجاد شرکت، نقش مدیر، عضویت سازنده و Audit در یک تراکنش؛ انتخاب شرکت پس از Commit انجام می‌شود.
 - UpdateCompanyProfile و DeleteCompanyForUser: اعتبارسنجی، یکتایی slug، حذف نرم و ثبت Audit در همان تراکنش.
 - ActivateCompanyForMember: بازیابی شرکت غیرفعال/حذف نرم فقط برای مدیر فعال و عضو همان شرکت؛ Audit بازیابی نیز ثبت می‌شود.
-- AddExistingUserToCompany، UpdateCompanyMembership و RemoveUserFromCompany: مدیریت عضویت و زنجیره سرپرستی در مرز شرکت همراه با Audit.
+- CreateUser و AddExistingUserToCompany: ثبت عضویت اولیه/افزودن حساب موجود همراه با Audit؛ UpdateCompanyMembership و RemoveUserFromCompany تغییر نقش/سرپرست و حذف عضویت را در مرز شرکت همراه با Audit انجام می‌دهند.
 - مقدار پیش‌فرض عضویت در کل حساب یکتا نگه داشته می‌شود؛ عضویت پیش‌فرض در شرکت غیرفعال یا حذف نرم‌شده هنگام ایجاد/افزودن شرکت جدید نادیده گرفته نمی‌شود.
 - وضعیت `User.is_active` سراسری است؛ تغییر آن از پنل شرکت برای حساب چندشرکتی، خود کاربر یا مدیر دارای زیرمجموعه مستقیم مجاز نیست.
+- CreateRole، EditRole و DeleteCompanyRole: عملیات نقش و مجوزها تراکنشی و همراه با Audit هستند.
 - UpdateRoleHierarchy: کنترل چرخه نقش‌ها و کپی مستقل مجوزها.
 - DeleteCompanyRole: جلوگیری از حذف نقش سیستمی، نقش تخصیص‌یافته یا نقش والد.
 - UpdateUserAccount: کنترل تغییر وضعیت سراسری حساب و جلوگیری از غیرفعال‌سازی مدیر دارای زیرمجموعه یا حساب چندشرکتی.
