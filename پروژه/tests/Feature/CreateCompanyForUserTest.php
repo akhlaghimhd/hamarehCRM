@@ -1,15 +1,15 @@
 <?php
 
-namespace Tests\\Feature;
+namespace Tests\Feature;
 
-use App\\Actions\\Identity\\CreateCompanyForUser;
-use App\\Models\\Company;
-use App\\Models\\Permission;
-use App\\Models\\Role;
-use App\\Models\\User;
-use Illuminate\\Foundation\\Testing\\RefreshDatabase;
-use Illuminate\\Support\\Facades\\DB;
-use Tests\\TestCase;
+use App\Actions\Identity\CreateCompanyForUser;
+use App\Models\Company;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
 
 class CreateCompanyForUserTest extends TestCase
 {
@@ -98,7 +98,7 @@ class CreateCompanyForUserTest extends TestCase
             ], $creator);
 
             $this->fail('Expected duplicate company slug to be rejected.');
-        } catch (\\Illuminate\\Database\\QueryException) {
+        } catch (\Illuminate\Database\QueryException) {
             $this->assertSame(1, Company::query()->where('slug', 'duplicate-company')->count());
             $this->assertDatabaseMissing('company_user', [
                 'user_id' => $creator->id,
