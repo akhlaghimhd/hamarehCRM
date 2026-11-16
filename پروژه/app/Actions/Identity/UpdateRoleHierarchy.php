@@ -65,13 +65,12 @@ class UpdateRoleHierarchy
                     ]);
                 }
 
-                $sourcePermissions = $source->permissions();
+                $permissionIds = $source->permissions()
+                    ->pluck('permissions.id')
+                    ->map(fn ($id): int => (int) $id)
+                    ->all();
 
-                if (! ($role->is_system && $role->name === 'admin')) {
-                    $sourcePermissions->where('permissions.group', '<>', 'سیستم');
-                }
-
-                $role->permissions()->sync($sourcePermissions->pluck('permissions.id')->all());
+                app(SyncCompanyRolePermissions::class)->handle($role, $permissionIds);
             }
         });
     }
