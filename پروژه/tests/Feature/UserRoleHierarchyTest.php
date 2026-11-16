@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -240,6 +241,39 @@ class UserRoleHierarchyTest extends TestCase
         $this->assertFalse($manager->canManageActivityOwner($staff->id));
     }
 
+
+
+    public function test_non_admin_manager_cannot_update_an_administrator_membership(): void
+    {
+        $company = $this->createCompany('admin-membership-protection');
+        $managerRole = $this->createRole($company, 'manager');
+        $managerRole->permissions()->attach($this->createPermission('users.manage'));
+        $adminRole = $this->createRole($company, 'admin');
+        $manager = User::factory()->create();
+        $target = User::factory()->create();
+
+        $manager->companies()->attach($company->id, [
+            'role_id' => $managerRole->id,
+            'is_default' => true,
+        ]);
+        $target->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => false,
+        ]);
+
+        $this->actingAs($manager);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(UpdateCompanyMembership::class)->handle(
+            $company->id,
+            $target->id,
+            [$adminRole->id],
+            null,
+            $manager->id,
+        );
+    }
 
     public function test_last_active_company_admin_cannot_be_demoted(): void
     {
