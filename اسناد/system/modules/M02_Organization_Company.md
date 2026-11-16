@@ -59,10 +59,12 @@
 - CompanySettings: تنظیمات عمومی نوع‌دار و پوسته شرکت.
 
 ### منطق دامنه
-- CreateCompanyForUser: ایجاد شرکت، نقش مدیر، عضویت سازنده و انتخاب شرکت در یک تراکنش.
-- UpdateCompanyProfile: اعتبارسنجی، یکتایی slug و ثبت Audit تغییرات پروفایل.
-- ActivateCompanyForMember: بازیابی فقط برای مدیر عضو همان شرکت.
-- AddExistingUserToCompany، UpdateCompanyMembership و RemoveUserFromCompany: مدیریت عضویت و زنجیره سرپرستی در مرز شرکت.
+- CreateCompanyForUser: ایجاد شرکت، نقش مدیر، عضویت سازنده و Audit در یک تراکنش؛ انتخاب شرکت پس از Commit انجام می‌شود.
+- UpdateCompanyProfile و DeleteCompanyForUser: اعتبارسنجی، یکتایی slug، حذف نرم و ثبت Audit در همان تراکنش.
+- ActivateCompanyForMember: بازیابی شرکت غیرفعال/حذف نرم فقط برای مدیر فعال و عضو همان شرکت؛ Audit بازیابی نیز ثبت می‌شود.
+- AddExistingUserToCompany، UpdateCompanyMembership و RemoveUserFromCompany: مدیریت عضویت و زنجیره سرپرستی در مرز شرکت همراه با Audit.
+- مقدار پیش‌فرض عضویت در کل حساب یکتا نگه داشته می‌شود؛ عضویت پیش‌فرض در شرکت غیرفعال یا حذف نرم‌شده هنگام ایجاد/افزودن شرکت جدید نادیده گرفته نمی‌شود.
+- وضعیت `User.is_active` سراسری است؛ تغییر آن از پنل شرکت برای حساب چندشرکتی، خود کاربر یا مدیر دارای زیرمجموعه مستقیم مجاز نیست.
 - UpdateRoleHierarchy: کنترل چرخه نقش‌ها و کپی مستقل مجوزها.
 - CompanyTheme: پالت آماده/دلخواه، رنگ اصلی و ثانویه و تراکم در کلید رزروشده ui.theme از سرویس تنظیمات شرکت استفاده می‌کند؛ جدول تنظیمات موازی ندارد.
 
@@ -72,6 +74,8 @@ FoundationSeeder دو شرکت نمونه myoffice و demo-co را همراه ن
 ### پوشش تست موجود
 - CreateCompanyForUserTest
 - UpdateCompanyProfileTest
+- DeleteCompanyForUserTest
+- UpdateUserAccountTest
 - ActivateCompanyForMemberTest
 - SwitchCompanyTest
 - AddExistingUserToCompanyTest
