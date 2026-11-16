@@ -60,6 +60,36 @@ class RoleResource extends Resource
         return $query->where('company_id', $companyId);
     }
 
+    public static function canEdit($record): bool
+    {
+        if (! $record instanceof Role) {
+            return false;
+        }
+
+        if ($record->is_system && $record->name === 'admin') {
+            $user = auth()->user();
+
+            return $user !== null
+                && (bool) ($user->is_active ?? false)
+                && method_exists($user, 'isCompanyAdmin')
+                && $user->isCompanyAdmin();
+        }
+
+        return static::allowed('roles.manage');
+    }
+
+    public static function canDelete($record): bool
+    {
+        return $record instanceof Role
+            && ! $record->is_system
+            && static::allowed('roles.manage');
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         $companyId = auth()->user()?->currentCompanyId();
