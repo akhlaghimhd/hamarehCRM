@@ -168,10 +168,10 @@ class EditUser extends EditRecord
 
     public ?int $companyId = null;
 
-    public bool $wasActive = true;
+    protected bool $wasActive = true;
 
     /** @var array<string, string|null> */
-    public array $originalProfile = [];
+    protected array $originalProfile = [];
 
     /** @var array<int, int> */
     public array $roleIds = [];
