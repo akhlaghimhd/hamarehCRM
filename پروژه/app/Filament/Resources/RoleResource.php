@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\RoleResource\Pages;
+use App\Models\Permission;
 use App\Models\Role;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
@@ -151,7 +152,9 @@ class RoleResource extends Resource
                         'label',
                         fn (Builder $query, ?Role $record): Builder => $record?->name === 'admin'
                             ? $query
-                            : $query->where('permissions.group', '<>', 'سیستم'),
+                            : $query
+                                ->whereNotIn('permissions.group', Permission::SYSTEM_GROUPS)
+                                ->whereNotIn('permissions.name', Permission::SYSTEM_NAMES),
                     )
                     ->columns(2)
                     ->bulkToggleable()
