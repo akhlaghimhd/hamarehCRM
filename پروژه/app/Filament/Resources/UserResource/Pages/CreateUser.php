@@ -69,6 +69,9 @@ class CreateUser extends CreateRecord
             'event' => 'membership_added',
             'old_values' => [],
             'new_values' => [
+                'name' => $this->record->name,
+                'username' => $this->record->username,
+                'email' => $this->record->email,
                 'role_ids' => $this->roleIds,
                 'manager_user_id' => $this->managerUserId,
                 'is_default' => true,
