@@ -147,7 +147,7 @@ class AddExistingUserToCompanyTest extends TestCase
     private function companyAdmin(string $suffix): array
     {
         $company = $this->createCompany($suffix);
-        $role = $this->createRole($company, 'admin');
+        $role = $this->createRole($company, 'identity-manager');
         $permission = Permission::query()->create([
             'name' => 'users.manage',
             'label' => 'مدیریت کاربران',
