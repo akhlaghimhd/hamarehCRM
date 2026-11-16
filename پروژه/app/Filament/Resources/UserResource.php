@@ -53,10 +53,19 @@ class UserResource extends Resource
         return 'کاربران';
     }
 
+    public static function canViewAny(): bool
+    {
+        return static::allowed(static::$permissionView)
+            || static::allowed(static::$permissionManage);
+    }
+
     public static function canView($record): bool
     {
         return static::belongsToCurrentCompany($record)
-            && static::allowed(static::$permissionView);
+            && (
+                static::allowed(static::$permissionView)
+                || static::allowed(static::$permissionManage)
+            );
     }
 
     public static function canEdit($record): bool
