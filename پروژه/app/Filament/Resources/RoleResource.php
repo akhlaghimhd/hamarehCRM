@@ -115,13 +115,14 @@ class RoleResource extends Resource
                     ->options(
                         Role::query()
                             ->where('company_id', $companyId ?? 0)
+                            ->where('name', '<>', 'admin')
                             ->orderBy('label')
                             ->pluck('label', 'id')
                     )
                     ->searchable()
                     ->preload()
                     ->nullable()
-                    ->helperText('نقش والد باید متعلق به همین شرکت باشد.'),
+                    ->helperText('نقش والد باید متعلق به همین شرکت باشد؛ نقش مدیر شرکت نمی‌تواند والد نقش دیگری باشد.'),
                 Toggle::make('inherit_permissions')
                     ->label('ارث‌بری مجوزهای نقش والد')
                     ->default(true),
