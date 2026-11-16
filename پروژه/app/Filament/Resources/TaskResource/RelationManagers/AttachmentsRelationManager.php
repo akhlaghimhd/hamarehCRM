@@ -1,20 +1,20 @@
 <?php
 
-namespace App\\Filament\\Resources\\TaskResource\\RelationManagers;
+namespace App\Filament\Resources\TaskResource\RelationManagers;
 
-use App\\Actions\\Attachments\\DeleteAttachment;
-use App\\Actions\\Attachments\\StoreAttachment;
-use App\\Models\\Attachment;
-use App\\Models\\Task;
-use App\\Models\\User;
-use Filament\\Actions\\Action;
-use Filament\\Forms\\Components\\FileUpload;
-use Filament\\Resources\\RelationManagers\\RelationManager;
-use Filament\\Schemas\\Schema;
-use Filament\\Tables\\Columns\\TextColumn;
-use Filament\\Tables\\Table;
-use Illuminate\\Database\\Eloquent\\Model;
-use Illuminate\\Support\\Facades\\Gate;
+use App\Actions\Attachments\DeleteAttachment;
+use App\Actions\Attachments\StoreAttachment;
+use App\Models\Attachment;
+use App\Models\Task;
+use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Gate;
 
 class AttachmentsRelationManager extends RelationManager
 {
