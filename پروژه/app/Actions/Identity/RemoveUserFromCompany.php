@@ -34,6 +34,17 @@ class RemoveUserFromCompany
                 ]);
             }
 
+            $targetUser = DB::table('users')
+                ->where('id', $userId)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $targetUser) {
+                throw ValidationException::withMessages([
+                    'user_id' => 'حساب کاربری انتخاب‌شده پیدا نشد.',
+                ]);
+            }
+
             $membership = DB::table('company_user')
                 ->where('company_id', $companyId)
                 ->where('user_id', $userId)

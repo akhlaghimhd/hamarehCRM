@@ -18,6 +18,11 @@ class CreateCompanyForUser
     public function handle(array $attributes, User $creator): Company
     {
         $company = DB::transaction(function () use ($attributes, $creator): Company {
+            $lockedCreator = User::query()
+                ->whereKey($creator->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
             $company = Company::query()->create($attributes);
 
             $adminRole = Role::query()->create([
@@ -32,18 +37,18 @@ class CreateCompanyForUser
 
             // Preserve the default flag even when its company is inactive or soft-deleted.
             $hasDefaultCompany = DB::table('company_user')
-                ->where('user_id', $creator->id)
+                ->where('user_id', $lockedCreator->id)
                 ->where('is_default', true)
                 ->exists();
 
-            $creator->companies()->attach($company->id, [
+            $lockedCreator->companies()->attach($company->id, [
                 'role_id' => $adminRole->id,
                 'is_default' => ! $hasDefaultCompany,
             ]);
 
             $membershipId = DB::table('company_user')
                 ->where('company_id', $company->id)
-                ->where('user_id', $creator->id)
+                ->where('user_id', $lockedCreator->id)
                 ->value('id');
 
             DB::table('company_user_role')->insert([
@@ -59,7 +64,7 @@ class CreateCompanyForUser
                 'company_id' => $company->id,
                 'auditable_type' => $company->getMorphClass(),
                 'auditable_id' => $company->id,
-                'actor_user_id' => $creator->id,
+                'actor_user_id' => $lockedCreator->id,
                 'event' => 'created',
                 'old_values' => json_encode([], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
                 'new_values' => json_encode([
