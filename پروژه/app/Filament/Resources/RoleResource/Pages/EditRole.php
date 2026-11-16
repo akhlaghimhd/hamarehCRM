@@ -160,5 +160,5 @@ class EditRole extends EditRecord
     public bool $inheritPermissions = false;
 
     /** @var array<string, mixed> */
-    public array $originalRoleState = [];
+    protected array $originalRoleState = [];
 }
