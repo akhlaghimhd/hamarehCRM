@@ -81,6 +81,47 @@ class UpdateCompanyProfileTest extends TestCase
     }
 
 
+
+    public function test_company_manager_with_permission_can_update_profile_without_changing_status(): void
+    {
+        $company = $this->createCompany('manager-profile-update');
+        $role = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'company-manager',
+            'label' => 'مدیر اجرایی',
+            'is_system' => false,
+        ]);
+        $permission = Permission::query()->create([
+            'name' => 'companies.manage',
+            'label' => 'مدیریت شرکت‌ها',
+            'group' => 'system',
+        ]);
+        $role->permissions()->attach($permission);
+
+        $user = User::factory()->create();
+        $user->companies()->attach($company->id, [
+            'role_id' => $role->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        $updated = app(UpdateCompanyProfile::class)->handle($company, [
+            'name' => 'نام به‌روزشده',
+            'slug' => $company->slug,
+            'national_id' => $company->national_id,
+            'registration_number' => $company->registration_number,
+            'phone' => $company->phone,
+            'email' => $company->email,
+            'address' => $company->address,
+            'is_active' => true,
+        ], $user);
+
+        $this->assertSame('نام به‌روزشده', $updated->name);
+        $this->assertTrue($updated->is_active);
+    }
+
     public function test_company_manager_with_permission_cannot_deactivate_company(): void
     {
         $company = $this->createCompany('manager-cannot-deactivate');
