@@ -2,6 +2,7 @@
 
 namespace App\Actions\Identity;
 
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
