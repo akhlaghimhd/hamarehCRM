@@ -5,10 +5,12 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\Role;
 use App\Models\User;
+use App\Filament\Pages\CompanySettings as CompanySettingsPage;
 use App\Support\CompanyTheme;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class CompanyThemeTest extends TestCase
