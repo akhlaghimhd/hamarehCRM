@@ -20,6 +20,8 @@ class RemoveUserFromCompany
         }
 
         DB::transaction(function () use ($companyId, $userId): void {
+            DB::table('companies')->where('id', $companyId)->lockForUpdate()->first();
+
             $membership = DB::table('company_user')
                 ->where('company_id', $companyId)
                 ->where('user_id', $userId)
