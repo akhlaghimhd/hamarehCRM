@@ -52,6 +52,12 @@ class RemoveUserFromCompanyTest extends TestCase
         $this->assertDatabaseMissing('company_user_role', [
             'company_user_id' => $membershipId,
         ]);
+        $this->assertDatabaseHas('audit_events', [
+            'company_id' => $company->id,
+            'actor_user_id' => $actor->id,
+            'auditable_id' => $user->id,
+            'event' => 'membership_removed',
+        ]);
     }
 
     public function test_removing_default_membership_promotes_another_active_company(): void
@@ -123,6 +129,37 @@ class RemoveUserFromCompanyTest extends TestCase
             'company_id' => $company->id,
             'user_id' => $secondAdmin->id,
         ]);
+    }
+
+
+    public function test_legacy_admin_role_is_not_counted_when_membership_has_explicit_non_admin_roles(): void
+    {
+        [$company, $actor, $adminRole] = $this->companyAdmin('legacy-admin-fallback');
+        $staffRole = $this->createRole($company, 'staff');
+        $legacyUser = User::factory()->create();
+        $legacyUser->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => false,
+        ]);
+
+        $membershipId = DB::table('company_user')
+            ->where('company_id', $company->id)
+            ->where('user_id', $legacyUser->id)
+            ->value('id');
+
+        DB::table('company_user_role')->insert([
+            'company_user_id' => $membershipId,
+            'role_id' => $staffRole->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+
+        app(RemoveUserFromCompany::class)->handle($company->id, $actor->id, $actor);
     }
 
     public function test_membership_with_direct_reports_cannot_be_removed(): void

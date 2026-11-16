@@ -55,6 +55,12 @@ class AddExistingUserToCompanyTest extends TestCase
             'user_id' => $existingUser->id,
             'is_default' => true,
         ]);
+        $this->assertDatabaseHas('audit_events', [
+            'company_id' => $company->id,
+            'actor_user_id' => $actor->id,
+            'auditable_id' => $existingUser->id,
+            'event' => 'membership_added',
+        ]);
     }
 
     public function test_first_company_membership_becomes_the_users_default_company(): void
@@ -77,6 +83,38 @@ class AddExistingUserToCompanyTest extends TestCase
             'company_id' => $company->id,
             'user_id' => $user->id,
             'is_default' => true,
+        ]);
+    }
+
+
+    public function test_soft_deleted_default_company_still_remains_the_users_default_membership(): void
+    {
+        [$company, $actor, $role] = $this->companyAdmin('deleted-default');
+        $oldCompany = $this->createCompany('old-deleted-default');
+        $user = User::factory()->create();
+        $user->companies()->attach($oldCompany->id, ['is_default' => true]);
+        $oldCompany->delete();
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        app(AddExistingUserToCompany::class)->handle(
+            $company->id,
+            $user->id,
+            [$role->id],
+            null,
+            $actor,
+        );
+
+        $this->assertDatabaseHas('company_user', [
+            'company_id' => $oldCompany->id,
+            'user_id' => $user->id,
+            'is_default' => true,
+        ]);
+        $this->assertDatabaseHas('company_user', [
+            'company_id' => $company->id,
+            'user_id' => $user->id,
+            'is_default' => false,
         ]);
     }
 
