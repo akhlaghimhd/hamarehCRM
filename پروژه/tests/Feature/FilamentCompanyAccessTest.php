@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\CompanyResource;
 use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\UserResource;
 use App\Models\Company;
