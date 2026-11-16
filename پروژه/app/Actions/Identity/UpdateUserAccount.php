@@ -61,6 +61,17 @@ class UpdateUserAccount
                 'is_active' => 'تغییر وضعیت حساب سراسری کاربر چندشرکتی از داخل یک شرکت مجاز نیست؛ عضویت شرکت جاری را جداگانه مدیریت کنید.',
             ]);
         }
+
+        $hasDirectReports = DB::table('company_user')
+            ->where('company_id', $companyId)
+            ->where('manager_user_id', $target->id)
+            ->exists();
+
+        if ($hasDirectReports) {
+            throw ValidationException::withMessages([
+                'is_active' => 'ابتدا مدیر مستقیم اعضای زیرمجموعه این کاربر را تغییر دهید.',
+            ]);
+        }
     }
 
     public function recordStatusChange(User $target, bool $wasActive, User $actor, int $companyId): void

@@ -79,6 +79,32 @@ class UpdateUserAccountTest extends TestCase
         $this->assertTrue($target->fresh()->is_active);
     }
 
+
+    public function test_company_admin_cannot_deactivate_a_user_who_has_direct_reports(): void
+    {
+        [$company, $actor] = $this->companyWithAdmin('account-status-manager');
+        $targetRole = $this->createRole($company, 'staff');
+        $target = User::factory()->create();
+        $report = User::factory()->create();
+        $target->companies()->attach($company->id, ['role_id' => $targetRole->id]);
+        $report->companies()->attach($company->id, [
+            'role_id' => $targetRole->id,
+            'manager_user_id' => $target->id,
+        ]);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+
+        app(UpdateUserAccount::class)->assertCanChangeStatus(
+            $target,
+            ['is_active' => false],
+            $actor,
+            $company->id,
+        );
+    }
+
     public function test_company_admin_cannot_deactivate_their_own_account_from_company_management(): void
     {
         [$company, $actor] = $this->companyWithAdmin('account-status-self');

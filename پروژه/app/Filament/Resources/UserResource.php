@@ -125,11 +125,17 @@ class UserResource extends Resource
                 Toggle::make('is_active')
                     ->label('فعال')
                     ->default(true)
-                    ->disabled(fn (?User $record): bool => $record !== null && DB::table('company_user')
-                        ->where('user_id', $record->id)
-                        ->where('company_id', '<>', $companyId ?? 0)
-                        ->exists())
-                    ->helperText('وضعیت حساب سراسری است؛ اگر کاربر عضو شرکت دیگری باشد، فقط عضویت شرکت جاری را مدیریت کنید.'),
+                    ->disabled(fn (?User $record): bool => $record !== null && (
+                        DB::table('company_user')
+                            ->where('user_id', $record->id)
+                            ->where('company_id', '<>', $companyId ?? 0)
+                            ->exists()
+                        || DB::table('company_user')
+                            ->where('company_id', $companyId ?? 0)
+                            ->where('manager_user_id', $record->id)
+                            ->exists()
+                    ))
+                    ->helperText('وضعیت حساب سراسری است؛ کاربر چندشرکتی یا دارای زیرمجموعه مستقیم را از اینجا غیرفعال نکنید.'),
             ]);
     }
 
