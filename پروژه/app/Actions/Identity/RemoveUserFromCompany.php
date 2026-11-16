@@ -101,6 +101,7 @@ class RemoveUserFromCompany
                     ->join('companies', 'companies.id', '=', 'company_user.company_id')
                     ->where('company_user.user_id', $userId)
                     ->where('companies.is_active', true)
+                    ->whereNull('companies.deleted_at')
                     ->orderBy('company_user.id')
                     ->first(['company_user.id']);
 
