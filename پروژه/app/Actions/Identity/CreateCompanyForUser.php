@@ -1,12 +1,12 @@
 <?php
 
-namespace App\\Actions\\Identity;
+namespace App\Actions\Identity;
 
-use App\\Models\\Company;
-use App\\Models\\Permission;
-use App\\Models\\Role;
-use App\\Models\\User;
-use Illuminate\\Support\\Facades\\DB;
+use App\Models\Company;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class CreateCompanyForUser
 {
