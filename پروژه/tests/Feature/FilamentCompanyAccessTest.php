@@ -126,7 +126,7 @@ class FilamentCompanyAccessTest extends TestCase
 
     public function test_non_admin_manager_cannot_edit_or_remove_an_administrator_account(): void
     {
-        [$companyA] = $this->createCompanies();
+        [$companyA, $companyB] = $this->createCompanies();
         $managerRole = $this->createRole($companyA, 'user-manager');
         $managerRole->permissions()->attach(Permission::query()->create([
             'name' => 'users.manage',
@@ -146,6 +146,8 @@ class FilamentCompanyAccessTest extends TestCase
             'role_id' => $adminRole->id,
             'is_default' => false,
         ]);
+        $foreignUser = User::factory()->create();
+        $foreignUser->companies()->attach($companyB->id, ['is_default' => true]);
 
         $this->actingAs($manager);
         session(['current_company_id' => $companyA->id]);
@@ -153,6 +155,9 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertTrue(UserResource::canView($administrator));
         $this->assertFalse(UserResource::canEdit($administrator));
         $this->assertFalse(UserResource::canDelete($administrator));
+        $this->assertFalse(UserResource::canView($foreignUser));
+        $this->assertFalse(UserResource::canEdit($foreignUser));
+        $this->assertFalse(UserResource::canDelete($foreignUser));
     }
 
     public function test_user_resource_only_lists_members_of_the_current_company(): void
