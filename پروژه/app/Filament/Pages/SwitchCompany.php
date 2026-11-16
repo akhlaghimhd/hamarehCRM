@@ -9,7 +9,6 @@ use App\Support\CompanyContext;
 use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard;
 use Filament\Pages\Page;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -187,7 +186,7 @@ class SwitchCompany extends Page
 
         try {
             app(ActivateCompanyForMember::class)->handle($companyId, $user);
-        } catch (AuthorizationException | ValidationException | RuntimeException) {
+        } catch (ValidationException | RuntimeException) {
             Notification::make()
                 ->title('فعال‌سازی انجام نشد')
                 ->body('فقط مدیر همان شرکت می‌تواند شرکت عضو‌شده را دوباره فعال کند.')
