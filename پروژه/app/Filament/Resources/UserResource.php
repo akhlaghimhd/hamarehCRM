@@ -91,7 +91,7 @@ class UserResource extends Resource
             return false;
         }
 
-        if (static::hasAdministratorMembership($record) && ! $actor->isCompanyAdmin()) {
+        if (static::membershipHasAdminRole($record, (int) $actor->currentCompanyId()) && ! $actor->isCompanyAdmin()) {
             return false;
         }
 
