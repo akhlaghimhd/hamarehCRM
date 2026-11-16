@@ -19,21 +19,6 @@ class CreateCompanyForUser
      */
     public function handle(array $attributes, User $creator): Company
     {
-        if (! $creator->is_active) {
-            throw new AuthorizationException('حساب غیرفعال اجازه ایجاد شرکت ندارد.');
-        }
-
-        $hasMemberships = DB::table('company_user')
-            ->where('user_id', $creator->id)
-            ->exists();
-
-        if ($hasMemberships && (
-            $creator->currentCompanyId() === null
-            || ! $creator->hasPermission('companies.manage')
-        )) {
-            throw new AuthorizationException('فقط مدیر شرکت جاری می‌تواند شرکت جدید ایجاد کند.');
-        }
-
         $attributes = Validator::make($attributes, [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'unique:companies,slug'],
