@@ -9,6 +9,8 @@ use App\Support\CompanySettings;
 use App\Support\CompanyTheme;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -145,6 +147,48 @@ class CompanyThemeTest extends TestCase
             'json',
             ['palette' => 'custom', 'primary' => '#000000'],
         );
+    }
+
+
+    public function test_non_admin_gets_safe_default_when_legacy_theme_setting_is_sensitive(): void
+    {
+        $company = $this->createCompany('legacy-sensitive-theme');
+        $staffRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'staff',
+            'label' => 'کارمند',
+            'is_system' => false,
+        ]);
+        $user = User::factory()->create();
+        $user->companies()->attach($company->id, [
+            'role_id' => $staffRole->id,
+            'is_default' => true,
+        ]);
+
+        DB::table('company_settings')->insert([
+            'company_id' => $company->id,
+            'key' => 'ui.theme',
+            'type' => 'json',
+            'value' => Crypt::encryptString(json_encode([
+                'palette' => 'custom',
+                'primary' => '#123456',
+                'secondary' => '#654321',
+                'density' => 'compact',
+            ], JSON_THROW_ON_ERROR)),
+            'validation_rules' => null,
+            'is_sensitive' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        $theme = app(CompanyTheme::class)->current();
+
+        $this->assertSame('default', $theme['palette']);
+        $this->assertSame('#087E78', $theme['primary']);
+        $this->assertSame('balanced', $theme['density']);
     }
 
     /**
