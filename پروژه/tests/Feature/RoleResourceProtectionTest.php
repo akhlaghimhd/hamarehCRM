@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\RoleResource\Pages\CreateRole;
 use App\Filament\Resources\RoleResource\Pages\EditRole;
 use App\Actions\Identity\SyncCompanyRolePermissions;
@@ -10,6 +11,7 @@ use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -72,6 +74,52 @@ class RoleResourceProtectionTest extends TestCase
     }
 
 
+
+
+    public function test_role_manager_cannot_edit_or_change_system_admin_role(): void
+    {
+        $company = Company::query()->create([
+            'name' => 'شرکت مدیر نقش',
+            'slug' => 'role-manager-company',
+            'is_active' => true,
+        ]);
+        $adminRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'admin',
+            'label' => 'مدیر شرکت',
+            'is_system' => true,
+            'inherit_permissions' => false,
+        ]);
+        $managerRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'role-manager',
+            'label' => 'مدیر نقش',
+            'is_system' => false,
+            'inherit_permissions' => false,
+        ]);
+        $rolesManage = Permission::query()->create([
+            'name' => 'roles.manage',
+            'label' => 'مدیریت نقش‌ها',
+            'group' => 'سیستم',
+        ]);
+        $managerRole->permissions()->attach($rolesManage);
+
+        $manager = User::factory()->create();
+        $manager->companies()->attach($company->id, [
+            'role_id' => $managerRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($manager);
+        session(['current_company_id' => $company->id]);
+
+        $this->assertFalse(RoleResource::canEdit($adminRole));
+        $this->assertTrue(RoleResource::canEdit($managerRole));
+        $this->assertFalse(RoleResource::canDelete($adminRole));
+
+        $this->expectException(AuthorizationException::class);
+        app(SyncCompanyRolePermissions::class)->handle($adminRole, [], $manager);
+    }
 
     public function test_central_permissions_can_only_be_synced_to_system_admin_role(): void
     {
