@@ -21,9 +21,10 @@
         --hm-ink: #17242b;
         --hm-ink-secondary: #52636d;
         --hm-ink-muted: #788790;
-        --hm-primary: #087e78;
-        --hm-primary-hover: #066b66;
-        --hm-primary-soft: #e7f4f2;
+        --hm-primary: var(--hm-company-primary, #087e78);
+        --hm-primary-hover: color-mix(in srgb, var(--hm-company-primary, #087e78) 86%, black);
+        --hm-primary-soft: color-mix(in srgb, var(--hm-company-primary, #087e78) 10%, white);
+        --hm-secondary: var(--hm-company-secondary, #3976b8);
         --hm-success: #16845b;
         --hm-success-soft: #e8f5ee;
         --hm-warning: #a96a12;
@@ -65,9 +66,10 @@
         --hm-ink: #edf3f4;
         --hm-ink-secondary: #bdcbd0;
         --hm-ink-muted: #8fa2a9;
-        --hm-primary: #62cbbd;
-        --hm-primary-hover: #7bd9cc;
-        --hm-primary-soft: #193d3a;
+        --hm-primary: color-mix(in srgb, var(--hm-company-primary, #087e78) 75%, white);
+        --hm-primary-hover: color-mix(in srgb, var(--hm-company-primary, #087e78) 86%, white);
+        --hm-primary-soft: color-mix(in srgb, var(--hm-company-primary, #087e78) 22%, #10191d);
+        --hm-secondary: color-mix(in srgb, var(--hm-company-secondary, #3976b8) 75%, white);
         --hm-success: #61c89b;
         --hm-success-soft: #183a2e;
         --hm-warning: #e5b968;
@@ -330,4 +332,37 @@ label {
         animation-iteration-count: 1 !important;
         transition-duration: .01ms !important;
     }
+}
+
+
+/* Company-level density tokens. Values are applied by the active company theme. */
+.fi-ta-cell {
+    padding-block: var(--hm-density-table-y, .65rem);
+}
+
+.fi-section-content,
+.fi-section-content-ctn {
+    padding: var(--hm-density-section-padding, 1rem);
+}
+
+.fi-btn {
+    min-height: var(--hm-density-control-height, 2.4rem);
+}
+
+html[data-hm-density="compact"] {
+    --hm-density-table-y: .4rem;
+    --hm-density-section-padding: .75rem;
+    --hm-density-control-height: 2.2rem;
+}
+
+html[data-hm-density="balanced"] {
+    --hm-density-table-y: .65rem;
+    --hm-density-section-padding: 1rem;
+    --hm-density-control-height: 2.4rem;
+}
+
+html[data-hm-density="comfortable"] {
+    --hm-density-table-y: .85rem;
+    --hm-density-section-padding: 1.25rem;
+    --hm-density-control-height: 2.65rem;
 }

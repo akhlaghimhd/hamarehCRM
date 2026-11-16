@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\SwitchCompany;
+use App\Support\CompanyTheme;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -11,7 +12,6 @@ use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
 use Hammadzafar05\MobileBottomNav\MobileBottomNav;
@@ -36,9 +36,6 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarWidth('15rem')
             ->collapsedSidebarWidth('4.5rem')
             ->collapsibleNavigationGroups()
-            ->colors([
-                'primary' => Color::Teal,
-            ])
             ->navigationGroups([
                 'بازاریابی (جدید)',
                 'فروش (جدید)',
@@ -95,8 +92,12 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">'
             )
             ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn (): string => app(CompanyTheme::class)->styleTag()
+            )
+            ->renderHook(
                 PanelsRenderHook::BODY_START,
-                fn (): string => '<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.lang="fa";</script>',
+                fn (): string => '<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.lang="fa";document.documentElement.dataset.hmDensity=' . json_encode(app(CompanyTheme::class)->density(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) . ';</script>',
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,

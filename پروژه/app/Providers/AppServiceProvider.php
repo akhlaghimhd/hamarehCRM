@@ -12,6 +12,9 @@ use App\Policies\ActivityPolicy;
 use App\Policies\AttachmentPolicy;
 use App\Policies\TaskPolicy;
 use App\Support\CompanyContext;
+use App\Support\CompanyTheme;
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentColor;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +31,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        FilamentColor::register(function (): array {
+            $theme = app(CompanyTheme::class)->current();
+
+            return [
+                'primary' => Color::hex($theme['primary']),
+                'secondary' => Color::hex($theme['secondary']),
+            ];
+        });
+
         Gate::policy(Activity::class, ActivityPolicy::class);
         Gate::policy(Attachment::class, AttachmentPolicy::class);
         Gate::policy(Task::class, TaskPolicy::class);

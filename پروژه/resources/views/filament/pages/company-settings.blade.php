@@ -10,6 +10,64 @@
             </div>
         </section>
 
+
+        <section class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:p-5">
+            <div class="mb-4">
+                <h3 class="font-bold text-gray-950 dark:text-white">پوسته و هویت بصری شرکت</h3>
+                <p class="mt-1 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    پالت، رنگ اصلی، رنگ ثانویه و تراکم پنل فقط برای شرکت جاری ذخیره می‌شوند.
+                </p>
+            </div>
+
+            <form wire:submit="saveTheme" class="space-y-4">
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label for="company-theme-palette" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">پالت رنگ</label>
+                        <select id="company-theme-palette" wire:model.live="themePalette" class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
+                            @foreach ($themePalettes as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                            <option value="custom">رنگ دلخواه</option>
+                        </select>
+                        @error('themePalette') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="company-theme-density" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">تراکم نمایش</label>
+                        <select id="company-theme-density" wire:model="themeDensity" class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
+                            <option value="comfortable">باز و خوانا</option>
+                            <option value="balanced">متعادل</option>
+                            <option value="compact">فشرده</option>
+                        </select>
+                        @error('themeDensity') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="company-theme-primary" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">رنگ اصلی</label>
+                        <div class="flex min-h-11 items-center gap-3 rounded-lg border border-gray-300 px-3 dark:border-gray-700">
+                            <input id="company-theme-primary" type="color" wire:model.live="themePrimary" class="size-8 cursor-pointer rounded border-0 bg-transparent p-0">
+                            <span dir="ltr" class="font-mono text-sm text-gray-600 dark:text-gray-300">{{ $themePrimary }}</span>
+                        </div>
+                        @error('themePrimary') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label for="company-theme-secondary" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">رنگ ثانویه</label>
+                        <div class="flex min-h-11 items-center gap-3 rounded-lg border border-gray-300 px-3 dark:border-gray-700">
+                            <input id="company-theme-secondary" type="color" wire:model.live="themeSecondary" class="size-8 cursor-pointer rounded border-0 bg-transparent p-0">
+                            <span dir="ltr" class="font-mono text-sm text-gray-600 dark:text-gray-300">{{ $themeSecondary }}</span>
+                        </div>
+                        @error('themeSecondary') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
+                    </div>
+                </div>
+
+                <div class="flex flex-col-reverse gap-2 border-t border-gray-100 pt-4 dark:border-gray-800 sm:flex-row sm:justify-end">
+                    <x-filament::button type="button" color="gray" outlined wire:click="resetTheme">بازنشانی پوسته</x-filament::button>
+                    <x-filament::button type="submit" icon="heroicon-m-swatch">ذخیره پوسته شرکت</x-filament::button>
+                </div>
+            </form>
+        </section>
+
         <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.85fr)]">
             <section class="order-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900 xl:order-1">
                 <header class="border-b border-gray-100 px-4 py-4 dark:border-gray-800 sm:px-5">

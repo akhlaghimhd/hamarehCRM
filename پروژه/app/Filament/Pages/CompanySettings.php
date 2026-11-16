@@ -6,6 +6,7 @@ use App\Models\CompanySetting;
 use App\Models\User;
 use App\Support\CompanyContext;
 use App\Support\CompanySettings as CompanySettingsService;
+use App\Support\CompanyTheme;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -39,6 +40,88 @@ class CompanySettings extends Page
     public bool $sensitive = false;
 
     public string $validationRules = '';
+
+    public string $themePalette = 'default';
+
+    public string $themePrimary = '#087E78';
+
+    public string $themeSecondary = '#3976B8';
+
+    public string $themeDensity = 'balanced';
+
+    public function mount(): void
+    {
+        $theme = app(CompanyTheme::class)->current();
+
+        $this->themePalette = $theme['palette'];
+        $this->themePrimary = $theme['primary'];
+        $this->themeSecondary = $theme['secondary'];
+        $this->themeDensity = $theme['density'];
+    }
+
+    public function updatedThemePalette(string $palette): void
+    {
+        $preset = app(CompanyTheme::class)->preset($palette);
+
+        if ($preset === null) {
+            return;
+        }
+
+        $this->themePrimary = $preset['primary'];
+        $this->themeSecondary = $preset['secondary'];
+    }
+
+    public function updatedThemePrimary(): void
+    {
+        $this->themePalette = 'custom';
+    }
+
+    public function updatedThemeSecondary(): void
+    {
+        $this->themePalette = 'custom';
+    }
+
+    public function saveTheme(): void
+    {
+        $this->authorizeAdmin();
+
+        $this->validate([
+            'themePalette' => ['required', 'in:default,ocean,forest,violet,graphite,custom'],
+            'themePrimary' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'themeSecondary' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+            'themeDensity' => ['required', 'in:compact,balanced,comfortable'],
+        ], [
+            'themePrimary.regex' => 'رنگ اصلی معتبر نیست.',
+            'themeSecondary.regex' => 'رنگ ثانویه معتبر نیست.',
+        ]);
+
+        app(CompanyTheme::class)->save([
+            'palette' => $this->themePalette,
+            'primary' => $this->themePrimary,
+            'secondary' => $this->themeSecondary,
+            'density' => $this->themeDensity,
+        ]);
+
+        Notification::make()
+            ->title('پوسته شرکت ذخیره شد')
+            ->body('رنگ‌ها و تراکم پس از بارگذاری مجدد پنل اعمال می‌شوند.')
+            ->success()
+            ->send();
+
+        $this->redirect(static::getUrl());
+    }
+
+    public function resetTheme(): void
+    {
+        $preset = app(CompanyTheme::class)->preset('default');
+
+        $this->themePalette = 'default';
+        $this->themePrimary = $preset['primary'];
+        $this->themeSecondary = $preset['secondary'];
+        $this->themeDensity = 'balanced';
+
+        $this->saveTheme();
+    }
 
     public static function canAccess(): bool
     {
@@ -183,8 +266,10 @@ class CompanySettings extends Page
 
         return [
             'settings' => CompanySetting::query()
+                ->where('key', '<>', 'ui.theme')
                 ->orderBy('key')
                 ->get(['id', 'key', 'type', 'is_sensitive', 'updated_at']),
+            'themePalettes' => CompanyTheme::paletteOptions(),
         ];
     }
 
