@@ -141,10 +141,6 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('email')
                     ->label('ایمیل')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('companies_count')
-                    ->label('شرکت‌ها')
-                    ->counts('companies')
-                    ->toggleable(),
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('فعال')
                     ->boolean(),
