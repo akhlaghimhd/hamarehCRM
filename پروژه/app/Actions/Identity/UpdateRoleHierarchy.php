@@ -3,6 +3,8 @@
 namespace App\Actions\Identity;
 
 use App\Models\Role;
+use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -10,18 +12,42 @@ class UpdateRoleHierarchy
 {
     /**
      * Set a role's parent and inheritance behavior. Optionally copy a source
-     * role's direct permissions as an independent snapshot.
+     * role's direct permissions as an independent, company-scoped snapshot.
      */
     public function handle(
         Role $role,
         ?int $parentRoleId,
         bool $inheritPermissions,
-        ?int $copyPermissionsFromRoleId = null,
+        ?int $copyPermissionsFromRoleId,
+        User $actor,
     ): void {
-        DB::transaction(function () use ($role, $parentRoleId, $inheritPermissions, $copyPermissionsFromRoleId): void {
+        if (
+            $role->company_id === null
+            || ! $actor->is_active
+            || (int) $actor->currentCompanyId() !== (int) $role->company_id
+        ) {
+            throw new AuthorizationException('مدیریت سلسله‌مراتب نقش خارج از شرکت جاری مجاز نیست.');
+        }
+
+        DB::transaction(function () use ($role, $parentRoleId, $inheritPermissions, $copyPermissionsFromRoleId, $actor): void {
+            $lockedRole = Role::query()
+                ->where('company_id', $role->company_id)
+                ->whereKey($role->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $isSystemAdmin = $lockedRole->is_system && $lockedRole->name === 'admin';
+
+            if (
+                ($isSystemAdmin && ! $actor->isCompanyAdmin())
+                || (! $isSystemAdmin && ! $actor->hasPermission('roles.manage'))
+            ) {
+                throw new AuthorizationException('مجوز کافی برای تغییر سلسله‌مراتب نقش را ندارید.');
+            }
+
             if ($parentRoleId !== null) {
-                if ($parentRoleId === (int) $role->id || ! Role::query()
-                    ->where('company_id', $role->company_id)
+                if ($parentRoleId === (int) $lockedRole->id || ! Role::query()
+                    ->where('company_id', $lockedRole->company_id)
                     ->whereKey($parentRoleId)
                     ->exists()) {
                     throw ValidationException::withMessages([
@@ -33,7 +59,7 @@ class UpdateRoleHierarchy
                 $visited = [];
 
                 while ($cursor !== null) {
-                    if ($cursor === (int) $role->id || in_array($cursor, $visited, true)) {
+                    if ($cursor === (int) $lockedRole->id || in_array($cursor, $visited, true)) {
                         throw ValidationException::withMessages([
                             'parent_role_id' => 'این انتخاب باعث ایجاد چرخه در سلسله‌مراتب نقش‌ها می‌شود.',
                         ]);
@@ -41,7 +67,7 @@ class UpdateRoleHierarchy
 
                     $visited[] = $cursor;
                     $nextParentId = Role::query()
-                        ->where('company_id', $role->company_id)
+                        ->where('company_id', $lockedRole->company_id)
                         ->whereKey($cursor)
                         ->value('parent_role_id');
 
@@ -49,14 +75,14 @@ class UpdateRoleHierarchy
                 }
             }
 
-            $role->forceFill([
+            $lockedRole->forceFill([
                 'parent_role_id' => $parentRoleId,
                 'inherit_permissions' => $inheritPermissions,
             ])->save();
 
             if ($copyPermissionsFromRoleId !== null) {
                 $source = Role::query()
-                    ->where('company_id', $role->company_id)
+                    ->where('company_id', $lockedRole->company_id)
                     ->find($copyPermissionsFromRoleId);
 
                 if (! $source) {
@@ -70,7 +96,7 @@ class UpdateRoleHierarchy
                     ->map(fn ($id): int => (int) $id)
                     ->all();
 
-                app(SyncCompanyRolePermissions::class)->handle($role, $permissionIds);
+                app(SyncCompanyRolePermissions::class)->handle($lockedRole, $permissionIds, $actor);
             }
         });
     }
