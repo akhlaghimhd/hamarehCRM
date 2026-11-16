@@ -100,9 +100,12 @@ class RoleResourceProtectionTest extends TestCase
             ->where('name', 'admin')
             ->firstOrFail();
 
-        app(SyncCompanyRolePermissions::class)->handle($customRole, [$systemPermission->id]);
-        app(SyncCompanyRolePermissions::class)->handle($salesSystemRole, [$systemPermission->id]);
-        app(SyncCompanyRolePermissions::class)->handle($adminRole, [$systemPermission->id]);
+        $this->actingAs($admin);
+        session(['current_company_id' => $company->id]);
+
+        app(SyncCompanyRolePermissions::class)->handle($customRole, [$systemPermission->id], $admin);
+        app(SyncCompanyRolePermissions::class)->handle($salesSystemRole, [$systemPermission->id], $admin);
+        app(SyncCompanyRolePermissions::class)->handle($adminRole, [$systemPermission->id], $admin);
 
         $this->assertFalse($customRole->permissions()->whereKey($systemPermission->id)->exists());
         $this->assertFalse($salesSystemRole->permissions()->whereKey($systemPermission->id)->exists());
@@ -145,6 +148,7 @@ class RoleResourceProtectionTest extends TestCase
             null,
             false,
             $adminRole->id,
+            $admin,
         );
 
         $this->assertTrue($customRole->permissions()->whereKey($ordinaryPermission->id)->exists());
