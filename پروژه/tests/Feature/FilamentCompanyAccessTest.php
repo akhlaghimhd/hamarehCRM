@@ -184,7 +184,7 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertFalse(RoleResource::canViewAny());
     }
 
-    public function test_role_bulk_delete_requires_company_role_management_permission(): void
+    public function test_role_delete_permission_is_scoped_to_current_company(): void
     {
         [$companyA, $companyB] = $this->createCompanies();
 
@@ -204,7 +204,7 @@ class FilamentCompanyAccessTest extends TestCase
         $this->actingAs($user);
         session(['current_company_id' => $companyA->id]);
 
-        $this->assertFalse(RoleResource::canDeleteAny());
+        $this->assertFalse(RoleResource::canDelete($salesRole));
 
         $salesRole->permissions()->attach($permission->id);
 
