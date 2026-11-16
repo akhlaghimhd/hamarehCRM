@@ -50,18 +50,28 @@
                                     <span class="min-w-0 flex-1">
                                         <span class="flex flex-wrap items-center gap-2">
                                             <span class="font-bold text-gray-900 dark:text-white">{{ $option['name'] }}</span>
-                                            @if ($option['is_current']) <x-filament::badge color="info">شرکت جاری</x-filament::badge> @endif
-                                            @if ($option['is_default']) <x-filament::badge color="gray">پیش‌فرض</x-filament::badge> @endif
+                                            @if ($option['is_current'])
+                                                <x-filament::badge color="info">شرکت جاری</x-filament::badge>
+                                            @endif
+                                            @if ($option['is_default'])
+                                                <x-filament::badge color="gray">پیش‌فرض</x-filament::badge>
+                                            @endif
                                             <x-filament::badge color="success">فعال</x-filament::badge>
                                         </span>
                                         <span class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
                                             <span>نقش: {{ $option['role_label'] }}</span>
-                                            @if ($option['slug']) <span dir="ltr">{{ $option['slug'] }}</span> @endif
-                                            @if ($option['phone']) <span dir="ltr">{{ $option['phone'] }}</span> @endif
+                                            @if ($option['slug'])
+                                                <span dir="ltr">{{ $option['slug'] }}</span>
+                                            @endif
+                                            @if ($option['phone'])
+                                                <span dir="ltr">{{ $option['phone'] }}</span>
+                                            @endif
                                         </span>
                                     </span>
                                     <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border border-gray-300 text-primary-600 dark:border-gray-600" aria-hidden="true">
-                                        @if ((int) $company_id === (int) $option['id']) <span class="size-2.5 rounded-full bg-primary-600"></span> @endif
+                                        @if ((int) $company_id === (int) $option['id'])
+                                            <span class="size-2.5 rounded-full bg-primary-600"></span>
+                                        @endif
                                     </span>
                                 </label>
                             @else
