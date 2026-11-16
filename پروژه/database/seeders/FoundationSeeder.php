@@ -18,7 +18,7 @@ class FoundationSeeder extends Seeder
             ['name' => 'users.manage', 'label' => 'مدیریت کاربران', 'group' => 'کاربران'],
             ['name' => 'customers.view', 'label' => 'مشاهده مشتریان', 'group' => 'مشتریان'],
             ['name' => 'customers.manage', 'label' => 'مدیریت مشتریان', 'group' => 'مشتریان'],
-            ['name' => 'companies.manage', 'label' => 'مدیریت شرکت‌ها', 'group' => 'سیستم'],
+            ['name' => 'companies.manage', 'label' => 'مدیریت شرکت‌ها', 'group' => 'شرکت'],
             ['name' => 'roles.manage', 'label' => 'مدیریت نقش‌ها', 'group' => 'سیستم'],
             ['name' => 'products.view', 'label' => 'مشاهده محصولات', 'group' => 'محصولات'],
             ['name' => 'products.manage', 'label' => 'مدیریت محصولات', 'group' => 'محصولات'],
