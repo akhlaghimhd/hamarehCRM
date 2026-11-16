@@ -17,6 +17,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use UnitEnum;
 
 class CompanyResource extends Resource
@@ -39,6 +40,28 @@ class CompanyResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'سیستم';
 
     protected static ?int $navigationSort = 2;
+
+    public static function canViewAny(): bool
+    {
+        $user = auth()->user();
+
+        if ($user && $user->is_active && ! DB::table('company_user')->where('user_id', $user->id)->exists()) {
+            return true;
+        }
+
+        return static::allowed(static::$permissionView);
+    }
+
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+
+        if ($user && $user->is_active && ! DB::table('company_user')->where('user_id', $user->id)->exists()) {
+            return true;
+        }
+
+        return static::allowed(static::$permissionManage ?? static::$permissionView);
+    }
 
     public static function getEloquentQuery(): Builder
     {

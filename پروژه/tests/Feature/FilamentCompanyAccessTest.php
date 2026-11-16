@@ -16,6 +16,34 @@ class FilamentCompanyAccessTest extends TestCase
 {
     use RefreshDatabase;
 
+
+    public function test_active_user_without_memberships_can_access_first_company_creation(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+        session()->forget('current_company_id');
+
+        $this->assertTrue(CompanyResource::canViewAny());
+        $this->assertTrue(CompanyResource::canCreate());
+    }
+
+    public function test_non_admin_member_cannot_create_another_company(): void
+    {
+        [$company] = $this->createCompanies();
+        $staffRole = $this->createRole($company, 'staff');
+        $user = User::factory()->create();
+        $user->companies()->attach($company->id, [
+            'role_id' => $staffRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        $this->assertFalse(CompanyResource::canCreate());
+    }
+
     public function test_company_resource_only_exposes_the_current_company(): void
     {
         [$companyA, $companyB] = $this->createCompanies();
