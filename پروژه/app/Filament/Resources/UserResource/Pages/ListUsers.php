@@ -1,16 +1,16 @@
 <?php
 
-namespace App\\Filament\\Resources\\UserResource\\Pages;
+namespace App\Filament\Resources\UserResource\Pages;
 
-use App\\Actions\\Identity\\AddExistingUserToCompany;
-use App\\Filament\\Resources\\UserResource;
-use App\\Models\\Role;
-use App\\Models\\User;
-use Filament\\Actions\\Action;
-use Filament\\Actions\\CreateAction;
-use Filament\\Forms\\Components\\Select;
-use Filament\\Resources\\Pages\\ListRecords;
-use Illuminate\\Database\\Eloquent\\Builder;
+use App\Actions\Identity\AddExistingUserToCompany;
+use App\Filament\Resources\UserResource;
+use App\Models\Role;
+use App\Models\User;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
+use Filament\Forms\Components\Select;
+use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListUsers extends ListRecords
 {
