@@ -103,6 +103,7 @@ class UserRoleHierarchyTest extends TestCase
         $company = $this->createCompany('one');
         $otherCompany = $this->createCompany('two');
         $role = $this->createRole($company, 'staff');
+        $role->permissions()->attach($this->createPermission('users.manage'));
 
         $manager = User::factory()->create();
         $employee = User::factory()->create();
@@ -164,7 +165,8 @@ class UserRoleHierarchyTest extends TestCase
         $teamViewPermission = $this->createPermission('team.activities.view');
         $teamManagePermission = $this->createPermission('team.activities.manage');
 
-        $managerRole->permissions()->attach([$viewPermission->id, $teamViewPermission->id, $teamManagePermission->id]);
+        $usersManagePermission = $this->createPermission('users.manage');
+        $managerRole->permissions()->attach([$viewPermission->id, $teamViewPermission->id, $teamManagePermission->id, $usersManagePermission->id]);
 
         $manager = User::factory()->create();
         $staff = User::factory()->create();
