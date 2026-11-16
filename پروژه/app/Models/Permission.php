@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Permission extends Model
 {
+    public const SYSTEM_GROUPS = ['سیستم', 'system'];
+
+    public const SYSTEM_NAMES = ['companies.manage', 'roles.manage'];
+
     protected $fillable = [
         'name',
         'label',
