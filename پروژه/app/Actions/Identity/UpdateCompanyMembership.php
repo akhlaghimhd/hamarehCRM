@@ -21,6 +21,11 @@ class UpdateCompanyMembership
         ?int $changedByUserId,
     ): void {
         DB::transaction(function () use ($companyId, $userId, $roleIds, $managerUserId, $changedByUserId): void {
+            DB::table('companies')
+                ->where('id', $companyId)
+                ->lockForUpdate()
+                ->first();
+
             $actor = $changedByUserId ? User::query()->find($changedByUserId) : null;
 
             if (! $actor || ! $actor->is_active
@@ -55,6 +60,12 @@ class UpdateCompanyMembership
             }
 
             $this->assertValidManagerAssignment($companyId, $userId, $managerUserId);
+            $this->assertCompanyRetainsActiveAdministrator(
+                $companyId,
+                $userId,
+                $membership,
+                $roleIds,
+            );
 
             $oldManagerUserId = $membership->manager_user_id === null
                 ? null
@@ -98,6 +109,88 @@ class UpdateCompanyMembership
                 ));
             }
         });
+    }
+
+    /**
+     * Prevent a role change or user deactivation from removing the last active
+     * company administrator. The company row is locked by handle() so parallel
+     * membership changes serialize this invariant check.
+     *
+     * @param array<int, int> $newRoleIds
+     */
+    private function assertCompanyRetainsActiveAdministrator(
+        int $companyId,
+        int $userId,
+        object $membership,
+        array $newRoleIds,
+    ): void {
+        $currentRoleIds = DB::table('company_user_role')
+            ->where('company_user_id', $membership->id)
+            ->pluck('role_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all();
+
+        if ($currentRoleIds === [] && $membership->role_id !== null) {
+            $currentRoleIds = [(int) $membership->role_id];
+        }
+
+        $wasAdministrator = $this->hasAdministratorRole($companyId, $currentRoleIds);
+        $willBeAdministrator = $this->hasAdministratorRole($companyId, $newRoleIds);
+        $willBeActive = DB::table('users')
+            ->where('id', $userId)
+            ->where('is_active', true)
+            ->whereNull('deleted_at')
+            ->exists();
+
+        if ($willBeActive && $willBeAdministrator) {
+            return;
+        }
+
+        if (! $wasAdministrator && ! $willBeAdministrator) {
+            return;
+        }
+
+        $anotherActiveAdministratorExists = DB::table('company_user as memberships')
+            ->join('users', 'users.id', '=', 'memberships.user_id')
+            ->leftJoin('company_user_role as assigned_roles', 'assigned_roles.company_user_id', '=', 'memberships.id')
+            ->leftJoin('roles as assigned_role', function ($join) use ($companyId): void {
+                $join->on('assigned_role.id', '=', 'assigned_roles.role_id')
+                    ->where('assigned_role.company_id', '=', $companyId);
+            })
+            ->leftJoin('roles as legacy_role', function ($join) use ($companyId): void {
+                $join->on('legacy_role.id', '=', 'memberships.role_id')
+                    ->where('legacy_role.company_id', '=', $companyId);
+            })
+            ->where('memberships.company_id', $companyId)
+            ->where('memberships.user_id', '<>', $userId)
+            ->where('users.is_active', true)
+            ->whereNull('users.deleted_at')
+            ->where(function ($query): void {
+                $query->where('assigned_role.name', 'admin')
+                    ->orWhere(function ($query): void {
+                        $query->whereNull('assigned_roles.id')
+                            ->where('legacy_role.name', 'admin');
+                    });
+            })
+            ->exists();
+
+        if (! $anotherActiveAdministratorExists) {
+            throw ValidationException::withMessages([
+                'role_ids' => 'شرکت باید حداقل یک مدیر فعال داشته باشد؛ ابتدا مدیر فعال دیگری تعیین کنید.',
+            ]);
+        }
+    }
+
+    /**
+     * @param array<int, int> $roleIds
+     */
+    private function hasAdministratorRole(int $companyId, array $roleIds): bool
+    {
+        return $roleIds !== [] && DB::table('roles')
+            ->where('company_id', $companyId)
+            ->whereIn('id', $roleIds)
+            ->where('name', 'admin')
+            ->exists();
     }
 
     public function assertValidManagerAssignment(int $companyId, int $userId, ?int $managerUserId): void

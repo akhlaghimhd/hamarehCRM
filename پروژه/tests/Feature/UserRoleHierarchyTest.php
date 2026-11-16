@@ -221,6 +221,90 @@ class UserRoleHierarchyTest extends TestCase
         $this->assertFalse($manager->canManageActivityOwner($staff->id));
     }
 
+
+    public function test_last_active_company_admin_cannot_be_demoted(): void
+    {
+        $company = $this->createCompany('last-admin-demotion');
+        $adminRole = $this->createRole($company, 'admin');
+        $staffRole = $this->createRole($company, 'staff');
+        $permission = $this->createPermission('users.manage');
+        $adminRole->permissions()->attach($permission);
+
+        $admin = User::factory()->create();
+        $admin->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+        $membershipId = DB::table('company_user')
+            ->where('company_id', $company->id)
+            ->where('user_id', $admin->id)
+            ->value('id');
+        DB::table('company_user_role')->insert([
+            'company_user_id' => $membershipId,
+            'role_id' => $adminRole->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($admin);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+
+        app(UpdateCompanyMembership::class)->handle(
+            $company->id,
+            $admin->id,
+            [$staffRole->id],
+            null,
+            $admin->id,
+        );
+    }
+
+    public function test_last_active_company_admin_cannot_be_deactivated_by_membership_update(): void
+    {
+        $company = $this->createCompany('last-admin-deactivation');
+        $managerRole = $this->createRole($company, 'manager');
+        $adminRole = $this->createRole($company, 'admin');
+        $permission = $this->createPermission('users.manage');
+        $managerRole->permissions()->attach($permission);
+
+        $manager = User::factory()->create();
+        $admin = User::factory()->create();
+        $manager->companies()->attach($company->id, [
+            'role_id' => $managerRole->id,
+            'is_default' => true,
+        ]);
+        $admin->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+
+        $membershipId = DB::table('company_user')
+            ->where('company_id', $company->id)
+            ->where('user_id', $admin->id)
+            ->value('id');
+        DB::table('company_user_role')->insert([
+            'company_user_id' => $membershipId,
+            'role_id' => $adminRole->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($manager);
+        session(['current_company_id' => $company->id]);
+        $admin->update(['is_active' => false]);
+
+        $this->expectException(ValidationException::class);
+
+        app(UpdateCompanyMembership::class)->handle(
+            $company->id,
+            $admin->id,
+            [$adminRole->id],
+            null,
+            $manager->id,
+        );
+    }
+
     private function createCompany(string $suffix): Company
     {
         return Company::query()->create([
