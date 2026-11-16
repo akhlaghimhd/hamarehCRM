@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Actions\Identity\UpdateCompanyProfile;
 use App\Filament\Pages\SwitchCompany;
 use App\Models\Company;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\CompanyContext;
@@ -77,6 +78,46 @@ class UpdateCompanyProfileTest extends TestCase
 
         $this->assertNull(app(CompanyContext::class)->currentCompanyId($user));
         $this->assertTrue(SwitchCompany::canAccess());
+    }
+
+
+    public function test_company_manager_with_permission_cannot_deactivate_company(): void
+    {
+        $company = $this->createCompany('manager-cannot-deactivate');
+        $role = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'company-manager',
+            'label' => 'مدیر اجرایی',
+            'is_system' => false,
+        ]);
+        $permission = Permission::query()->create([
+            'name' => 'companies.manage',
+            'label' => 'مدیریت شرکت‌ها',
+            'group' => 'system',
+        ]);
+        $role->permissions()->attach($permission);
+
+        $user = User::factory()->create();
+        $user->companies()->attach($company->id, [
+            'role_id' => $role->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(UpdateCompanyProfile::class)->handle($company, [
+            'name' => $company->name,
+            'slug' => $company->slug,
+            'national_id' => $company->national_id,
+            'registration_number' => $company->registration_number,
+            'phone' => $company->phone,
+            'email' => $company->email,
+            'address' => $company->address,
+            'is_active' => false,
+        ], $user);
     }
 
     public function test_non_admin_cannot_update_company_profile(): void
