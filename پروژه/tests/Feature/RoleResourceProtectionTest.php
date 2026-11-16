@@ -107,7 +107,7 @@ class RoleResourceProtectionTest extends TestCase
     }
 
 
-    public function test_legacy_admin_parent_does_not_leak_central_permissions_to_custom_role(): void
+    public function test_legacy_admin_parent_does_not_leak_permissions_to_custom_role(): void
     {
         [$company] = $this->companyAdmin('legacy-admin-parent');
         $adminRole = Role::query()
@@ -137,7 +137,7 @@ class RoleResourceProtectionTest extends TestCase
 
         $effectiveIds = $customRole->effectivePermissionIds();
 
-        $this->assertTrue($effectiveIds->contains($ordinaryPermission->id));
+        $this->assertFalse($effectiveIds->contains($ordinaryPermission->id));
         $this->assertFalse($effectiveIds->contains($systemPermission->id));
 
         $user = User::factory()->create();
@@ -149,7 +149,7 @@ class RoleResourceProtectionTest extends TestCase
         session(['current_company_id' => $company->id]);
 
         $this->assertFalse($user->hasPermission('companies.manage'));
-        $this->assertTrue($user->hasPermission('orders.view'));
+        $this->assertFalse($user->hasPermission('orders.view'));
     }
 
     public function test_role_manager_cannot_edit_or_change_legacy_admin_role(): void
