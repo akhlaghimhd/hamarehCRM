@@ -60,7 +60,38 @@ class CompanyResource extends Resource
             return true;
         }
 
-        return static::allowed(static::$permissionManage ?? static::$permissionView);
+        return $user && $user->is_active && $user->isCompanyAdmin();
+    }
+
+    public static function canView($record): bool
+    {
+        return static::belongsToCurrentCompany($record)
+            && static::allowed(static::$permissionView);
+    }
+
+    public static function canEdit($record): bool
+    {
+        return static::belongsToCurrentCompany($record)
+            && static::allowed(static::$permissionManage);
+    }
+
+    public static function canDelete($record): bool
+    {
+        $user = auth()->user();
+
+        return static::belongsToCurrentCompany($record)
+            && $user !== null
+            && $user->is_active
+            && $user->isCompanyAdmin();
+    }
+
+    protected static function belongsToCurrentCompany(mixed $record): bool
+    {
+        $companyId = auth()->user()?->currentCompanyId();
+
+        return $record instanceof Company
+            && $companyId !== null
+            && (int) $record->id === (int) $companyId;
     }
 
     public static function getEloquentQuery(): Builder
