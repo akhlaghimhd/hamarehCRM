@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\RoleResource\Pages;
 
 use App\Actions\Identity\DeleteCompanyRole;
+use App\Actions\Identity\SyncCompanyRolePermissions;
 use App\Actions\Identity\UpdateRoleHierarchy;
 use App\Models\AuditEvent;
-use App\Models\Permission;
 use App\Filament\Resources\RoleResource;
 use App\Models\Role;
 use Filament\Actions\DeleteAction;
@@ -116,13 +116,10 @@ class EditRole extends EditRecord
             $this->inheritPermissions,
         );
 
-        if (! ($this->record->is_system && $this->record->name === 'admin')) {
-            $systemPermissionIds = Permission::query()
-                ->where('group', 'سیستم')
-                ->pluck('id');
-
-            $this->record->permissions()->detach($systemPermissionIds);
-        }
+        app(SyncCompanyRolePermissions::class)->handle(
+            $this->record,
+            $this->record->permissions()->pluck('permissions.id')->map(fn ($id): int => (int) $id)->all(),
+        );
 
         $role = $this->record->fresh();
         $newRoleState = [
