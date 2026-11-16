@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\Identity\UpdateUserAccount;
 use App\Models\Company;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -54,6 +55,44 @@ class UpdateUserAccountTest extends TestCase
         app(UpdateUserAccount::class)->assertCanChangeStatus(
             $target,
             ['is_active' => true],
+            $actor,
+            $company->id,
+        );
+    }
+
+
+    public function test_company_admin_cannot_deactivate_the_last_active_company_admin(): void
+    {
+        $company = $this->createCompany('last-admin-protection');
+        $managerRole = $this->createRole($company, 'identity-manager');
+        $permission = Permission::query()->create([
+            'name' => 'users.manage',
+            'label' => 'مدیریت کاربران',
+            'group' => 'identity',
+        ]);
+        $managerRole->permissions()->attach($permission);
+
+        $actor = User::factory()->create();
+        $actor->companies()->attach($company->id, [
+            'role_id' => $managerRole->id,
+            'is_default' => true,
+        ]);
+
+        $adminRole = $this->createRole($company, 'admin');
+        $target = User::factory()->create();
+        $target->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+
+        app(UpdateUserAccount::class)->assertCanChangeStatus(
+            $target,
+            ['is_active' => false],
             $actor,
             $company->id,
         );
