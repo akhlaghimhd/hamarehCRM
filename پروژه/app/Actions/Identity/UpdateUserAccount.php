@@ -113,6 +113,10 @@ class UpdateUserAccount
                 ->where('name', 'admin')
                 ->exists();
 
+            if ($isCompanyAdmin && ! $actor->isCompanyAdmin()) {
+                throw new AuthorizationException('فقط مدیر شرکت می‌تواند وضعیت حساب مدیر شرکت را تغییر دهد.');
+            }
+
             if ($isCompanyAdmin) {
                 $anotherActiveAdminExists = DB::table('company_user as memberships')
                     ->join('users', 'users.id', '=', 'memberships.user_id')
