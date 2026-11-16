@@ -250,7 +250,7 @@ class CreateCompanyForUserTest extends TestCase
         }
     }
 
-    public function test_company_creation_rolls_back_when_a_duplicate_slug_is_rejected(): void
+    public function test_company_creation_rejects_duplicate_slug_without_creating_membership(): void
     {
         $creator = User::factory()->create();
         Company::query()->create([
