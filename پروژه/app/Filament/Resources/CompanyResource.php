@@ -76,7 +76,8 @@ class CompanyResource extends Resource
                     ->label('اسلاگ')
                     ->required()
                     ->maxLength(255)
-                    ->helperText('شناسه یکتای لاتین شرکت؛ پس از ثبت بهتر است تغییر نکند.')
+                    ->helperText('شناسه یکتای لاتین شرکت؛ فقط حروف کوچک انگلیسی، عدد و خط تیره.')
+                    ->rules(['regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'])
                     ->unique(ignoreRecord: true),
                 TextInput::make('national_id')
                     ->label('شناسه ملی / اقتصادی')
