@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -83,6 +84,33 @@ class RemoveUserFromCompanyTest extends TestCase
             'user_id' => $user->id,
             'is_default' => true,
         ]);
+    }
+
+
+    public function test_non_admin_manager_cannot_remove_an_administrator_membership(): void
+    {
+        $company = $this->createCompany('manager-cannot-remove-admin');
+        $managerRole = $this->createRole($company, 'manager');
+        $managerRole->permissions()->attach(Permission::query()->create([
+            'name' => 'users.manage',
+            'label' => 'مدیریت کاربران',
+            'group' => 'کاربران',
+        ]));
+        $adminRole = $this->createRole($company, 'admin');
+        $manager = User::factory()->create();
+        $targetAdmin = User::factory()->create();
+        $remainingAdmin = User::factory()->create();
+
+        $manager->companies()->attach($company->id, ['role_id' => $managerRole->id, 'is_default' => true]);
+        $targetAdmin->companies()->attach($company->id, ['role_id' => $adminRole->id, 'is_default' => false]);
+        $remainingAdmin->companies()->attach($company->id, ['role_id' => $adminRole->id, 'is_default' => false]);
+
+        $this->actingAs($manager);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(RemoveUserFromCompany::class)->handle($company->id, $targetAdmin->id, $manager);
     }
 
     public function test_last_active_company_admin_cannot_be_removed(): void
