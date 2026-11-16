@@ -68,7 +68,9 @@ class Role extends Model
             $permissionQuery = $role->permissions();
 
             if ($this->name !== 'admin') {
-                $permissionQuery->where('permissions.group', '<>', 'سیستم');
+                $permissionQuery
+                    ->whereNotIn('permissions.group', Permission::SYSTEM_GROUPS)
+                    ->whereNotIn('permissions.name', Permission::SYSTEM_NAMES);
             }
 
             $permissionIds = $permissionIds->merge(
