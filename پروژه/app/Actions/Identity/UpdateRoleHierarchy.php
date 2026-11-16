@@ -36,7 +36,7 @@ class UpdateRoleHierarchy
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $isSystemAdmin = $lockedRole->is_system && $lockedRole->name === 'admin';
+            $isSystemAdmin = $lockedRole->name === 'admin';
 
             if (
                 ($isSystemAdmin && ! $actor->isCompanyAdmin())
