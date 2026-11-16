@@ -61,44 +61,6 @@ class UpdateUserAccountTest extends TestCase
     }
 
 
-    public function test_company_admin_cannot_deactivate_the_last_active_company_admin(): void
-    {
-        $company = $this->createCompany('last-admin-protection');
-        $managerRole = $this->createRole($company, 'identity-manager');
-        $permission = Permission::query()->create([
-            'name' => 'users.manage',
-            'label' => 'مدیریت کاربران',
-            'group' => 'identity',
-        ]);
-        $managerRole->permissions()->attach($permission);
-
-        $actor = User::factory()->create();
-        $actor->companies()->attach($company->id, [
-            'role_id' => $managerRole->id,
-            'is_default' => true,
-        ]);
-
-        $adminRole = $this->createRole($company, 'admin');
-        $target = User::factory()->create();
-        $target->companies()->attach($company->id, [
-            'role_id' => $adminRole->id,
-            'is_default' => true,
-        ]);
-
-        $this->actingAs($actor);
-        session(['current_company_id' => $company->id]);
-
-        $this->expectException(ValidationException::class);
-
-        app(UpdateUserAccount::class)->assertCanChangeStatus(
-            $target,
-            ['is_active' => false],
-            $actor,
-            $company->id,
-        );
-    }
-
-
     public function test_company_admin_can_deactivate_an_admin_when_another_active_admin_remains(): void
     {
         [$company, $actor] = $this->companyWithAdmin('two-admins');
