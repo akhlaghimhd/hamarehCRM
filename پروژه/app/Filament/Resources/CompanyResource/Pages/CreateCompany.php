@@ -1,12 +1,11 @@
 <?php
 
-namespace App\\Filament\\Resources\\CompanyResource\\Pages;
+namespace App\Filament\Resources\CompanyResource\Pages;
 
-use App\\Actions\\Identity\\CreateCompanyForUser;
-use App\\Filament\\Resources\\CompanyResource;
-use App\\Models\\Company;
-use Filament\\Resources\\Pages\\CreateRecord;
-use Illuminate\\Database\\Eloquent\\Model;
+use App\Actions\Identity\CreateCompanyForUser;
+use App\Filament\Resources\CompanyResource;
+use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateCompany extends CreateRecord
 {
