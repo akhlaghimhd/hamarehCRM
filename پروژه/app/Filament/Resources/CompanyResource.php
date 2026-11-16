@@ -18,6 +18,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Illuminate\\Database\\Eloquent\\Builder;
 use UnitEnum;
 
 class CompanyResource extends Resource
@@ -40,6 +41,18 @@ class CompanyResource extends Resource
     protected static string|UnitEnum|null $navigationGroup = 'سیستم';
 
     protected static ?int $navigationSort = 2;
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $companyId = auth()->user()?->currentCompanyId();
+
+        if (! $companyId) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->whereKey($companyId);
+    }
 
     public static function form(Schema $schema): Schema
     {
@@ -107,11 +120,7 @@ class CompanyResource extends Resource
                 ViewAction::make(),
                 EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+;
     }
 
     public static function getPages(): array
