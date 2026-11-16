@@ -130,6 +130,23 @@ class CompanyThemeTest extends TestCase
         app(CompanySettings::class)->forget($company->id, 'ui.theme');
     }
 
+
+    public function test_generic_settings_service_cannot_overwrite_reserved_theme_key(): void
+    {
+        [$company, , $user] = $this->adminInTwoCompanies();
+
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(InvalidArgumentException::class);
+        app(CompanySettings::class)->set(
+            $company->id,
+            'ui.theme',
+            'json',
+            ['palette' => 'custom', 'primary' => '#000000'],
+        );
+    }
+
     /**
      * @return array{Company, Company, User}
      */
