@@ -119,7 +119,7 @@ class RoleResource extends Resource
                     ->maxLength(100)
                     ->rules(fn (?Role $record): array => [
                         'regex:/^[a-z][a-z0-9_-]{0,99}$/',
-                        ...($record?->is_system ? [] : ['not_in:admin']),
+                        ...(($record?->is_system || $record?->name === 'admin') ? [] : ['not_in:admin']),
                     ])
                     ->disabled(fn (?Role $record): bool => (bool) ($record?->is_system || $record?->name === 'admin'))
                     ->helperText('نام admin رزرو شده است؛ برای نقش‌های اختصاصی نامی مانند sales یا warehouse انتخاب کنید.'),
