@@ -36,6 +36,10 @@ class UpdateCompanyProfile
             'is_active' => ['required', 'boolean'],
         ])->validate();
 
+        if (! $validated['is_active'] && ! $actor->isCompanyAdmin()) {
+            throw new AuthorizationException('فقط مدیر شرکت می‌تواند شرکت را غیرفعال کند؛ این عملیات مسیر بازیابی مدیریتی دارد.');
+        }
+
         return DB::transaction(function () use ($record, $validated, $actor, $companyId): Company {
             $company = Company::query()
                 ->whereKey($record->getKey())
