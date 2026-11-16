@@ -4,9 +4,12 @@ namespace Tests\Feature;
 
 use App\Filament\Pages\CompanySettings as CompanySettingsPage;
 use App\Models\Company;
+use App\Models\CompanySetting;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\CompanyTheme;
+use App\Support\CompanySettings;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -94,7 +97,7 @@ class CompanySettingsPageTest extends TestCase
         $this->actingAs($user);
         session(['current_company_id' => $companyA->id]);
 
-        $setting = app(\\App\\Support\\CompanySettings::class)->set(
+        $setting = app(CompanySettings::class)->set(
             $companyA->id,
             'private.company_a',
             'string',
@@ -109,19 +112,19 @@ class CompanySettingsPageTest extends TestCase
             'key' => 'private.company_a',
         ]);
 
-        $this->assertNull(\\App\\Models\\CompanySetting::query()->find($setting->id));
+        $this->assertNull(CompanySetting::query()->find($setting->id));
 
         try {
             Livewire::test(CompanySettingsPage::class)->call('editSetting', $setting->id);
             $this->fail('A company admin must not read a setting from another company.');
-        } catch (\\Illuminate\\Database\\Eloquent\\ModelNotFoundException) {
+        } catch (ModelNotFoundException) {
             // The company global scope must make foreign settings indistinguishable from missing settings.
         }
 
         try {
             Livewire::test(CompanySettingsPage::class)->call('deleteSetting', $setting->id);
             $this->fail('A company admin must not delete a setting from another company.');
-        } catch (\\Illuminate\\Database\\Eloquent\\ModelNotFoundException) {
+        } catch (ModelNotFoundException) {
             // The company global scope must prevent ID-based cross-company deletion.
         }
 
