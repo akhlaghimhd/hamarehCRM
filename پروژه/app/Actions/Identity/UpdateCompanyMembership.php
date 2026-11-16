@@ -20,6 +20,16 @@ class UpdateCompanyMembership
         ?int $changedByUserId,
     ): void {
         DB::transaction(function () use ($companyId, $userId, $roleIds, $managerUserId, $changedByUserId): void {
+            $actor = $changedByUserId ? User::query()->find($changedByUserId) : null;
+
+            if (! $actor || ! $actor->is_active
+                || (int) $actor->currentCompanyId() !== $companyId
+                || ! $actor->hasPermission('users.manage')) {
+                throw ValidationException::withMessages([
+                    'company_id' => 'اجازه تغییر نقش یا مدیر مستقیم کاربران در این شرکت را ندارید.',
+                ]);
+            }
+
             $membership = DB::table('company_user')
                 ->where('company_id', $companyId)
                 ->where('user_id', $userId)
@@ -34,7 +44,7 @@ class UpdateCompanyMembership
 
             $roleIds = array_values(array_unique(array_map('intval', $roleIds)));
 
-            if ($roleIds !== [] && DB::table('roles')
+            if ($roleIds === [] || DB::table('roles')
                 ->where('company_id', $companyId)
                 ->whereIn('id', $roleIds)
                 ->count() !== count($roleIds)) {
