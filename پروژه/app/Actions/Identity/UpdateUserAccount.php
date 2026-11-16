@@ -62,15 +62,17 @@ class UpdateUserAccount
             ]);
         }
 
-        $hasDirectReports = DB::table('company_user')
-            ->where('company_id', $companyId)
-            ->where('manager_user_id', $target->id)
-            ->exists();
+        if (! $requestedStatus) {
+            $hasDirectReports = DB::table('company_user')
+                ->where('company_id', $companyId)
+                ->where('manager_user_id', $target->id)
+                ->exists();
 
-        if ($hasDirectReports) {
-            throw ValidationException::withMessages([
-                'is_active' => 'ابتدا مدیر مستقیم اعضای زیرمجموعه این کاربر را تغییر دهید.',
-            ]);
+            if ($hasDirectReports) {
+                throw ValidationException::withMessages([
+                    'is_active' => 'ابتدا مدیر مستقیم اعضای زیرمجموعه این کاربر را تغییر دهید.',
+                ]);
+            }
         }
     }
 

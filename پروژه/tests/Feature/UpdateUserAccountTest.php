@@ -80,6 +80,28 @@ class UpdateUserAccountTest extends TestCase
     }
 
 
+
+    public function test_company_admin_can_reactivate_a_manager_who_has_direct_reports(): void
+    {
+        [$company, $actor] = $this->companyWithAdmin('account-status-reactivate-manager');
+        $target = User::factory()->create(['is_active' => false]);
+        $report = User::factory()->create();
+        $target->companies()->attach($company->id);
+        $report->companies()->attach($company->id, [
+            'manager_user_id' => $target->id,
+        ]);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        app(UpdateUserAccount::class)->assertCanChangeStatus(
+            $target,
+            ['is_active' => true],
+            $actor,
+            $company->id,
+        );
+    }
+
     public function test_company_admin_cannot_deactivate_a_user_who_has_direct_reports(): void
     {
         [$company, $actor] = $this->companyWithAdmin('account-status-manager');
