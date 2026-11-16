@@ -190,7 +190,8 @@ class RoleResourceProtectionTest extends TestCase
         session(['current_company_id' => $company->id]);
 
         $this->assertFalse(RoleResource::canEdit($adminRole));
-        $this->assertTrue(RoleResource::canEdit($managerRole));
+        $this->assertFalse($manager->hasPermission('roles.manage'));
+        $this->assertFalse(RoleResource::canEdit($managerRole));
         $this->assertFalse(RoleResource::canDelete($adminRole));
 
         $this->expectException(AuthorizationException::class);
@@ -204,6 +205,11 @@ class RoleResourceProtectionTest extends TestCase
             'name' => 'roles.manage',
             'label' => 'مدیریت نقش‌ها',
             'group' => 'سیستم',
+        ]);
+        $legacySystemPermission = Permission::query()->create([
+            'name' => 'companies.manage',
+            'label' => 'مدیریت شرکت‌ها',
+            'group' => 'system',
         ]);
         $customRole = Role::query()->create([
             'company_id' => $company->id,
@@ -227,13 +233,16 @@ class RoleResourceProtectionTest extends TestCase
         $this->actingAs($admin);
         session(['current_company_id' => $company->id]);
 
-        app(SyncCompanyRolePermissions::class)->handle($customRole, [$systemPermission->id], $admin);
-        app(SyncCompanyRolePermissions::class)->handle($salesSystemRole, [$systemPermission->id], $admin);
-        app(SyncCompanyRolePermissions::class)->handle($adminRole, [$systemPermission->id], $admin);
+        app(SyncCompanyRolePermissions::class)->handle($customRole, [$systemPermission->id, $legacySystemPermission->id], $admin);
+        app(SyncCompanyRolePermissions::class)->handle($salesSystemRole, [$systemPermission->id, $legacySystemPermission->id], $admin);
+        app(SyncCompanyRolePermissions::class)->handle($adminRole, [$systemPermission->id, $legacySystemPermission->id], $admin);
 
         $this->assertFalse($customRole->permissions()->whereKey($systemPermission->id)->exists());
+        $this->assertFalse($customRole->permissions()->whereKey($legacySystemPermission->id)->exists());
         $this->assertFalse($salesSystemRole->permissions()->whereKey($systemPermission->id)->exists());
+        $this->assertFalse($salesSystemRole->permissions()->whereKey($legacySystemPermission->id)->exists());
         $this->assertTrue($adminRole->permissions()->whereKey($systemPermission->id)->exists());
+        $this->assertTrue($adminRole->permissions()->whereKey($legacySystemPermission->id)->exists());
     }
 
     public function test_copying_admin_permissions_does_not_grant_central_permissions_to_custom_roles(): void
