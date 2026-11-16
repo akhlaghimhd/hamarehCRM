@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RoleResource\Pages;
 
 use App\Actions\Identity\DeleteCompanyRole;
 use App\Actions\Identity\UpdateRoleHierarchy;
+use App\Models\AuditEvent;
 use App\Filament\Resources\RoleResource;
 use App\Models\Role;
 use Filament\Actions\DeleteAction;
@@ -18,6 +19,14 @@ class EditRole extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        $this->originalRoleState = [
+            'name' => $this->record->name,
+            'label' => $this->record->label,
+            'parent_role_id' => $this->record->parent_role_id === null ? null : (int) $this->record->parent_role_id,
+            'inherit_permissions' => (bool) $this->record->inherit_permissions,
+            'permission_ids' => $this->record->permissions()->pluck('permissions.id')->map(fn ($id): int => (int) $id)->all(),
+        ];
+
         $name = trim((string) ($data['name'] ?? $this->record->name));
 
         if ($this->record->is_system && $name !== $this->record->name) {
@@ -96,6 +105,8 @@ class EditRole extends EditRecord
         return $data;
     }
 
+    protected ?bool $hasDatabaseTransactions = true;
+
     protected function afterSave(): void
     {
         app(UpdateRoleHierarchy::class)->handle(
@@ -103,6 +114,34 @@ class EditRole extends EditRecord
             $this->parentRoleId,
             $this->inheritPermissions,
         );
+
+        $role = $this->record->fresh();
+        $newRoleState = [
+            'name' => $role->name,
+            'label' => $role->label,
+            'parent_role_id' => $role->parent_role_id === null ? null : (int) $role->parent_role_id,
+            'inherit_permissions' => (bool) $role->inherit_permissions,
+            'permission_ids' => $role->permissions()->pluck('permissions.id')->map(fn ($id): int => (int) $id)->all(),
+        ];
+
+        $oldComparable = $this->originalRoleState;
+        $newComparable = $newRoleState;
+        sort($oldComparable['permission_ids']);
+        sort($newComparable['permission_ids']);
+
+        if ($oldComparable !== $newComparable) {
+            AuditEvent::query()->create([
+                'company_id' => $role->company_id,
+                'auditable_type' => $role->getMorphClass(),
+                'auditable_id' => $role->getKey(),
+                'actor_user_id' => auth()->id(),
+                'event' => 'updated',
+                'old_values' => $this->originalRoleState,
+                'new_values' => $newRoleState,
+                'metadata' => ['source' => 'role_management'],
+                'occurred_at' => now(),
+            ]);
+        }
     }
 
     protected function getHeaderActions(): array
@@ -119,4 +158,7 @@ class EditRole extends EditRecord
     public ?int $parentRoleId = null;
 
     public bool $inheritPermissions = false;
+
+    /** @var array<string, mixed> */
+    public array $originalRoleState = [];
 }
