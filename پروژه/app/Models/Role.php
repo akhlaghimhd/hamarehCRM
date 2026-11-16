@@ -65,6 +65,10 @@ class Role extends Model
                 break;
             }
 
+            if ($this->name !== 'admin' && $role->name === 'admin') {
+                break;
+            }
+
             $permissionQuery = $role->permissions();
 
             if ($this->name !== 'admin') {
