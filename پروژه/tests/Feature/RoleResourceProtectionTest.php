@@ -139,6 +139,17 @@ class RoleResourceProtectionTest extends TestCase
 
         $this->assertTrue($effectiveIds->contains($ordinaryPermission->id));
         $this->assertFalse($effectiveIds->contains($systemPermission->id));
+
+        $user = User::factory()->create();
+        $user->companies()->attach($company->id, [
+            'role_id' => $customRole->id,
+            'is_default' => true,
+        ]);
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        $this->assertFalse($user->hasPermission('companies.manage'));
+        $this->assertTrue($user->hasPermission('orders.view'));
     }
 
     public function test_role_manager_cannot_edit_or_change_system_admin_role(): void
