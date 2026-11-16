@@ -11,8 +11,8 @@ use Illuminate\Validation\ValidationException;
 class UpdateUserAccount
 {
     /**
-     * Account status is global. A company manager may deactivate a user only
-     * when that account has no membership in another company.
+     * Account status is global. A company manager may change it only when
+     * the account has no membership in another company.
      *
      * @param array<string, mixed> $data
      */
