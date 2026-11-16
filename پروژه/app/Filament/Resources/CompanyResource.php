@@ -101,6 +101,7 @@ class CompanyResource extends Resource
                     ->label('فعال')
                     ->default(true)
                     ->disabled(fn (): bool => ! (auth()->user()?->isCompanyAdmin() ?? false))
+                    ->dehydrated()
                     ->helperText('تغییر وضعیت شرکت فقط برای مدیر شرکت مجاز است.'),
             ]);
     }
