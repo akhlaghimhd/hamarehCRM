@@ -3,10 +3,13 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Actions\Identity\UpdateCompanyMembership;
+use App\Actions\Identity\UpdateUserAccount;
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
+use App\Models\User;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -69,6 +72,21 @@ class EditUser extends EditRecord
             ]);
         }
 
+        $actor = auth()->user();
+
+        if (! $actor instanceof User) {
+            throw new AuthorizationException('برای ویرایش کاربر باید وارد حساب کاربری شوید.');
+        }
+
+        app(UpdateUserAccount::class)->assertCanChangeStatus(
+            $this->record,
+            $data,
+            $actor,
+            (int) $companyId,
+        );
+
+        $this->wasActive = (bool) $this->record->is_active;
+
         app(UpdateCompanyMembership::class)->assertValidManagerAssignment((int) $companyId, (int) $this->record->id, $managerUserId);
 
         $this->companyId = (int) $companyId;
@@ -80,8 +98,26 @@ class EditUser extends EditRecord
         return $data;
     }
 
+    protected function hasDatabaseTransactions(): bool
+    {
+        return true;
+    }
+
     protected function afterSave(): void
     {
+        $actor = auth()->user();
+
+        if (! $actor instanceof User) {
+            throw new AuthorizationException('برای ویرایش کاربر باید وارد حساب کاربری شوید.');
+        }
+
+        app(UpdateUserAccount::class)->recordStatusChange(
+            $this->record,
+            $this->wasActive,
+            $actor,
+            $this->companyId,
+        );
+
         app(UpdateCompanyMembership::class)->handle(
             $this->companyId,
             (int) $this->record->id,
@@ -99,6 +135,8 @@ class EditUser extends EditRecord
     }
 
     public ?int $companyId = null;
+
+    public bool $wasActive = true;
 
     /** @var array<int, int> */
     public array $roleIds = [];

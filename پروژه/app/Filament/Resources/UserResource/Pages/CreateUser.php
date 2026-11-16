@@ -49,6 +49,11 @@ class CreateUser extends CreateRecord
         return $data;
     }
 
+    protected function hasDatabaseTransactions(): bool
+    {
+        return true;
+    }
+
     protected function afterCreate(): void
     {
         $this->record->companies()->syncWithoutDetaching([

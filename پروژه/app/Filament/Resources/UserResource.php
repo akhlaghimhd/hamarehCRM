@@ -18,6 +18,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use UnitEnum;
 
@@ -123,7 +124,12 @@ class UserResource extends Resource
                     ->helperText('مدیر باید عضو فعال همین شرکت باشد. چرخه سرپرستی در زمان ذخیره کنترل می‌شود.'),
                 Toggle::make('is_active')
                     ->label('فعال')
-                    ->default(true),
+                    ->default(true)
+                    ->disabled(fn (?User $record): bool => $record !== null && DB::table('company_user')
+                        ->where('user_id', $record->id)
+                        ->where('company_id', '<>', $companyId ?? 0)
+                        ->exists())
+                    ->helperText('وضعیت حساب سراسری است؛ اگر کاربر عضو شرکت دیگری باشد، فقط عضویت شرکت جاری را مدیریت کنید.'),
             ]);
     }
 
