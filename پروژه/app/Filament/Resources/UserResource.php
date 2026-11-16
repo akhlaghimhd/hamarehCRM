@@ -153,6 +153,20 @@ class UserResource extends Resource
                     ->visible(fn ($record) => static::canView($record)),
                 EditAction::make()->label('ویرایش')
                     ->visible(fn ($record) => static::canEdit($record)),
+                Action::make('removeFromCompany')
+                    ->label('حذف از شرکت جاری')
+                    ->icon('heroicon-o-user-minus')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('حذف عضویت کاربر')
+                    ->modalDescription('حساب کاربری حذف نمی‌شود؛ فقط عضویت او در شرکت جاری برداشته خواهد شد.')
+                    ->action(fn ($record) => app(RemoveUserFromCompany::class)->handle(
+                        (int) auth()->user()->currentCompanyId(),
+                        (int) $record->id,
+                        auth()->user(),
+                    ))
+                    ->successNotificationTitle('عضویت کاربر از شرکت جاری حذف شد')
+                    ->visible(fn ($record) => static::canDelete($record)),
             ]);
     }
 
