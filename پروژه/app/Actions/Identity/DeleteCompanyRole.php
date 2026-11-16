@@ -2,6 +2,7 @@
 
 namespace App\Actions\Identity;
 
+use App\Models\AuditEvent;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -66,6 +67,24 @@ class DeleteCompanyRole
                     'role' => 'این نقش والد نقش‌های دیگری است؛ ابتدا سلسله‌مراتب آن‌ها را اصلاح کنید.',
                 ]);
             }
+
+            AuditEvent::query()->create([
+                'company_id' => $companyId,
+                'auditable_type' => $lockedRole->getMorphClass(),
+                'auditable_id' => $lockedRole->getKey(),
+                'actor_user_id' => $actor->id,
+                'event' => 'deleted',
+                'old_values' => [
+                    'name' => $lockedRole->name,
+                    'label' => $lockedRole->label,
+                    'parent_role_id' => $lockedRole->parent_role_id,
+                    'inherit_permissions' => (bool) $lockedRole->inherit_permissions,
+                    'permission_ids' => $lockedRole->permissions()->pluck('permissions.id')->map(fn ($id): int => (int) $id)->all(),
+                ],
+                'new_values' => [],
+                'metadata' => ['source' => 'role_management'],
+                'occurred_at' => now(),
+            ]);
 
             $lockedRole->delete();
 
