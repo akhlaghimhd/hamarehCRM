@@ -23,7 +23,7 @@
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label for="company-theme-palette" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">پالت رنگ</label>
-                        <select id="company-theme-palette" wire:model.live="themePalette" class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
+                        <select id="company-theme-palette" wire:model.live="themePalette" class="min-h-11 w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
                             @foreach ($themePalettes as $value => $label)
                                 <option value="{{ $value }}">{{ $label }}</option>
                             @endforeach
@@ -34,7 +34,7 @@
 
                     <div>
                         <label for="company-theme-density" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">تراکم نمایش</label>
-                        <select id="company-theme-density" wire:model="themeDensity" class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
+                        <select id="company-theme-density" wire:model="themeDensity" class="min-h-11 w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
                             <option value="comfortable">باز و خوانا</option>
                             <option value="balanced">متعادل</option>
                             <option value="compact">فشرده</option>
@@ -114,13 +114,13 @@
                 <form wire:submit="saveSetting" class="space-y-4">
                     <div>
                         <label for="setting-key" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">کلید تنظیم</label>
-                        <input id="setting-key" type="text" dir="ltr" wire:model="key" @disabled($editingSettingId) placeholder="sales.default_currency" class="w-full rounded-lg border-gray-300 bg-white text-left text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white dark:disabled:bg-gray-800">
+                        <input id="setting-key" type="text" dir="ltr" wire:model="key" @disabled($editingSettingId) placeholder="sales.default_currency" class="min-h-11 w-full rounded-lg border-gray-300 bg-white text-left text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 disabled:bg-gray-100 dark:border-gray-700 dark:bg-gray-950 dark:text-white dark:disabled:bg-gray-800">
                         @error('key') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label for="setting-type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">نوع داده</label>
-                        <select id="setting-type" wire:model="type" class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
+                        <select id="setting-type" wire:model="type" class="min-h-11 w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
                             <option value="string">متن</option>
                             <option value="integer">عدد صحیح</option>
                             <option value="boolean">بله / خیر</option>
@@ -133,15 +133,15 @@
                     <div>
                         <label for="setting-value" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">مقدار</label>
                         @if ($type === 'boolean')
-                            <select id="setting-value" wire:model="value" class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm dark:border-gray-700 dark:bg-gray-950 dark:text-white">
+                            <select id="setting-value" wire:model="value" class="min-h-11 w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm dark:border-gray-700 dark:bg-gray-950 dark:text-white">
                                 <option value="">انتخاب کنید</option>
                                 <option value="1">بله</option>
                                 <option value="0">خیر</option>
                             </select>
                         @elseif ($type === 'json')
-                            <textarea id="setting-value" wire:model="value" rows="6" dir="ltr" placeholder='{"enabled": true}' class="w-full rounded-lg border-gray-300 bg-white font-mono text-left text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white"></textarea>
+                            <textarea id="setting-value" wire:model="value" rows="6" dir="ltr" placeholder='{"enabled": true}' class="min-h-11 w-full rounded-lg border-gray-300 bg-white font-mono text-left text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white"></textarea>
                         @else
-                            <input id="setting-value" type="text" wire:model="value" @if ($type === 'integer') inputmode="numeric" @elseif ($type === 'decimal') inputmode="decimal" @endif dir="auto" placeholder="{{ $sensitive && $editingSettingId ? 'برای جایگزینی، مقدار جدید را وارد کنید' : 'مقدار تنظیم' }}" class="w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
+                            <input id="setting-value" type="text" wire:model="value" @if ($type === 'integer') inputmode="numeric" @elseif ($type === 'decimal') inputmode="decimal" @endif dir="auto" placeholder="{{ $sensitive && $editingSettingId ? 'برای جایگزینی، مقدار جدید را وارد کنید' : 'مقدار تنظیم' }}" class="min-h-11 w-full rounded-lg border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white">
                         @endif
                         @if ($sensitive && $editingSettingId)
                             <p class="mt-1.5 text-xs leading-5 text-warning-600 dark:text-warning-400">مقدار فعلی نمایش داده نمی‌شود؛ برای تغییر آن مقدار جدید را وارد کنید.</p>
@@ -151,7 +151,7 @@
 
                     <div>
                         <label for="setting-validation-rules" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">قواعد اعتبارسنجی (اختیاری)</label>
-                        <textarea id="setting-validation-rules" wire:model="validationRules" rows="3" dir="ltr" placeholder='["min:1","max:100"]' class="w-full rounded-lg border-gray-300 bg-white font-mono text-left text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white"></textarea>
+                        <textarea id="setting-validation-rules" wire:model="validationRules" rows="3" dir="ltr" placeholder='["min:1","max:100"]' class="min-h-11 w-full rounded-lg border-gray-300 bg-white font-mono text-left text-sm shadow-sm focus:border-primary-500 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:text-white"></textarea>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">قواعد را به‌شکل آرایه JSON از رشته‌های قواعد Laravel وارد کنید.</p>
                         @error('validationRules') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
                     </div>
