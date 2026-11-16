@@ -37,7 +37,7 @@ class DeleteCompanyRole
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($lockedRole->is_system) {
+            if ($lockedRole->is_system || $lockedRole->name === 'admin') {
                 throw ValidationException::withMessages([
                     'role' => 'نقش‌های سیستمی قابل حذف نیستند.',
                 ]);
