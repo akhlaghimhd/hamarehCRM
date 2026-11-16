@@ -103,6 +103,33 @@ class DeleteCompanyRoleTest extends TestCase
         app(DeleteCompanyRole::class)->handle($parent, $admin);
     }
 
+
+    public function test_legacy_admin_role_cannot_be_deleted_even_when_not_marked_system(): void
+    {
+        $company = Company::query()->create([
+            'name' => 'شرکت مدیر قدیمی',
+            'slug' => 'legacy-admin-role',
+            'is_active' => true,
+        ]);
+        $adminRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'admin',
+            'label' => 'مدیر شرکت',
+            'is_system' => false,
+        ]);
+        $admin = User::factory()->create();
+        $admin->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($admin);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+        app(DeleteCompanyRole::class)->handle($adminRole, $admin);
+    }
+
     public function test_system_role_cannot_be_deleted_even_when_called_directly(): void
     {
         [$company, $admin] = $this->companyAdmin('system-role');
