@@ -154,10 +154,8 @@ class CompanyTheme
             }
         }
 
-        app(CompanySettings::class)->set(
+        app(CompanySettings::class)->setTheme(
             $companyId,
-            'ui.theme',
-            'json',
             [
                 'palette' => $palette,
                 'primary' => $primary,
