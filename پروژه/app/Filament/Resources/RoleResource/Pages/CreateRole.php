@@ -4,6 +4,7 @@ namespace App\Filament\Resources\RoleResource\Pages;
 
 use App\Actions\Identity\UpdateRoleHierarchy;
 use App\Models\AuditEvent;
+use App\Models\Permission;
 use App\Filament\Resources\RoleResource;
 use App\Models\Role;
 use Filament\Resources\Pages\CreateRecord;
@@ -86,6 +87,14 @@ class CreateRole extends CreateRecord
             $this->inheritPermissions,
             $this->copyPermissionsFromRoleId,
         );
+
+        if (! ($this->record->is_system && $this->record->name === 'admin')) {
+            $systemPermissionIds = Permission::query()
+                ->where('group', 'سیستم')
+                ->pluck('id');
+
+            $this->record->permissions()->detach($systemPermissionIds);
+        }
 
         $role = $this->record->fresh();
 
