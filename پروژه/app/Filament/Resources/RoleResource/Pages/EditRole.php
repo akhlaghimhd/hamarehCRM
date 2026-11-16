@@ -26,13 +26,31 @@ class EditRole extends EditRecord
             ]);
         }
 
-        if (! $this->record->is_system && strtolower($name) === 'admin') {
+        $name = strtolower($name);
+
+        if (! $this->record->is_system && $name === 'admin') {
             throw ValidationException::withMessages([
                 'name' => 'نام admin رزرو شده و فقط برای نقش مدیر سیستمی شرکت استفاده می‌شود.',
             ]);
         }
 
-        $data['name'] = strtolower($name);
+        if (! preg_match('/^[a-z][a-z0-9_-]{0,99}$/', $name)) {
+            throw ValidationException::withMessages([
+                'name' => 'نام سیستمی نقش باید با حرف انگلیسی کوچک شروع شود و فقط شامل حروف کوچک، عدد، خط تیره یا زیرخط باشد.',
+            ]);
+        }
+
+        if (Role::query()
+            ->where('company_id', $this->record->company_id)
+            ->where('name', $name)
+            ->where('id', '<>', $this->record->id)
+            ->exists()) {
+            throw ValidationException::withMessages([
+                'name' => 'این نام سیستمی قبلاً در شرکت جاری استفاده شده است.',
+            ]);
+        }
+
+        $data['name'] = $name;
         unset($data['is_system']);
 
         $parentRoleId = filled($data['parent_role_id'] ?? null) ? (int) $data['parent_role_id'] : null;
