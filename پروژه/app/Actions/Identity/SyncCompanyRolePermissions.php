@@ -39,16 +39,18 @@ class SyncCompanyRolePermissions
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            $isAdminRole = $lockedRole->name === 'admin';
+
             if (
-                ($lockedRole->name === 'admin' && ! $actor->isCompanyAdmin())
-                || (! ($lockedRole->is_system && $lockedRole->name === 'admin') && ! $actor->hasPermission('roles.manage'))
+                ($isAdminRole && ! $actor->isCompanyAdmin())
+                || (! $isAdminRole && ! $actor->hasPermission('roles.manage'))
             ) {
                 throw new AuthorizationException('مجوز کافی برای تغییر دسترسی‌های این نقش را ندارید.');
             }
 
             $query = Permission::query()->whereIn('id', $permissionIds);
 
-            if (! ($lockedRole->is_system && $lockedRole->name === 'admin')) {
+            if (! $isAdminRole) {
                 $query
                     ->whereNotIn('group', Permission::SYSTEM_GROUPS)
                     ->whereNotIn('name', Permission::SYSTEM_NAMES);
