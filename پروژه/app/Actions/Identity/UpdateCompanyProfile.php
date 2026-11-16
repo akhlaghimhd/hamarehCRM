@@ -27,7 +27,7 @@ class UpdateCompanyProfile
 
         $validated = Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:255', Rule::unique('companies', 'slug')->ignore($record->getKey())],
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('companies', 'slug')->ignore($record->getKey())],
             'national_id' => ['nullable', 'string', 'max:50'],
             'registration_number' => ['nullable', 'string', 'max:50'],
             'phone' => ['nullable', 'string', 'max:50'],
