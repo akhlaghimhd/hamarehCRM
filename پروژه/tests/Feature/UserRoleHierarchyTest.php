@@ -137,6 +137,30 @@ class UserRoleHierarchyTest extends TestCase
         $this->assertSame([], $manager->fresh()->managedUserIds()->all());
     }
 
+    public function test_membership_updates_require_users_manage_in_the_current_company(): void
+    {
+        $company = $this->createCompany('authorization');
+        $role = $this->createRole($company, 'staff');
+        $actor = User::factory()->create();
+        $target = User::factory()->create();
+
+        $actor->companies()->attach($company->id, ['role_id' => $role->id, 'is_default' => true]);
+        $target->companies()->attach($company->id, ['role_id' => $role->id, 'is_default' => true]);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        $this->expectException(ValidationException::class);
+
+        app(UpdateCompanyMembership::class)->handle(
+            $company->id,
+            $target->id,
+            [$role->id],
+            null,
+            $actor->id,
+        );
+    }
+
     public function test_membership_manager_cannot_be_self_or_create_a_reporting_cycle(): void
     {
         $company = $this->createCompany('one');
