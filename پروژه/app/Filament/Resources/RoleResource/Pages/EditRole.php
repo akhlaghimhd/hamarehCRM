@@ -30,7 +30,7 @@ class EditRole extends EditRecord
 
         $name = trim((string) ($data['name'] ?? $this->record->name));
 
-        if ($this->record->is_system && $name !== $this->record->name) {
+        if (($this->record->is_system || $this->record->name === 'admin') && $name !== $this->record->name) {
             throw ValidationException::withMessages([
                 'name' => 'نام نقش سیستمی قابل تغییر نیست.',
             ]);
@@ -38,7 +38,7 @@ class EditRole extends EditRecord
 
         $name = strtolower($name);
 
-        if (! $this->record->is_system && $name === 'admin') {
+        if ($this->record->name !== 'admin' && $name === 'admin') {
             throw ValidationException::withMessages([
                 'name' => 'نام admin رزرو شده و فقط برای نقش مدیر سیستمی شرکت استفاده می‌شود.',
             ]);
@@ -158,7 +158,7 @@ class EditRole extends EditRecord
         return [
             DeleteAction::make()
                 ->label('حذف')
-                ->hidden(fn ($record) => $record->is_system)
+                ->hidden(fn ($record) => $record->is_system || $record->name === 'admin')
                 ->using(fn (Role $record) => app(DeleteCompanyRole::class)->handle($record, auth()->user()))
                 ->successNotificationTitle('نقش حذف شد'),
         ];
