@@ -182,6 +182,13 @@ class UpdateUserAccountTest extends TestCase
             $actor,
             $company->id,
         );
+
+        $this->assertFalse($target->fresh()->is_active);
+        $this->assertDatabaseHas('company_user', [
+            'company_id' => $company->id,
+            'user_id' => $report->id,
+            'manager_user_id' => $target->id,
+        ]);
     }
 
     public function test_company_admin_cannot_deactivate_a_user_who_has_direct_reports(): void
