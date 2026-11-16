@@ -31,6 +31,15 @@ class EditCompany extends EditRecord
         return app(UpdateCompanyProfile::class)->handle($record, $data, $user);
     }
 
+    protected function getRedirectUrl(): ?string
+    {
+        if (! $this->record->is_active) {
+            return SwitchCompany::getUrl();
+        }
+
+        return parent::getRedirectUrl();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
