@@ -74,7 +74,9 @@ class EditRole extends EditRecord
         return [
             DeleteAction::make()
                 ->label('حذف')
-                ->hidden(fn ($record) => $record->is_system),
+                ->hidden(fn ($record) => $record->is_system)
+                ->using(fn (Role $record) => app(DeleteCompanyRole::class)->handle($record, auth()->user()))
+                ->successNotificationTitle('نقش حذف شد'),
         ];
     }
 
