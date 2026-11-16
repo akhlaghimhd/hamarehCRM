@@ -98,6 +98,49 @@ class UpdateUserAccountTest extends TestCase
         );
     }
 
+
+    public function test_company_admin_can_deactivate_an_admin_when_another_active_admin_remains(): void
+    {
+        $company = $this->createCompany('two-admins');
+        $actorRole = $this->createRole($company, 'identity-manager');
+        $permission = Permission::query()->create([
+            'name' => 'users.manage',
+            'label' => 'مدیریت کاربران',
+            'group' => 'identity',
+        ]);
+        $actorRole->permissions()->attach($permission);
+
+        $actor = User::factory()->create();
+        $actor->companies()->attach($company->id, [
+            'role_id' => $actorRole->id,
+            'is_default' => true,
+        ]);
+
+        $adminRole = $this->createRole($company, 'admin');
+        $target = User::factory()->create();
+        $target->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+        $remainingAdmin = User::factory()->create();
+        $remainingAdmin->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        app(UpdateUserAccount::class)->assertCanChangeStatus(
+            $target,
+            ['is_active' => false],
+            $actor,
+            $company->id,
+        );
+
+        $this->assertTrue($remainingAdmin->fresh()->is_active);
+    }
+
     public function test_company_admin_can_deactivate_an_account_that_belongs_only_to_current_company(): void
     {
         [$company, $actor] = $this->companyWithAdmin('account-status-single');
