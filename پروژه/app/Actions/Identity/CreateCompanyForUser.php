@@ -44,8 +44,8 @@ class CreateCompanyForUser
                 ->where('user_id', $lockedCreator->id)
                 ->exists();
 
-            if ($hasMembership && ! $lockedCreator->hasPermission('companies.manage')) {
-                throw new AuthorizationException('برای ایجاد شرکت جدید باید در شرکت جاری مجوز مدیریت شرکت داشته باشید.');
+            if ($hasMembership && ! $lockedCreator->isCompanyAdmin()) {
+                throw new AuthorizationException('فقط مدیر شرکت جاری می‌تواند شرکت جدید ایجاد کند.');
             }
 
             $company = Company::query()->create($attributes);
