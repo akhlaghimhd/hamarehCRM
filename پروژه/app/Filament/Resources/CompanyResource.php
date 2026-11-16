@@ -6,8 +6,6 @@ use App\Filament\Concerns\ChecksResourcePermission;
 
 use App\Filament\Resources\CompanyResource\Pages;
 use App\Models\Company;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
@@ -18,7 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
-use Illuminate\\Database\\Eloquent\\Builder;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class CompanyResource extends Resource
