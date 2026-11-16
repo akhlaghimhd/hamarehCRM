@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
 class CreateUser extends CreateRecord
@@ -35,6 +36,16 @@ class CreateUser extends CreateRecord
             throw ValidationException::withMessages([
                 'role_ids' => 'حداقل یک نقش معتبر از شرکت جاری انتخاب کنید.',
             ]);
+        }
+
+        $assignsAdministratorRole = Role::query()
+            ->where('company_id', $companyId)
+            ->whereIn('id', $roleIds)
+            ->where('name', 'admin')
+            ->exists();
+
+        if ($assignsAdministratorRole && ! auth()->user()?->isCompanyAdmin()) {
+            throw new AuthorizationException('فقط مدیر شرکت می‌تواند نقش مدیر شرکت را به کاربر واگذار کند.');
         }
 
         if ($managerUserId !== null) {
