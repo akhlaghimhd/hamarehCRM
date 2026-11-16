@@ -5,6 +5,7 @@ namespace App\Actions\Identity;
 use App\Models\AuditEvent;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -81,6 +82,10 @@ class RemoveUserFromCompany
                 ->whereIn('id', $roleIds)
                 ->where('name', 'admin')
                 ->exists();
+
+            if ($isCompanyAdmin && ! $actor->isCompanyAdmin()) {
+                throw new AuthorizationException('فقط مدیر شرکت می‌تواند عضویت مدیر شرکت را حذف کند.');
+            }
 
             if ($isCompanyAdmin) {
                 $otherAdminExists = DB::table('company_user as memberships')
