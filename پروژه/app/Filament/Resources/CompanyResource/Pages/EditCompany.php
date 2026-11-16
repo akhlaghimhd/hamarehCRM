@@ -42,6 +42,7 @@ class EditCompany extends EditRecord
                 ->requiresConfirmation()
                 ->modalHeading('حذف نرم شرکت')
                 ->modalDescription('شرکت از فهرست فعال خارج می‌شود. مدیران عضو همان شرکت می‌توانند آن را از صفحه تعویض شرکت بازیابی کنند.')
+                ->visible(fn (): bool => (bool) (auth()->user()?->isCompanyAdmin() ?? false))
                 ->action(function (Company $record, \Livewire\Component $livewire): void {
                     $user = auth()->user();
 
