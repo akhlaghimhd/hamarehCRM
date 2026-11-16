@@ -63,8 +63,11 @@ class UserRoleHierarchyTest extends TestCase
         $firstPermission = $this->createPermission('customers.view');
         $laterPermission = $this->createPermission('orders.view');
         $source->permissions()->attach($firstPermission);
+        $actor = $this->createAdminActor($company);
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
 
-        app(UpdateRoleHierarchy::class)->handle($child, null, false, $source->id);
+        app(UpdateRoleHierarchy::class)->handle($child, null, false, $source->id, $actor);
 
         $this->assertTrue($child->fresh()->permissions()->whereKey($firstPermission->id)->exists());
 
@@ -82,9 +85,12 @@ class UserRoleHierarchyTest extends TestCase
         $company = $this->createCompany('one');
         $parent = $this->createRole($company, 'parent');
         $child = $this->createRole($company, 'child', $parent);
+        $actor = $this->createAdminActor($company);
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
 
         $this->expectException(ValidationException::class);
-        app(UpdateRoleHierarchy::class)->handle($parent, $child->id, true);
+        app(UpdateRoleHierarchy::class)->handle($parent, $child->id, true, null, $actor);
     }
 
     public function test_role_parent_cannot_cross_company_boundary(): void
@@ -93,9 +99,12 @@ class UserRoleHierarchyTest extends TestCase
         $otherCompany = $this->createCompany('two');
         $child = $this->createRole($company, 'child');
         $foreignRole = $this->createRole($otherCompany, 'foreign');
+        $actor = $this->createAdminActor($company);
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
 
         $this->expectException(ValidationException::class);
-        app(UpdateRoleHierarchy::class)->handle($child, $foreignRole->id, true);
+        app(UpdateRoleHierarchy::class)->handle($child, $foreignRole->id, true, null, $actor);
     }
 
     public function test_membership_manager_tree_is_company_scoped_and_keeps_manager_change_history(): void
@@ -315,6 +324,21 @@ class UserRoleHierarchyTest extends TestCase
         } catch (ValidationException) {
             $this->assertTrue($admin->fresh()->is_active);
         }
+    }
+
+
+    private function createAdminActor(Company $company): User
+    {
+        $adminRole = $this->createRole($company, 'admin');
+        $adminRole->forceFill(['is_system' => true])->save();
+
+        $user = User::factory()->create();
+        $user->companies()->attach($company->id, [
+            'role_id' => $adminRole->id,
+            'is_default' => true,
+        ]);
+
+        return $user;
     }
 
     private function createCompany(string $suffix): Company
