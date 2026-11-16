@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Filament\Resources\CompanyResource;
+use App\Filament\Resources\CompanyResource\Pages\ListCompanies;
 use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\UserResource;
 use App\Models\Company;
@@ -10,6 +11,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class FilamentCompanyAccessTest extends TestCase
@@ -26,6 +28,19 @@ class FilamentCompanyAccessTest extends TestCase
 
         $this->assertTrue(CompanyResource::canViewAny());
         $this->assertTrue(CompanyResource::canCreate());
+    }
+
+    public function test_first_company_list_shows_a_clear_empty_state_and_create_action(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+        session()->forget('current_company_id');
+
+        Livewire::test(ListCompanies::class)
+            ->assertSee('هنوز شرکتی ثبت نشده است')
+            ->assertSee('برای شروع، اولین شرکت خود را ایجاد کنید.')
+            ->assertSee('ایجاد شرکت');
     }
 
     public function test_non_admin_member_cannot_create_another_company(): void

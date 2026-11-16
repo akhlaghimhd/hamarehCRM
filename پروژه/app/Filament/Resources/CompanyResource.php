@@ -6,6 +6,7 @@ use App\Filament\Concerns\ChecksResourcePermission;
 
 use App\Filament\Resources\CompanyResource\Pages;
 use App\Models\Company;
+use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
@@ -185,11 +186,16 @@ class CompanyResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
+            ->recordUrl(null)
+            ->emptyStateHeading('هنوز شرکتی ثبت نشده است')
+            ->emptyStateDescription('برای شروع، اولین شرکت خود را ایجاد کنید.')
+            ->emptyStateActions([
+                CreateAction::make()->label('ایجاد شرکت'),
+            ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-            ])
-;
+            ]);
     }
 
     public static function getPages(): array
