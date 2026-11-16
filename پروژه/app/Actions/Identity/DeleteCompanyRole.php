@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class DeleteCompanyRole
 {
-    public function handle(Role $role, User $actor): void
+    public function handle(Role $role, User $actor): bool
     {
         $companyId = $actor->currentCompanyId();
 
@@ -18,7 +18,7 @@ class DeleteCompanyRole
             throw new AuthorizationException('اجازه حذف نقش را ندارید.');
         }
 
-        DB::transaction(function () use ($role, $actor, $companyId): void {
+        return DB::transaction(function () use ($role, $actor, $companyId): bool {
             $company = DB::table('companies')
                 ->where('id', $companyId)
                 ->where('is_active', true)
@@ -68,6 +68,8 @@ class DeleteCompanyRole
             }
 
             $lockedRole->delete();
+
+            return true;
         });
     }
 }

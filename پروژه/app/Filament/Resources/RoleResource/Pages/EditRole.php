@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\RoleResource\Pages;
 
+use App\Actions\Identity\DeleteCompanyRole;
 use App\Actions\Identity\UpdateRoleHierarchy;
 use App\Filament\Resources\RoleResource;
 use App\Models\Role;

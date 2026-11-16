@@ -51,7 +51,7 @@ class DeleteCompanyRoleTest extends TestCase
     {
         [$company, $admin] = $this->companyAdmin('parent-role');
         $parent = $this->createRole($company, 'parent');
-        $this->createRole($company, 'child', $parent);
+        $this->createRole($company, 'child', false, $parent);
 
         $this->actingAs($admin);
         session(['current_company_id' => $company->id]);
