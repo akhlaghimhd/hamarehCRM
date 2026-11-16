@@ -80,6 +80,7 @@ class UpdateCompanyProfileTest extends TestCase
                 'is_active' => false,
             ])
             ->call('save')
+            ->assertHasNoFormErrors()
             ->assertRedirect(SwitchCompany::getUrl());
     }
 
