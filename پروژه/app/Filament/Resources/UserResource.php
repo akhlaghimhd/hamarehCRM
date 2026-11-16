@@ -53,6 +53,86 @@ class UserResource extends Resource
         return 'کاربران';
     }
 
+    public static function canView($record): bool
+    {
+        return static::belongsToCurrentCompany($record)
+            && static::allowed(static::$permissionView);
+    }
+
+    public static function canEdit($record): bool
+    {
+        $actor = auth()->user();
+
+        if (! static::belongsToCurrentCompany($record) || ! $actor) {
+            return false;
+        }
+
+        if (static::hasAdministratorMembership($record) && ! $actor->isCompanyAdmin()) {
+            return false;
+        }
+
+        return static::allowed(static::$permissionManage);
+    }
+
+    public static function canDelete($record): bool
+    {
+        $actor = auth()->user();
+
+        if (! static::belongsToCurrentCompany($record) || ! $actor) {
+            return false;
+        }
+
+        if (static::hasAdministratorMembership($record) && ! $actor->isCompanyAdmin()) {
+            return false;
+        }
+
+        return static::allowed(static::$permissionManage);
+    }
+
+    protected static function belongsToCurrentCompany(mixed $record): bool
+    {
+        $companyId = auth()->user()?->currentCompanyId();
+
+        return $record instanceof User
+            && $companyId !== null
+            && DB::table('company_user')
+                ->where('company_id', $companyId)
+                ->where('user_id', $record->id)
+                ->exists();
+    }
+
+    protected static function hasAdministratorMembership(User $record): bool
+    {
+        $companyId = auth()->user()?->currentCompanyId();
+
+        if (! $companyId) {
+            return false;
+        }
+
+        $membership = DB::table('company_user')
+            ->where('company_id', $companyId)
+            ->where('user_id', $record->id)
+            ->first();
+
+        if (! $membership) {
+            return false;
+        }
+
+        $roleIds = DB::table('company_user_role')
+            ->where('company_user_id', $membership->id)
+            ->pluck('role_id');
+
+        if ($roleIds->isEmpty() && $membership->role_id !== null) {
+            $roleIds = collect([(int) $membership->role_id]);
+        }
+
+        return DB::table('roles')
+            ->where('company_id', $companyId)
+            ->whereIn('id', $roleIds)
+            ->where('name', 'admin')
+            ->exists();
+    }
+
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
