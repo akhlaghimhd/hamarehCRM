@@ -118,6 +118,32 @@ class AddExistingUserToCompanyTest extends TestCase
         ]);
     }
 
+
+    public function test_initial_manager_assignment_is_written_to_membership_history(): void
+    {
+        [$company, $actor, $role] = $this->companyAdmin('initial-manager-history');
+        $user = User::factory()->create();
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        app(AddExistingUserToCompany::class)->handle(
+            $company->id,
+            $user->id,
+            [$role->id],
+            $actor->id,
+            $actor,
+        );
+
+        $this->assertDatabaseHas('manager_membership_histories', [
+            'company_id' => $company->id,
+            'user_id' => $user->id,
+            'old_manager_user_id' => null,
+            'new_manager_user_id' => $actor->id,
+            'changed_by_user_id' => $actor->id,
+        ]);
+    }
+
     public function test_duplicate_membership_is_rejected(): void
     {
         [$company, $actor, $role] = $this->companyAdmin('duplicate');
