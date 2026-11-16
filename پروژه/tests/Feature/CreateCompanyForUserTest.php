@@ -191,6 +191,20 @@ class CreateCompanyForUserTest extends TestCase
         ], $creator);
     }
 
+
+    public function test_inactive_user_cannot_create_a_company(): void
+    {
+        $creator = User::factory()->create(['is_active' => false]);
+
+        $this->expectException(AuthorizationException::class);
+
+        app(CreateCompanyForUser::class)->handle([
+            'name' => 'شرکت کاربر غیرفعال',
+            'slug' => 'inactive-creator-company',
+            'is_active' => true,
+        ], $creator);
+    }
+
     public function test_company_creation_rejects_non_latin_slug_before_creating_records(): void
     {
         $creator = User::factory()->create();
