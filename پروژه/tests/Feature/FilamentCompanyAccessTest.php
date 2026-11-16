@@ -44,6 +44,31 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertFalse(CompanyResource::canCreate());
     }
 
+
+    public function test_company_manager_can_manage_current_profile_but_cannot_create_companies(): void
+    {
+        [$companyA] = $this->createCompanies();
+        $managerRole = $this->createRole($companyA, 'company-manager');
+        $permission = Permission::query()->create([
+            'name' => 'companies.manage',
+            'label' => 'مدیریت شرکت‌ها',
+            'group' => 'شرکت',
+        ]);
+        $managerRole->permissions()->attach($permission);
+        $manager = User::factory()->create();
+        $manager->companies()->attach($companyA->id, [
+            'role_id' => $managerRole->id,
+            'is_default' => true,
+        ]);
+
+        $this->actingAs($manager);
+        session(['current_company_id' => $companyA->id]);
+
+        $this->assertTrue(CompanyResource::canViewAny());
+        $this->assertTrue(CompanyResource::canEdit($companyA));
+        $this->assertFalse(CompanyResource::canCreate());
+    }
+
     public function test_company_resource_only_exposes_the_current_company(): void
     {
         [$companyA, $companyB] = $this->createCompanies();
