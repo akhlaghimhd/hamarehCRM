@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use App\Models\Company;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\CompanySettings;
 use App\Support\CompanyTheme;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use InvalidArgumentException;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -108,6 +110,25 @@ class CompanyThemeTest extends TestCase
         ]);
     }
 
+
+
+    public function test_reserved_theme_setting_cannot_be_deleted_by_generic_settings_service(): void
+    {
+        [$company, , $user] = $this->adminInTwoCompanies();
+
+        $this->actingAs($user);
+        session(['current_company_id' => $company->id]);
+
+        app(CompanyTheme::class)->save([
+            'palette' => 'default',
+            'primary' => '#087E78',
+            'secondary' => '#3976B8',
+            'density' => 'balanced',
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+        app(CompanySettings::class)->forget($company->id, 'ui.theme');
+    }
 
     /**
      * @return array{Company, Company, User}

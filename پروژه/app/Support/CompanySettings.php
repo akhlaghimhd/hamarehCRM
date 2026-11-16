@@ -108,6 +108,11 @@ class CompanySettings
     {
         $this->assertCompanyContext($companyId);
         $this->assertCanManage();
+        $this->assertKey($key);
+
+        if ($key === 'ui.theme') {
+            throw new InvalidArgumentException('تنظیم پوسته رزرو شده است و فقط از طریق CompanyTheme مدیریت می‌شود.');
+        }
 
         return DB::transaction(function () use ($companyId, $key) {
             $setting = CompanySetting::query()->where('key', $key)->lockForUpdate()->first();
