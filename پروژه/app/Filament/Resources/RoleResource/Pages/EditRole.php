@@ -114,11 +114,14 @@ class EditRole extends EditRecord
             $this->record,
             $this->parentRoleId,
             $this->inheritPermissions,
+            null,
+            auth()->user(),
         );
 
         app(SyncCompanyRolePermissions::class)->handle(
             $this->record,
             $this->record->permissions()->pluck('permissions.id')->map(fn ($id): int => (int) $id)->all(),
+            auth()->user(),
         );
 
         $role = $this->record->fresh();
