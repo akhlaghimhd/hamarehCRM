@@ -84,7 +84,9 @@
                                             @else
                                                 <x-filament::badge color="warning">غیرفعال</x-filament::badge>
                                             @endif
-                                            @if ($option['is_default']) <x-filament::badge color="gray">پیش‌فرض</x-filament::badge> @endif
+                                            @if ($option['is_default'])
+                                                <x-filament::badge color="gray">پیش‌فرض</x-filament::badge>
+                                            @endif
                                         </div>
                                         <p class="mt-2 text-xs text-gray-600 dark:text-gray-400">نقش شما: {{ $option['role_label'] }}</p>
                                         @if (! $option['can_activate'])
