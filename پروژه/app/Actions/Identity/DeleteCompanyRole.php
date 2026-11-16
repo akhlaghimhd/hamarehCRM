@@ -3,6 +3,7 @@
 namespace App\Actions\Identity;
 
 use App\Models\AuditEvent;
+use App\Models\AuditEvent;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -83,6 +84,30 @@ class DeleteCompanyRole
                 ],
                 'new_values' => [],
                 'metadata' => ['source' => 'role_management'],
+                'occurred_at' => now(),
+            ]);
+
+            $permissionIds = $lockedRole->permissions()
+                ->pluck('permissions.id')
+                ->map(fn ($id): int => (int) $id)
+                ->values()
+                ->all();
+
+            AuditEvent::query()->create([
+                'company_id' => $companyId,
+                'auditable_type' => $lockedRole->getMorphClass(),
+                'auditable_id' => $lockedRole->id,
+                'actor_user_id' => $actor->id,
+                'event' => 'role_deleted',
+                'old_values' => [
+                    'name' => $lockedRole->name,
+                    'label' => $lockedRole->label,
+                    'parent_role_id' => $lockedRole->parent_role_id,
+                    'inherit_permissions' => (bool) $lockedRole->inherit_permissions,
+                    'permission_ids' => $permissionIds,
+                ],
+                'new_values' => [],
+                'metadata' => ['source' => 'company_role_management'],
                 'occurred_at' => now(),
             ]);
 
