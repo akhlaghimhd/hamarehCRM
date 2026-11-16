@@ -50,6 +50,10 @@ class ListUsers extends ListRecords
                             ->multiple()
                             ->options(fn () => Role::query()
                                 ->where('company_id', $companyId ?? 0)
+                                ->when(
+                                    ! (auth()->user()?->isCompanyAdmin() ?? false),
+                                    fn (Builder $query) => $query->where('name', '<>', 'admin'),
+                                )
                                 ->orderBy('label')
                                 ->pluck('label', 'id'))
                             ->searchable()
