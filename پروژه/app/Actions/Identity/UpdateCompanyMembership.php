@@ -4,6 +4,7 @@ namespace App\Actions\Identity;
 
 use App\Models\AuditEvent;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -60,14 +61,6 @@ class UpdateCompanyMembership
                 ]);
             }
 
-            $this->assertValidManagerAssignment($companyId, $userId, $managerUserId);
-            $this->assertCompanyRetainsActiveAdministrator(
-                $companyId,
-                $userId,
-                $membership,
-                $roleIds,
-            );
-
             $oldManagerUserId = $membership->manager_user_id === null
                 ? null
                 : (int) $membership->manager_user_id;
@@ -82,6 +75,25 @@ class UpdateCompanyMembership
             if ($oldRoleIds === [] && $membership->role_id !== null) {
                 $oldRoleIds = [(int) $membership->role_id];
             }
+
+            $adminRoleId = DB::table('roles')
+                ->where('company_id', $companyId)
+                ->where('name', 'admin')
+                ->value('id');
+            $wasAdministrator = $adminRoleId !== null && in_array((int) $adminRoleId, $oldRoleIds, true);
+            $willBeAdministrator = $adminRoleId !== null && in_array((int) $adminRoleId, $roleIds, true);
+
+            if ($wasAdministrator !== $willBeAdministrator && ! $actor->isCompanyAdmin()) {
+                throw new AuthorizationException('فقط مدیر شرکت می‌تواند نقش مدیر شرکت را به کاربر واگذار یا از او سلب کند.');
+            }
+
+            $this->assertValidManagerAssignment($companyId, $userId, $managerUserId);
+            $this->assertCompanyRetainsActiveAdministrator(
+                $companyId,
+                $userId,
+                $membership,
+                $roleIds,
+            );
 
             $oldRoleIdsForCompare = $oldRoleIds;
             $newRoleIdsForCompare = $roleIds;
