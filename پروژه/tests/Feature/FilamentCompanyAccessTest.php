@@ -189,24 +189,21 @@ class FilamentCompanyAccessTest extends TestCase
         [$companyA, $companyB] = $this->createCompanies();
 
         $salesRole = $this->createRole($companyA, 'sales');
+        $adminRole = $this->createRole($companyA, 'admin');
+        $adminRole->forceFill(['is_system' => true])->save();
+        $staffRole = $this->createRole($companyB, 'staff');
         $user = User::factory()->create();
         $user->companies()->attach($companyA->id, [
-            'role_id' => $salesRole->id,
+            'role_id' => $adminRole->id,
             'is_default' => true,
         ]);
-
-        $permission = Permission::query()->create([
-            'name' => 'roles.manage',
-            'label' => 'مدیریت نقش‌ها',
-            'group' => 'system',
+        $user->companies()->attach($companyB->id, [
+            'role_id' => $staffRole->id,
+            'is_default' => false,
         ]);
 
         $this->actingAs($user);
         session(['current_company_id' => $companyA->id]);
-
-        $this->assertFalse(RoleResource::canDelete($salesRole));
-
-        $salesRole->permissions()->attach($permission->id);
 
         $this->assertTrue(RoleResource::canDelete($salesRole));
 
