@@ -3,7 +3,6 @@
 namespace App\Actions\Identity;
 
 use App\Models\AuditEvent;
-use App\Models\AuditEvent;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
