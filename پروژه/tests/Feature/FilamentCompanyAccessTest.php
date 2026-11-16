@@ -15,6 +15,38 @@ class FilamentCompanyAccessTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_company_resource_only_exposes_the_current_company(): void
+    {
+        [$companyA, $companyB] = $this->createCompanies();
+
+        $user = User::factory()->create();
+        $user->companies()->attach($companyA->id, ['is_default' => true]);
+        $user->companies()->attach($companyB->id, ['is_default' => false]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => $companyA->id]);
+
+        $companyIds = CompanyResource::getEloquentQuery()
+            ->pluck('companies.id')
+            ->all();
+
+        $this->assertSame([$companyA->id], $companyIds);
+        $this->assertNotContains($companyB->id, $companyIds);
+    }
+
+    public function test_company_resource_fails_closed_without_a_valid_company_context(): void
+    {
+        [$companyA] = $this->createCompanies();
+
+        $user = User::factory()->create();
+        $user->companies()->attach($companyA->id, ['is_default' => true]);
+
+        $this->actingAs($user);
+        session(['current_company_id' => null]);
+
+        $this->assertSame([], CompanyResource::getEloquentQuery()->pluck('companies.id')->all());
+    }
+
     public function test_user_resource_only_lists_members_of_the_current_company(): void
     {
         [$companyA, $companyB] = $this->createCompanies();
