@@ -54,6 +54,31 @@ class RemoveUserFromCompanyTest extends TestCase
         ]);
     }
 
+    public function test_removing_default_membership_promotes_another_active_company(): void
+    {
+        [$company, $actor, $role] = $this->companyAdmin('default-remove');
+        $otherCompany = $this->createCompany('default-keep');
+        $user = User::factory()->create();
+        $user->companies()->attach($company->id, [
+            'role_id' => $role->id,
+            'is_default' => true,
+        ]);
+        $user->companies()->attach($otherCompany->id, [
+            'is_default' => false,
+        ]);
+
+        $this->actingAs($actor);
+        session(['current_company_id' => $company->id]);
+
+        app(RemoveUserFromCompany::class)->handle($company->id, $user->id, $actor);
+
+        $this->assertDatabaseHas('company_user', [
+            'company_id' => $otherCompany->id,
+            'user_id' => $user->id,
+            'is_default' => true,
+        ]);
+    }
+
     public function test_last_active_company_admin_cannot_be_removed(): void
     {
         [$company, $actor] = $this->companyAdmin('last-admin');
