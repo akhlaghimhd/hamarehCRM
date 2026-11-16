@@ -20,7 +20,18 @@ class RemoveUserFromCompany
         }
 
         DB::transaction(function () use ($companyId, $userId): void {
-            DB::table('companies')->where('id', $companyId)->lockForUpdate()->first();
+            $company = DB::table('companies')
+                ->where('id', $companyId)
+                ->where('is_active', true)
+                ->whereNull('deleted_at')
+                ->lockForUpdate()
+                ->first();
+
+            if (! $company || (int) $actor->currentCompanyId() !== $companyId) {
+                throw ValidationException::withMessages([
+                    'company_id' => 'شرکت جاری دیگر فعال یا در دسترس نیست.',
+                ]);
+            }
 
             $membership = DB::table('company_user')
                 ->where('company_id', $companyId)

@@ -28,6 +28,19 @@ class AddExistingUserToCompany
         }
 
         DB::transaction(function () use ($companyId, $userId, $roleIds, $managerUserId, $actor): void {
+            $company = DB::table('companies')
+                ->where('id', $companyId)
+                ->where('is_active', true)
+                ->whereNull('deleted_at')
+                ->lockForUpdate()
+                ->first();
+
+            if (! $company || (int) $actor->currentCompanyId() !== $companyId) {
+                throw ValidationException::withMessages([
+                    'company_id' => 'شرکت جاری دیگر فعال یا در دسترس نیست.',
+                ]);
+            }
+
             $user = User::query()
                 ->whereKey($userId)
                 ->where('is_active', true)
