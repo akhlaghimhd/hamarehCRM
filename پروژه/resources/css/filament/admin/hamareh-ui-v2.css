@@ -382,28 +382,28 @@ html[data-hm-density="comfortable"] {
 
 /* Shared responsive Filament slide-over sizing. Each form supplies a marker
    based on its field count and effective column count. */
-.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--compact) > .fi-modal-window-ctn > .fi-modal-window {
+.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--compact) .fi-modal-window {
     width: clamp(33.333vw, 36vw, 66.667vw) !important;
     min-width: 33.333vw !important;
     max-width: 66.667vw !important;
 }
 
-.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--medium) > .fi-modal-window-ctn > .fi-modal-window {
+.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--medium) .fi-modal-window {
     width: clamp(33.333vw, 42vw, 66.667vw) !important;
     min-width: 33.333vw !important;
     max-width: 66.667vw !important;
 }
 
-.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--wide) > .fi-modal-window-ctn > .fi-modal-window {
+.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--wide) .fi-modal-window {
     width: clamp(33.333vw, 56vw, 66.667vw) !important;
     min-width: 33.333vw !important;
     max-width: 66.667vw !important;
 }
 
-@media (max-width: 1023px) {
-    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--compact) > .fi-modal-window-ctn > .fi-modal-window,
-    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--medium) > .fi-modal-window-ctn > .fi-modal-window,
-    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--wide) > .fi-modal-window-ctn > .fi-modal-window {
+@media (max-width: 767px) {
+    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--compact) .fi-modal-window,
+    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--medium) .fi-modal-window,
+    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--wide) .fi-modal-window {
         width: 100vw !important;
         min-width: 100vw !important;
         max-width: 100vw !important;
@@ -417,4 +417,32 @@ html[data-hm-density="comfortable"] {
     .fi-select-input {
         min-height: max(var(--hm-density-control-height, 2.4rem), var(--hm-touch, 2.75rem));
     }
+}
+
+
+/* Actual Filament text cells include their own vertical padding; compact both
+   the table cell and the text/description wrapper, not only the TD. */
+.fi-ta-cell {
+    padding-block: .2rem !important;
+}
+
+.fi-ta-cell > .fi-ta-text,
+.fi-ta-cell .fi-ta-text-has-descriptions {
+    padding-block: .125rem !important;
+}
+
+.fi-ta-cell .fi-ta-text-item,
+.fi-ta-cell .fi-ta-text-item-label,
+.fi-ta-cell .fi-ta-text-item-description {
+    line-height: 1.25 !important;
+}
+
+.fi-ta-filters-dropdown .fi-fo,
+.fi-ta-filters-dropdown .fi-sc {
+    min-width: 0;
+}
+
+.fi-ta-filters-dropdown {
+    max-height: min(70vh, 36rem);
+    overflow-y: auto;
 }
