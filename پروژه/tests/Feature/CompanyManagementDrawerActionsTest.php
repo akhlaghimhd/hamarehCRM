@@ -28,6 +28,11 @@ class CompanyManagementDrawerActionsTest extends TestCase
         $this->assertSame('مدیریت سازمان', RoleResource::getNavigationGroup());
     }
 
+    public function test_company_create_view_and_edit_are_contextual_drawer_actions(): void
+    {
+        $this->assertSame(['index'], array_keys(CompanyResource::getPages()));
+    }
+
     public function test_user_can_be_created_and_updated_through_company_scoped_actions(): void
     {
         [$company, $admin] = $this->companyAdmin('drawer-user');
