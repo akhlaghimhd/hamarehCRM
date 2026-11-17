@@ -61,27 +61,21 @@ class UpdateCompanyProfileTest extends TestCase
     }
 
 
-    public function test_deactivating_company_redirects_admin_to_company_recovery_page(): void
+    public function test_company_admin_can_deactivate_company_from_the_table_status_action(): void
     {
         [$company, $user] = $this->companyWithAdmin();
 
         $this->actingAs($user);
         session(['current_company_id' => $company->id]);
 
-        Livewire::test(EditCompany::class, ['record' => $company->getRouteKey()])
-            ->fillForm([
-                'name' => $company->name,
-                'slug' => $company->slug,
-                'national_id' => $company->national_id,
-                'registration_number' => $company->registration_number,
-                'phone' => $company->phone,
-                'email' => $company->email,
-                'address' => $company->address,
-                'is_active' => false,
-            ])
-            ->call('save')
-            ->assertHasNoFormErrors()
-            ->assertRedirect(SwitchCompany::getUrl());
+        app(SetCompanyStatus::class)->handle($company, false, $user);
+
+        $this->assertNull(app(CompanyContext::class)->currentCompanyId($user));
+        $this->assertTrue(SwitchCompany::canAccess());
+        $this->assertDatabaseHas('companies', [
+            'id' => $company->id,
+            'is_active' => false,
+        ]);
     }
 
     public function test_company_admin_can_deactivate_current_company_and_recover_it_later(): void
@@ -91,16 +85,7 @@ class UpdateCompanyProfileTest extends TestCase
         $this->actingAs($user);
         session(['current_company_id' => $company->id]);
 
-        app(UpdateCompanyProfile::class)->handle($company, [
-            'name' => $company->name,
-            'slug' => $company->slug,
-            'national_id' => $company->national_id,
-            'registration_number' => $company->registration_number,
-            'phone' => $company->phone,
-            'email' => $company->email,
-            'address' => $company->address,
-            'is_active' => false,
-        ], $user);
+        app(SetCompanyStatus::class)->handle($company, false, $user);
 
         $this->assertNull(app(CompanyContext::class)->currentCompanyId($user));
         $this->assertTrue(SwitchCompany::canAccess());
@@ -148,7 +133,7 @@ class UpdateCompanyProfileTest extends TestCase
         $this->assertTrue($updated->is_active);
     }
 
-    public function test_company_manager_with_permission_cannot_deactivate_company(): void
+    public function test_company_manager_with_permission_cannot_change_company_status(): void
     {
         $company = $this->createCompany('manager-cannot-deactivate');
         $role = Role::query()->create([
@@ -175,16 +160,7 @@ class UpdateCompanyProfileTest extends TestCase
 
         $this->expectException(AuthorizationException::class);
 
-        app(UpdateCompanyProfile::class)->handle($company, [
-            'name' => $company->name,
-            'slug' => $company->slug,
-            'national_id' => $company->national_id,
-            'registration_number' => $company->registration_number,
-            'phone' => $company->phone,
-            'email' => $company->email,
-            'address' => $company->address,
-            'is_active' => false,
-        ], $user);
+        app(SetCompanyStatus::class)->handle($company, false, $user);
     }
 
     public function test_non_admin_cannot_update_company_profile(): void
