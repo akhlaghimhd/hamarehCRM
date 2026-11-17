@@ -134,11 +134,13 @@ class CompanyResource extends Resource
                             'spellcheck' => 'false',
                         ])
                         ->rules(['regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'])
+                        ->validationMessages(['regex' => 'شناسه سیستمی فقط شامل حروف انگلیسی کوچک، عدد و خط تیره است.'])
                         ->unique(ignoreRecord: true),
                     TextInput::make('national_id')
                         ->label('شناسه ملی')
                         ->maxLength(10)
-                        ->minLength(10)
+                        ->rules(['regex:/^\\d{10}$/'])
+                        ->validationMessages(['regex' => 'شناسه ملی باید دقیقاً ۱۰ رقم باشد.'])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'numeric']),
                     TextInput::make('registration_number')
@@ -150,6 +152,8 @@ class CompanyResource extends Resource
                         ->label('تلفن')
                         ->tel()
                         ->maxLength(11)
+                        ->rules(['regex:/^\\d{8,11}$/'])
+                        ->validationMessages(['regex' => 'شماره تلفن باید بین ۸ تا ۱۱ رقم باشد.'])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'tel']),
                     TextInput::make('email')
@@ -219,6 +223,7 @@ class CompanyResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
                 ToggleColumn::make('is_active')
                     ->label('وضعیت')
+                    ->sortable()
                     ->disabled(fn (Company $record): bool => ! static::canEdit($record))
                     ->updateStateUsing(function (Company $record, bool $state): bool {
                         $actor = auth()->user();
@@ -245,6 +250,17 @@ class CompanyResource extends Resource
                 $companyTextFilter('registration_number', 'شماره ثبت'),
                 $companyTextFilter('phone', 'تلفن'),
                 $companyTextFilter('email', 'ایمیل'),
+                Filter::make('created_at')
+                    ->label('تاریخ ایجاد')
+                    ->schema([
+                        DatePicker::make('from')->label('از تاریخ'),
+                        DatePicker::make('until')->label('تا تاریخ'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(filled($data['from'] ?? null), fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $data['from']))
+                            ->when(filled($data['until'] ?? null), fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $data['until']));
+                    }),
             ])
             ->recordUrl(null)
             ->emptyStateHeading('شرکتی برای نمایش وجود ندارد')
