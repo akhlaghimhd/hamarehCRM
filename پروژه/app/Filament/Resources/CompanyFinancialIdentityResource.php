@@ -12,7 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Actions\EditAction;
+use Filament\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -146,7 +146,7 @@ class CompanyFinancialIdentityResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
             ])
             ->recordActions([
-                EditAction::make()->label('مدیریت هویت و حساب‌ها')->visible(fn (CompanyFinancialIdentity $record): bool => static::canEdit($record)),
+                Action::make('manage')->label('مدیریت هویت و حساب‌ها')->url(fn (CompanyFinancialIdentity $record): string => static::getUrl('edit', ['record' => $record]))->visible(fn (CompanyFinancialIdentity $record): bool => static::canEdit($record)),
             ])
             ->defaultSort('company_id')
             ->emptyStateHeading('هویت مالی ثبت‌شده‌ای وجود ندارد')

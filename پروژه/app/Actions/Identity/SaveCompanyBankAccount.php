@@ -63,6 +63,10 @@ class SaveCompanyBankAccount
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            if (! $actor->isPlatformOwner() && ! app(CompanyMembershipAccess::class)->canManage($actor, (int) $lockedIdentity->company_id)) {
+                throw new AuthorizationException('دسترسی مدیریت حساب‌های این شرکت در همین فاصله لغو شده است.');
+            }
+
             if (! $lockedIdentity->is_active) {
                 throw new AuthorizationException('هویت مالی در همین فاصله غیرفعال شده است.');
             }

@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Actions\Identity\CreateCompanyForUser;
 use App\Actions\Identity\SaveCompanyBankAccount;
 use App\Actions\Identity\SaveCompanyFinancialIdentity;
+use App\Filament\Resources\CompanyFinancialIdentityResource;
+use App\Filament\Resources\CompanyFinancialIdentityResource\Pages\EditCompanyFinancialIdentity;
 use App\Models\Company;
 use App\Models\CompanyBankAccount;
 use App\Models\CompanyFinancialIdentity;
@@ -14,6 +16,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class CompanyFinancialIdentityTest extends TestCase
@@ -89,6 +92,26 @@ class CompanyFinancialIdentityTest extends TestCase
         $this->assertTrue($second->is_default);
         $this->assertSame(1, CompanyBankAccount::query()->where('company_financial_identity_id', $identity->id)->where('is_default', true)->count());
         $this->assertDatabaseHas('company_bank_account_versions', ['company_bank_account_id' => $first->id, 'version' => 2]);
+    }
+
+    public function test_owner_can_open_financial_identity_and_bank_account_management_ui(): void
+    {
+        [$company, $owner] = $this->companyAndOwner();
+        $identity = CompanyFinancialIdentity::query()
+            ->where('company_id', $company->id)
+            ->where('type', 'official')
+            ->firstOrFail();
+
+        $this->actingAs($owner);
+
+        $this->assertTrue(CompanyFinancialIdentityResource::canViewAny());
+        $this->assertTrue(CompanyFinancialIdentityResource::canEdit($identity));
+
+        Livewire::test(EditCompanyFinancialIdentity::class, ['record' => $identity->getRouteKey()])
+            ->assertOk()
+            ->assertSee('حساب‌های دریافت')
+            ->assertSee('افزودن حساب')
+            ->assertSee('شماره حساب');
     }
 
     public function test_member_of_another_company_cannot_edit_financial_identity(): void

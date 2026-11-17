@@ -48,6 +48,10 @@ class SaveCompanyFinancialIdentity
 
         return DB::transaction(function () use ($record, $company, $validated, $actor): CompanyFinancialIdentity {
             $lockedCompany = Company::query()->whereKey($company->id)->lockForUpdate()->firstOrFail();
+
+            if (! $actor->isPlatformOwner() && ! app(CompanyMembershipAccess::class)->canManage($actor, (int) $lockedCompany->id)) {
+                throw new AuthorizationException('دسترسی مدیریت هویت مالی این شرکت در همین فاصله لغو شده است.');
+            }
             $identity = $record
                 ? CompanyFinancialIdentity::query()->where('company_id', $lockedCompany->id)->whereKey($record->id)->lockForUpdate()->firstOrFail()
                 : new CompanyFinancialIdentity(['company_id' => $lockedCompany->id, 'version' => 0, 'is_active' => true]);
