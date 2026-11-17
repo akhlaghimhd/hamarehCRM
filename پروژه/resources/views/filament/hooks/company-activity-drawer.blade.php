@@ -215,7 +215,7 @@
     @keyframes hm-factory-packages { 0% { transform: translateX(0); } 100% { transform: translateX(-260px); } }
     @keyframes hm-factory-forklift { 0%,100% { transform: translateX(-22px); } 50% { transform: translateX(22px); } }
     @keyframes hm-factory-sparkles { 0%,100% { opacity: .45; transform: scale(.88); } 50% { opacity: 1; transform: scale(1.08); } }
-    @media (max-width: 1023px) { #hm-company-activity-stage { display: none !important; } }
+    @media (max-width: 767px) { #hm-company-activity-stage { display: none !important; } }
     @media (prefers-reduced-motion: reduce) {
         #hm-company-activity-stage *,
         #hm-company-activity-stage *::before,
@@ -236,7 +236,7 @@
         const drawer = [...document.querySelectorAll(drawerSelector)]
             .find((element) => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden');
 
-        if (!drawer || window.innerWidth < 1024) {
+        if (!drawer || window.innerWidth < 768) {
             stage.hidden = true;
             return;
         }
