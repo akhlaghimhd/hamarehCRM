@@ -21,6 +21,11 @@ class UiReference extends Page
 
     protected string $view = 'filament.pages.ui-reference';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     public static function canAccess(): bool
     {
         return auth()->check();

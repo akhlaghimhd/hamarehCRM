@@ -58,7 +58,7 @@ class ProductOptionResource extends Resource
     protected static ?string $navigationLabel = 'اقلام و آپشن‌ها';
     protected static ?string $modelLabel = 'قلم';
     protected static ?string $pluralModelLabel = 'اقلام و آپشن‌ها';
-    protected static string|UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?int $navigationSort = 4;
 
     public static function shouldRegisterNavigation(): bool
@@ -385,6 +385,7 @@ class ProductOptionResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->placeholder('—'),
             ])
+            ->stackedOnMobile()
             ->defaultSort('sort')
             ->striped()
             ->paginated([10, 15, 25, 50, 100])

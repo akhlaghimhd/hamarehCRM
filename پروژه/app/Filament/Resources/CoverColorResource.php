@@ -27,7 +27,7 @@ class CoverColorResource extends Resource
     protected static ?string $navigationLabel = 'رنگ‌های جلد';
     protected static ?string $modelLabel = 'رنگ';
     protected static ?string $pluralModelLabel = 'رنگ‌های جلد';
-    protected static string|UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?int $navigationSort = 22;
 
     public static function shouldRegisterNavigation(): bool
@@ -60,7 +60,8 @@ class CoverColorResource extends Resource
             Tables\Columns\TextColumn::make('name')->label('نام')->searchable(),
             Tables\Columns\TextColumn::make('hex')->label('کد'),
             Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
-        ])->defaultSort('sort')
+        ])
+            ->stackedOnMobile()->defaultSort('sort')
         ->recordActions([EditAction::make()->label('ویرایش')->visible(fn ($r) => static::canEdit($r))]);
     }
 

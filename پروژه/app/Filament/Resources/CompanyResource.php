@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Actions\Identity\CreateCompanyForUser;
+use App\Actions\Identity\UpdateCompanyProfile;
 use App\Filament\Concerns\ChecksResourcePermission;
 
 use App\Filament\Resources\CompanyResource\Pages;
 use App\Models\Company;
+use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -16,6 +19,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\TernaryFilter;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +42,7 @@ class CompanyResource extends Resource
 
     protected static ?string $navigationLabel = 'شرکت‌ها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'سیستم';
+    protected static string|UnitEnum|null $navigationGroup = 'مدیریت سازمان';
 
     protected static ?int $navigationSort = 2;
 
@@ -186,15 +190,27 @@ class CompanyResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('id', 'desc')
+            ->stackedOnMobile()
+            ->filters([TernaryFilter::make('is_active')->label('وضعیت شرکت')->trueLabel('فعال')->falseLabel('غیرفعال')])
             ->recordUrl(null)
             ->emptyStateHeading('هنوز شرکتی ثبت نشده است')
             ->emptyStateDescription('برای شروع، اولین شرکت خود را ایجاد کنید.')
             ->emptyStateActions([
-                CreateAction::make()->label('ایجاد شرکت'),
+                CreateAction::make()->label('ایجاد شرکت')->slideOver()->using(function (array $data): Company {
+                    $actor = auth()->user();
+                    abort_unless($actor instanceof User, 403);
+
+                    return app(CreateCompanyForUser::class)->handle($data, $actor);
+                }),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                ViewAction::make()->slideOver(),
+                EditAction::make()->slideOver()->using(function (Company $record, array $data): Company {
+                    $actor = auth()->user();
+                    abort_unless($actor instanceof User, 403);
+
+                    return app(UpdateCompanyProfile::class)->handle($record, $data, $actor);
+                }),
             ]);
     }
 

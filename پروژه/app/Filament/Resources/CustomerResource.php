@@ -42,7 +42,7 @@ class CustomerResource extends Resource
 
     protected static ?string $navigationLabel = 'مشتریان';
 
-    protected static string|UnitEnum|null $navigationGroup = 'فروش (جدید)';
+    protected static string|UnitEnum|null $navigationGroup = 'ارتباط با مشتری';
 
     protected static ?int $navigationSort = 1;
 
@@ -70,6 +70,7 @@ class CustomerResource extends Resource
                     ->description('نوع و مشخصات هویتی مشتری را ثبت کنید.')
                     ->icon('heroicon-o-identification')
                     ->columns(['default' => 1, 'md' => 2])
+            ->stackedOnMobile()
                     ->schema([
                         Select::make('type')
                             ->label('نوع مشتری')

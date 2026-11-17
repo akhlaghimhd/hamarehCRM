@@ -44,7 +44,7 @@ class CatalogSeasonResource extends Resource
 
     protected static ?string $navigationLabel = 'نسخه‌های کاتالوگ';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
 
     protected static ?int $navigationSort = 21;
 
@@ -119,6 +119,7 @@ class CatalogSeasonResource extends Resource
                             ->action(fn ($record) => $record->update(['is_active' => ! $record->is_active]))
                     ),
             ])
+            ->stackedOnMobile()
             ->defaultSort('sort')
             ->filters([TrashedFilter::make()])
             ->recordActions([

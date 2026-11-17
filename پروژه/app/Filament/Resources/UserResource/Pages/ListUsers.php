@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Actions\Identity\AddExistingUserToCompany;
+use App\Actions\Identity\CreateUserForCompany;
 use App\Filament\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
@@ -24,6 +25,7 @@ class ListUsers extends ListRecords
             Action::make('addExistingUser')
                 ->label('افزودن کاربر موجود')
                 ->icon('heroicon-o-user-plus')
+                ->slideOver()
                 ->schema(function (): array {
                     $companyId = auth()->user()?->currentCompanyId();
 
@@ -88,6 +90,13 @@ class ListUsers extends ListRecords
 
             CreateAction::make()
                 ->label('ایجاد کاربر')
+                ->slideOver()
+                ->using(function (array $data): User {
+                    $actor = auth()->user();
+                    abort_unless($actor instanceof User, 403);
+
+                    return app(CreateUserForCompany::class)->handle($data, $actor);
+                })
                 ->visible(fn () => UserResource::canCreate()),
         ];
     }

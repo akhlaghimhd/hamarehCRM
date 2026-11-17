@@ -44,7 +44,7 @@ protected static ?string $permissionView = 'products.view';
     protected static ?string $pluralModelLabel = 'سایزها';
     protected static ?string $navigationLabel = 'سایزها';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?int $navigationSort = 2;
 
     
@@ -138,6 +138,7 @@ protected static ?string $permissionView = 'products.view';
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->placeholder('—'),
             ])
+            ->stackedOnMobile()
             ->defaultSort('sort')
             ->striped()
             ->paginated([10, 15, 25, 50, 100])

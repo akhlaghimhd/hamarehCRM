@@ -44,7 +44,7 @@ protected static ?string $permissionView = 'products.view';
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-gift';
     protected static ?string $navigationLabel = 'بسته‌بندی محصول';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?string $modelLabel = 'نوع بسته‌بندی';
     protected static ?string $pluralModelLabel = 'انواع بسته‌بندی';
     protected static ?int $navigationSort = 6;
@@ -134,6 +134,7 @@ protected static ?string $permissionView = 'products.view';
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->placeholder('—'),
             ])
+            ->stackedOnMobile()
             ->defaultSort('sort')
             ->striped()
             ->paginated([10, 15, 25, 50, 100])

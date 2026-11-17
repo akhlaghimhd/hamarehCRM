@@ -19,7 +19,7 @@ class NotopiaCatalog extends Page
 
     protected static ?string $title = 'کاتالوگ نوتوپیا';
 
-    protected static string|UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
 
     protected static ?int $navigationSort = 0;
 

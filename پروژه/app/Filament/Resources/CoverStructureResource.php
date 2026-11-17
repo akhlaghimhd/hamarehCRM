@@ -26,7 +26,7 @@ class CoverStructureResource extends Resource
     protected static ?string $navigationLabel = 'مدل ساخت جلد';
     protected static ?string $modelLabel = 'مدل ساخت';
     protected static ?string $pluralModelLabel = 'مدل‌های ساخت جلد';
-    protected static string|UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?int $navigationSort = 21;
 
     public static function shouldRegisterNavigation(): bool
@@ -60,7 +60,8 @@ class CoverStructureResource extends Resource
             Tables\Columns\TextColumn::make('code')->label('کد')->badge(),
             Tables\Columns\TextColumn::make('color_slots')->label('تعداد رنگ'),
             Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
-        ])->defaultSort('sort')
+        ])
+            ->stackedOnMobile()->defaultSort('sort')
         ->recordActions([EditAction::make()->label('ویرایش')->visible(fn ($r) => static::canEdit($r))]);
     }
 

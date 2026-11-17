@@ -44,7 +44,7 @@ class ProductFamilyResource extends Resource
 
     protected static ?string $navigationLabel = 'خانواده مدل';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
 
     protected static ?int $navigationSort = 20;
 
@@ -98,6 +98,7 @@ class ProductFamilyResource extends Resource
                             ->action(fn ($record) => $record->update(['is_active' => ! $record->is_active]))
                     ),
             ])
+            ->stackedOnMobile()
             ->defaultSort('sort')
             ->filters([TrashedFilter::make()])
             ->recordActions([

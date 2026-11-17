@@ -2,11 +2,14 @@
     <div class="mx-auto flex w-full max-w-6xl flex-col gap-6" dir="rtl">
         <section class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900 sm:p-5">
             <div class="flex flex-col gap-2">
-                <h2 class="text-base font-bold text-gray-950 dark:text-white">مدیریت تنظیمات فضای کاری</h2>
+                <h2 class="text-base font-bold text-gray-950 dark:text-white">تنظیمات فضای کاری شرکت</h2>
                 <p class="text-sm leading-6 text-gray-500 dark:text-gray-400">
-                    تنظیمات این صفحه فقط به شرکت جاری تعلق دارد. کلیدها را با ساختار نام‌گذاری مشخص تعریف کنید؛
-                    مقادیر حساس رمزگذاری می‌شوند و مقدار ذخیره‌شده آن‌ها در فهرست نمایش داده نمی‌شود.
+                    این صفحه دو کاربرد جدا دارد: ظاهر پنل شرکت و پارامترهای فنی قابل استفاده توسط ماژول‌ها. تغییرات فقط روی شرکت جاری اثر می‌گذارند.
                 </p>
+            </div>
+            <div class="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm leading-6 text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-200">
+                <strong>نکته درباره پارامترهای فنی:</strong>
+                ساختن یک کلید به‌تنهایی قابلیت تازه‌ای در سیستم فعال نمی‌کند. مقدار فقط زمانی اثر دارد که ماژول مربوط آن کلید را بخواند. پیش از افزودن یا تغییر کلید، باید نام و کاربرد آن در مستندات همان ماژول مشخص باشد. مقادیر حساس رمزگذاری می‌شوند و مقدار آن‌ها در فهرست نمایش داده نمی‌شود.
             </div>
         </section>
 
@@ -15,7 +18,7 @@
             <div class="mb-4">
                 <h3 class="font-bold text-gray-950 dark:text-white">پوسته و هویت بصری شرکت</h3>
                 <p class="mt-1 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                    پالت، رنگ اصلی، رنگ ثانویه و تراکم پنل فقط برای شرکت جاری ذخیره می‌شوند.
+                    این گزینه‌ها ظاهر پنل همین شرکت را تغییر می‌دهند؛ پالت رنگ، رنگ‌های اصلی و ثانویه و میزان فشردگی جدول‌ها و فاصله اجزای رابط.
                 </p>
             </div>
 
@@ -39,6 +42,7 @@
                             <option value="balanced">متعادل</option>
                             <option value="compact">فشرده</option>
                         </select>
+                        <p class="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">باز و خوانا: فاصله بیشتر؛ متعادل: حالت پیش‌فرض؛ فشرده: نمایش اطلاعات بیشتر در فضای کمتر.</p>
                         @error('themeDensity') <p class="mt-1 text-xs text-danger-600">{{ $message }}</p> @enderror
                     </div>
 
@@ -71,7 +75,7 @@
         <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.85fr)]">
             <section class="order-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900 xl:order-1">
                 <header class="border-b border-gray-100 px-4 py-4 dark:border-gray-800 sm:px-5">
-                    <h3 class="font-bold text-gray-950 dark:text-white">تنظیمات ثبت‌شده</h3>
+                    <h3 class="font-bold text-gray-950 dark:text-white">پارامترهای فنی شرکت</h3>
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ $settings->count() }} تنظیم</p>
                 </header>
                 <div class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -97,7 +101,7 @@
                     @empty
                         <div class="px-5 py-12 text-center">
                             <p class="font-semibold text-gray-800 dark:text-gray-200">هنوز تنظیمی ثبت نشده است</p>
-                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">از فرم مقابل برای تعریف اولین تنظیم شرکت استفاده کنید.</p>
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">این بخش برای پارامترهایی است که یک ماژول مشخص در برنامه مصرف می‌کند؛ برای تغییر ظاهر پنل از بخش پوسته استفاده کنید.</p>
                         </div>
                     @endforelse
                 </div>

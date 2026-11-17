@@ -33,7 +33,7 @@ protected static ?string $permissionView = 'products.view';
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-swatch';
     protected static ?string $navigationLabel = 'انواع جلد';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?string $modelLabel = 'نوع جلد';
     protected static ?string $pluralModelLabel = 'انواع جلد';
     protected static ?int $navigationSort = 5;
@@ -70,7 +70,8 @@ protected static ?string $permissionView = 'products.view';
             Tables\Columns\TextColumn::make('code')->label('کد')->badge(),
             Tables\Columns\TextColumn::make('productLine.name')->label('خط'),
             Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
-        ])->defaultSort('sort')
+        ])
+            ->stackedOnMobile()->defaultSort('sort')
         ->recordActions([EditAction::make()->label('ویرایش')->visible(fn ($r) => static::canEdit($r))]);
     }
 

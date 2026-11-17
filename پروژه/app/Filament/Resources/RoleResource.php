@@ -2,16 +2,20 @@
 
 namespace App\Filament\Resources;
 
+use App\Actions\Identity\UpdateCompanyRole;
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\RoleResource\Pages;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\User;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -35,7 +39,7 @@ class RoleResource extends Resource
 
     protected static ?string $navigationLabel = 'نقش‌ها و مجوزها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'مدیریت سیستم';
+    protected static string|UnitEnum|null $navigationGroup = 'مدیریت سازمان';
 
     protected static ?int $navigationSort = 3;
 
@@ -111,70 +115,46 @@ class RoleResource extends Resource
     {
         $companyId = auth()->user()?->currentCompanyId();
 
-        return $schema
-            ->components([
-                TextInput::make('name')
-                    ->label('نام سیستمی')
-                    ->required()
-                    ->maxLength(100)
-                    ->rules(fn (?Role $record): array => [
-                        'regex:/^[a-z][a-z0-9_-]{0,99}$/',
-                        ...(($record?->is_system || $record?->name === 'admin') ? [] : ['not_in:admin']),
-                    ])
-                    ->disabled(fn (?Role $record): bool => (bool) ($record?->is_system || $record?->name === 'admin'))
-                    ->helperText('نام admin رزرو شده است؛ برای نقش‌های اختصاصی نامی مانند sales یا warehouse انتخاب کنید.'),
-                TextInput::make('label')
-                    ->label('عنوان نمایشی')
-                    ->required()
-                    ->maxLength(100),
-                Select::make('parent_role_id')
-                    ->label('نقش والد')
-                    ->options(
-                        Role::query()
-                            ->where('company_id', $companyId ?? 0)
-                            ->where('name', '<>', 'admin')
-                            ->orderBy('label')
-                            ->pluck('label', 'id')
-                    )
-                    ->searchable()
-                    ->preload()
-                    ->nullable()
-                    ->helperText('نقش والد باید متعلق به همین شرکت باشد؛ نقش مدیر شرکت نمی‌تواند والد نقش دیگری باشد.'),
-                Toggle::make('inherit_permissions')
-                    ->label('ارث‌بری مجوزهای نقش والد')
-                    ->default(true),
-                Select::make('copy_permissions_from_role_id')
-                    ->label('کپی اولیه مجوزها از نقش')
-                    ->options(
-                        Role::query()
-                            ->where('company_id', $companyId ?? 0)
-                            ->orderBy('label')
-                            ->pluck('label', 'id')
-                    )
-                    ->searchable()
-                    ->nullable()
-                    ->visible(fn (string $operation): bool => $operation === 'create')
-                    ->helperText('فقط یک کپی مستقل در زمان ایجاد انجام می‌شود؛ تغییرات بعدی منبع منتقل نمی‌شوند.'),
-                Toggle::make('is_system')
-                    ->label('نقش سیستمی')
-                    ->default(false)
-                    ->disabled()
-                    ->helperText('وضعیت سیستمی فقط توسط کد و Seed رسمی مدیریت می‌شود.'),
-                CheckboxList::make('permissions')
-                    ->label('مجوزهای مستقیم')
-                    ->relationship(
-                        'permissions',
-                        'label',
-                        fn (Builder $query, ?Role $record): Builder => $record?->name === 'admin'
+        return $schema->components([
+            Section::make('اطلاعات و ساختار نقش')
+                ->description('نام، جایگاه سازمانی و نحوه ارث‌بری دسترسی‌ها را مشخص کنید.')
+                ->columns(['default' => 1, 'md' => 2])
+                ->schema([
+                    TextInput::make('name')->label('شناسه سیستمی')->required()->maxLength(100)
+                        ->rules(fn (?Role $record): array => [
+                            'regex:/^[a-z][a-z0-9_-]{0,99}$/',
+                            ...(($record?->is_system || $record?->name === 'admin') ? [] : ['not_in:admin']),
+                        ])
+                        ->disabled(fn (?Role $record): bool => (bool) ($record?->is_system || $record?->name === 'admin'))
+                        ->helperText('شناسه انگلیسی یکتا؛ admin رزرو شده است.'),
+                    TextInput::make('label')->label('عنوان نقش')->required()->maxLength(100),
+                    Select::make('parent_role_id')->label('نقش والد')
+                        ->options(Role::query()->where('company_id', $companyId ?? 0)->where('name', '<>', 'admin')->orderBy('label')->pluck('label', 'id'))
+                        ->searchable()->preload()->nullable()
+                        ->helperText('نقش والد باید متعلق به همین شرکت باشد.'),
+                    Toggle::make('inherit_permissions')->label('ارث‌بری مجوزهای نقش والد')->default(true)
+                        ->helperText('با فعال‌سازی، مجوزهای مؤثر نقش والد نیز اعمال می‌شوند.'),
+                    Select::make('copy_permissions_from_role_id')->label('الگوی کپی مجوزها')
+                        ->options(Role::query()->where('company_id', $companyId ?? 0)->orderBy('label')->pluck('label', 'id'))
+                        ->searchable()->nullable()
+                        ->visible(fn (string $operation): bool => $operation === 'create')
+                        ->helperText('فقط در زمان ایجاد یک کپی مستقل ساخته می‌شود.'),
+                    Toggle::make('is_system')->label('نقش سیستمی')->default(false)->disabled()
+                        ->helperText('این ویژگی فقط توسط کد و Seed رسمی مدیریت می‌شود.'),
+                ]),
+            Section::make('مجوزهای مستقیم')
+                ->description('دسترسی‌ها را بر اساس نیاز این نقش انتخاب کنید. مجوزهای ارث‌رسیده از نقش والد جداگانه محاسبه می‌شوند.')
+                ->schema([
+                    CheckboxList::make('permissions')->label('دسترسی‌ها')
+                        ->relationship('permissions', 'label', fn (Builder $query, ?Role $record): Builder => $record?->name === 'admin'
                             ? $query
-                            : $query
-                                ->whereNotIn('permissions.group', Permission::SYSTEM_GROUPS)
-                                ->whereNotIn('permissions.name', Permission::SYSTEM_NAMES),
-                    )
-                    ->columns(2)
-                    ->bulkToggleable()
-                    ->helperText('مجوزهای مرکزی سیستم فقط برای نقش مدیر سیستمی قابل تخصیص هستند؛ مجوزهای مستقیم مستقل از مجوزهای ارث‌رسیده‌اند.'),
-            ]);
+                            : $query->whereNotIn('permissions.group', Permission::SYSTEM_GROUPS)
+                                ->whereNotIn('permissions.name', Permission::SYSTEM_NAMES))
+                        ->columns(['default' => 1, 'md' => 2, 'xl' => 3])
+                        ->searchable()->bulkToggleable()
+                        ->helperText('مجوزهای مرکزی سیستم فقط برای نقش مدیر سیستمی قابل تخصیص هستند.'),
+                ]),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -206,8 +186,18 @@ class RoleResource extends Resource
                     ->boolean(),
             ])
             ->defaultSort('id')
+            ->stackedOnMobile()
+            ->filters([
+                TernaryFilter::make('is_system')->label('نوع نقش')->trueLabel('سیستمی')->falseLabel('اختصاصی'),
+                TernaryFilter::make('inherit_permissions')->label('ارث‌بری مجوزها')->trueLabel('فعال')->falseLabel('غیرفعال'),
+            ])
             ->recordActions([
-                EditAction::make()->label('ویرایش'),
+                EditAction::make()->slideOver()->using(function (Role $record, array $data): Role {
+                    $actor = auth()->user();
+                    abort_unless($actor instanceof User, 403);
+
+                    return app(UpdateCompanyRole::class)->handle($record, $data, $actor);
+                })->label('ویرایش'),
             ]);
     }
 

@@ -35,7 +35,7 @@ class ProductLineResource extends Resource
 
     protected static ?string $pluralModelLabel = 'محصولات';
 
-    protected static string|UnitEnum|null $navigationGroup = 'استخر کاتالوگ (پایه)';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
 
     protected static ?int $navigationSort = 0;
 
@@ -105,6 +105,7 @@ class ProductLineResource extends Resource
                 Tables\Columns\TextColumn::make('unit')->label('واحد'),
                 Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
             ])
+            ->stackedOnMobile()
             ->defaultSort('sort')
             ->recordActions([
                 EditAction::make()->label('ویرایش')->visible(fn ($r) => static::canEdit($r)),

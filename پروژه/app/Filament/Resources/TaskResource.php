@@ -32,7 +32,7 @@ class TaskResource extends Resource
     protected static ?string $modelLabel = 'کار';
     protected static ?string $pluralModelLabel = 'کارها';
     protected static ?string $navigationLabel = 'کارهای تیم';
-    protected static string|UnitEnum|null $navigationGroup = 'مدیریت تیم';
+    protected static string|UnitEnum|null $navigationGroup = 'کارها و تیم';
     protected static ?int $navigationSort = 1;
 
     public static function canViewAny(): bool
@@ -126,6 +126,7 @@ class TaskResource extends Resource
                     ->color(fn (Task $record) => ! in_array($record->status, [Task::STATUS_DONE, Task::STATUS_CANCELLED], true)
                         && $record->due_at?->isPast() ? 'danger' : null),
             ])
+            ->stackedOnMobile()
             ->filters([
                 SelectFilter::make('assignee_user_id')->label('مسئول')->options(
                     User::query()->whereHas('companies', fn (Builder $q) => $q->where('companies.id', $companyId ?? 0))

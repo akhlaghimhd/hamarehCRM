@@ -62,7 +62,7 @@ protected static ?string $permissionView = 'products.view';
     protected static ?string $pluralModelLabel = 'مدل‌های محصول';
     protected static ?string $navigationLabel = 'مدل‌ها';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?int $navigationSort = 2;
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
@@ -158,7 +158,8 @@ protected static ?string $permissionView = 'products.view';
                 ->columns([
                     'default' => 1,
                     'md' => 2,
-                ]),
+                ])
+            ->stackedOnMobile(),
 
             Section::make('ماتریس مجاز')
                 ->description('لیست اجازه برای سفارش — مشتری در هر سفارش فقط یک سایز و یک جلد انتخاب می‌کند')

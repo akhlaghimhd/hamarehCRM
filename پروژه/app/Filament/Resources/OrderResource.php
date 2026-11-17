@@ -34,7 +34,7 @@ class OrderResource extends Resource
 
     protected static ?string $navigationLabel = 'سفارش‌ها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'فروش (جدید)';
+    protected static string|UnitEnum|null $navigationGroup = 'فروش و سفارش';
 
     protected static ?int $navigationSort = 30;
 
@@ -76,7 +76,8 @@ class OrderResource extends Resource
                         ->rows(3)
                         ->columnSpanFull(),
                 ])
-                ->columns(['default' => 1, 'md' => 2]),
+                ->columns(['default' => 1, 'md' => 2])
+            ->stackedOnMobile(),
         ]);
     }
 

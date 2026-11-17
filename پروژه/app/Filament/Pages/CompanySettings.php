@@ -21,7 +21,7 @@ class CompanySettings extends Page
 
     protected static ?string $title = 'تنظیمات شرکت';
 
-    protected static string|UnitEnum|null $navigationGroup = 'سیستم';
+    protected static string|UnitEnum|null $navigationGroup = 'تنظیمات';
 
     protected static ?int $navigationSort = 3;
 

@@ -48,7 +48,7 @@ class CoverSkuResource extends Resource
     protected static ?string $navigationLabel = 'جلد (SKU)';
     protected static ?string $modelLabel = 'جلد';
     protected static ?string $pluralModelLabel = 'جلدها';
-    protected static string|UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?int $navigationSort = 13;
 
     
@@ -170,6 +170,7 @@ class CoverSkuResource extends Resource
                     ->formatStateUsing(fn ($state) => Fa::dateTime($state))
                     ->placeholder('—'),
             ])
+            ->stackedOnMobile()
             ->defaultSort('sku')
             ->striped()
             ->paginated([10, 15, 25, 50, 100])

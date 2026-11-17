@@ -37,11 +37,13 @@ class AdminPanelProvider extends PanelProvider
             ->collapsedSidebarWidth('4.5rem')
             ->collapsibleNavigationGroups()
             ->navigationGroups([
-                'بازاریابی (جدید)',
-                'فروش (جدید)',
-                'نوتوپیا',
-                'استخر کاتالوگ (پایه)',
-                'سیستم',
+                'مدیریت سازمان',
+                'ارتباط با مشتری',
+                'فروش و سفارش',
+                'کاتالوگ و محصولات',
+                'کارها و تیم',
+                'گزارش‌ها',
+                'تنظیمات',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')

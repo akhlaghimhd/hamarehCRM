@@ -39,7 +39,7 @@ protected static ?string $permissionView = 'products.view';
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'راهنمای لت';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'تنظیمات کاتالوگ';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?string $modelLabel = 'راهنما';
     protected static ?string $pluralModelLabel = 'راهنماهای لت';
     protected static ?int $navigationSort = 23;
@@ -120,6 +120,7 @@ protected static ?string $permissionView = 'products.view';
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->stackedOnMobile()
             ->defaultSort('title')
             ->striped()
             ->paginated([10, 15, 25, 50, 100])

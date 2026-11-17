@@ -29,7 +29,7 @@ class CoverMaterialResource extends Resource
     protected static ?string $navigationLabel = 'جنس جلد';
     protected static ?string $modelLabel = 'جنس جلد';
     protected static ?string $pluralModelLabel = 'جنس‌های جلد';
-    protected static string|UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
     protected static ?int $navigationSort = 20;
 
     public static function shouldRegisterNavigation(): bool
@@ -65,7 +65,8 @@ class CoverMaterialResource extends Resource
             Tables\Columns\TextColumn::make('code')->label('کد')->badge(),
             Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
             Tables\Columns\TextColumn::make('sort')->label('ترتیب')->sortable(),
-        ])->defaultSort('sort')
+        ])
+            ->stackedOnMobile()->defaultSort('sort')
         ->recordActions([EditAction::make()->label('ویرایش')->visible(fn ($r) => static::canEdit($r))]);
     }
 

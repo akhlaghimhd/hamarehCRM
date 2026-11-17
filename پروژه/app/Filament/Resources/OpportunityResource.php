@@ -46,7 +46,7 @@ class OpportunityResource extends Resource
 
     protected static ?string $navigationLabel = 'فرصت‌ها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'بازاریابی (جدید)';
+    protected static string|UnitEnum|null $navigationGroup = 'ارتباط با مشتری';
 
     protected static ?int $navigationSort = 10;
 
@@ -169,6 +169,7 @@ class OpportunityResource extends Resource
                                 : null),
                     ])
                     ->columns(['default' => 1, 'md' => 2, 'xl' => 4])
+            ->stackedOnMobile()
                     ->columnSpanFull(),
 
                 Section::make('۲. ایمیل و آدرس')

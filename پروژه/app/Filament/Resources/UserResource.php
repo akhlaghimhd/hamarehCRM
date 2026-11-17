@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Actions\Identity\RemoveUserFromCompany;
+use App\Actions\Identity\UpdateUserForCompany;
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\Role;
@@ -17,6 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -39,7 +41,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationLabel = 'کاربران';
 
-    protected static string|UnitEnum|null $navigationGroup = 'مدیریت سیستم';
+    protected static string|UnitEnum|null $navigationGroup = 'مدیریت سازمان';
 
     protected static ?int $navigationSort = 1;
 
@@ -229,10 +231,42 @@ class UserResource extends Resource
                     ->boolean(),
             ])
             ->defaultSort('id', 'desc')
+            ->stackedOnMobile()
+            ->filters([SelectFilter::make('is_active')->label('وضعیت حساب')->options([1 => 'فعال', 0 => 'غیرفعال'])])
             ->recordActions([
-                ViewAction::make()->label('مشاهده')
+                ViewAction::make()->slideOver()->label('مشاهده')
                     ->visible(fn ($record) => static::canView($record)),
-                EditAction::make()->label('ویرایش')
+                EditAction::make()->slideOver()->label('ویرایش')
+                    ->mutateRecordDataUsing(function (array $data, User $record): array {
+                        $companyId = auth()->user()?->currentCompanyId();
+                        $membership = DB::table('company_user')
+                            ->where('company_id', $companyId ?? 0)
+                            ->where('user_id', $record->id)
+                            ->first();
+                        $roleIds = $membership
+                            ? DB::table('company_user_role')
+                                ->where('company_user_id', $membership->id)
+                                ->orderBy('id')
+                                ->pluck('role_id')
+                                ->map(fn ($id): int => (int) $id)
+                                ->all()
+                            : [];
+
+                        if ($roleIds === [] && $membership?->role_id) {
+                            $roleIds = [(int) $membership->role_id];
+                        }
+
+                        $data['role_ids'] = $roleIds;
+                        $data['manager_user_id'] = $membership?->manager_user_id;
+
+                        return $data;
+                    })
+                    ->using(function (User $record, array $data): User {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof User, 403);
+
+                        return app(UpdateUserForCompany::class)->handle($record, $data, $actor);
+                    })
                     ->visible(fn ($record) => static::canEdit($record)),
                 Action::make('removeFromCompany')
                     ->label('حذف از شرکت جاری')

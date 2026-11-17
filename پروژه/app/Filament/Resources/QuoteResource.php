@@ -41,7 +41,7 @@ class QuoteResource extends Resource
 
     protected static ?string $navigationLabel = 'پیش‌فاکتورها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'فروش (جدید)';
+    protected static string|UnitEnum|null $navigationGroup = 'فروش و سفارش';
 
     protected static ?int $navigationSort = 20;
 
@@ -101,7 +101,8 @@ class QuoteResource extends Resource
                         ->rows(3)
                         ->columnSpanFull(),
                 ])
-                ->columns(['default' => 1, 'md' => 2]),
+                ->columns(['default' => 1, 'md' => 2])
+            ->stackedOnMobile(),
         ]);
     }
 

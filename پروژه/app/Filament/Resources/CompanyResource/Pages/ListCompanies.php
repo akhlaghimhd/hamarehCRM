@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources\CompanyResource\Pages;
 
+use App\Actions\Identity\CreateCompanyForUser;
 use App\Filament\Resources\CompanyResource;
+use App\Models\Company;
+use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
@@ -17,6 +20,13 @@ class ListCompanies extends ListRecords
         return [
             CreateAction::make()
                 ->label('ایجاد شرکت')
+                ->slideOver()
+                ->using(function (array $data): Company {
+                    $actor = auth()->user();
+                    abort_unless($actor instanceof User, 403);
+
+                    return app(CreateCompanyForUser::class)->handle($data, $actor);
+                })
                 ->visible(fn () => CompanyResource::canCreate()),
         ];
     }
