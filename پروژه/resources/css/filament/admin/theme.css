@@ -1,9 +1,0 @@
-@import 'tailwindcss';
-
-@import '../../../../vendor/filament/filament/resources/css/theme.css';
-@import './hamareh-ui-v2.css';
-
-@source '../../../../app/Filament/**/*';
-@source '../../../../resources/views/filament/**/*';
-@source '../../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../../../vendor/ariaieboy/filament-jalali/resources/**/*';
