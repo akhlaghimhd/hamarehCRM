@@ -22,7 +22,7 @@ class CreateCompanyForUser
     public function handle(array $attributes, User $creator): Company
     {
         $attributes['national_id'] = Fa::toEnglishDigits($attributes['national_id'] ?? '');
-        $attributes['phone'] = Fa::toEnglishDigits($attributes['phone'] ?? '');
+        $attributes['phone'] = Fa::toEnglishDigits($attributes['phone'] ?? '');\n        $attributes['registration_number'] = Fa::toEnglishDigits($attributes['registration_number'] ?? '');
 
         if (blank($attributes['slug'] ?? null)) {
             $slug = Str::slug((string) ($attributes['name'] ?? ''));
