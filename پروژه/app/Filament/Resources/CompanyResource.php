@@ -11,6 +11,7 @@ use App\Models\Company;
 use App\Models\User;
 use App\Support\Fa;
 use App\Support\CompanyMembershipAccess;
+use App\Support\Filament\FormDrawerWidth;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -25,6 +26,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Support\Enums\SlideOverPosition;
+use Filament\Support\Enums\Width;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -310,11 +312,19 @@ class CompanyResource extends Resource
                     ->label('مشاهده')
                     ->slideOver()
                     ->slideOverPosition(SlideOverPosition::Start)
+                    ->modalWidth(Width::Screen)
+                    ->modalContent(view('filament.components.drawer-width-marker', [
+                        'widthClass' => FormDrawerWidth::markerClass(7, 2),
+                    ]))
                     ->closeModalByClickingAway(false),
                 EditAction::make()
                     ->label('ویرایش')
                     ->slideOver()
                     ->slideOverPosition(SlideOverPosition::Start)
+                    ->modalWidth(Width::Screen)
+                    ->modalContent(view('filament.components.drawer-width-marker', [
+                        'widthClass' => FormDrawerWidth::markerClass(7, 2),
+                    ]))
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalCloseButton(false)
