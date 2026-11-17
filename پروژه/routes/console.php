@@ -51,12 +51,12 @@ Artisan::command('platform-owner:create', function (): int {
         'name' => ['required', 'string', 'max:255'],
         'username' => ['required', 'string', 'max:100', 'alpha_dash', 'unique:users,username'],
         'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-        'password' => ['required', 'string', 'min:12', 'same:password_confirmation'],
+        'password' => ['required', 'string', 'min:6', 'same:password_confirmation'],
         'password_confirmation' => ['required', 'string'],
     ], [
         'username.unique' => 'این نام کاربری قبلاً ثبت شده است.',
         'email.unique' => 'این ایمیل قبلاً ثبت شده است.',
-        'password.min' => 'گذرواژه باید حداقل ۱۲ نویسه باشد.',
+        'password.min' => 'گذرواژه باید حداقل ۶ نویسه باشد.',
         'password.same' => 'تکرار گذرواژه با گذرواژه یکسان نیست.',
     ])->validate();
 
