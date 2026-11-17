@@ -149,6 +149,8 @@ class CompanyResource extends Resource
                         ->unique(ignoreRecord: true),
                     TextInput::make('national_id')
                         ->label('شناسه ملی')
+                        ->formatStateUsing(fn ($state) => filled($state) ? Fa::digits($state) : null)
+                        ->dehydrateStateUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
                         ->maxLength(11)
                         ->rules(['nullable', 'regex:/^[0-9۰-۹٠-٩]{11}$/'])
                         ->validationMessages([
@@ -159,12 +161,16 @@ class CompanyResource extends Resource
                         ->extraInputAttributes(['lang' => 'fa', 'dir' => 'ltr', 'inputmode' => 'numeric']),
                     TextInput::make('registration_number')
                         ->label('شماره ثبت')
+                        ->formatStateUsing(fn ($state) => filled($state) ? Fa::digits($state) : null)
+                        ->dehydrateStateUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
                         ->maxLength(50)
                         ->validationMessages(['max' => 'شماره ثبت بیش از حد مجاز طولانی است.'])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'fa', 'dir' => 'rtl', 'inputmode' => 'numeric']),
                     TextInput::make('phone')
                         ->label('تلفن')
+                        ->formatStateUsing(fn ($state) => filled($state) ? Fa::digits($state) : null)
+                        ->dehydrateStateUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
                         ->tel()
                         ->maxLength(11)
                         ->rules(['nullable', 'regex:/^[0-9۰-۹٠-٩]{8,11}$/'])
@@ -197,6 +203,13 @@ class CompanyResource extends Resource
                         ->validationMessages(['max' => 'نشانی نباید بیشتر از ۲۰۰۰ نویسه باشد.'])
                         ->columnSpanFull()
                         ->extraInputAttributes(['lang' => 'fa', 'dir' => 'rtl']),
+                    TextInput::make('website')
+                        ->label('وب‌سایت')
+                        ->placeholder('https://example.com')
+                        ->maxLength(255)
+                        ->validationMessages(['max' => 'نشانی وب‌سایت نباید بیشتر از ۲۵۵ نویسه باشد.'])
+                        ->columnSpanFull()
+                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'url', 'autocapitalize' => 'off', 'spellcheck' => 'false']),
                 ]),
         ]);
     }
@@ -283,7 +296,7 @@ class CompanyResource extends Resource
                     ->slideOver()
                     ->slideOverPosition(SlideOverPosition::Start)
                     ->modalWidth(Width::Medium)
-                    ->closeModalByClickingAway(false),
+                    ->closeModalByClickingAway(true),
                 EditAction::make()
                     ->label('ویرایش')
                     ->slideOver()
