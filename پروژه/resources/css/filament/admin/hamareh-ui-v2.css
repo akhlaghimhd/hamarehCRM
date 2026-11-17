@@ -382,28 +382,28 @@ html[data-hm-density="comfortable"] {
 
 /* Shared responsive Filament slide-over sizing. Each form supplies a marker
    based on its field count and effective column count. */
-.fi-modal-slide-over-window:has(.hm-drawer-width--compact) {
+.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--compact) > .fi-modal-window-ctn > .fi-modal-window {
     width: clamp(33.333vw, 36vw, 66.667vw) !important;
     min-width: 33.333vw !important;
     max-width: 66.667vw !important;
 }
 
-.fi-modal-slide-over-window:has(.hm-drawer-width--medium) {
+.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--medium) > .fi-modal-window-ctn > .fi-modal-window {
     width: clamp(33.333vw, 42vw, 66.667vw) !important;
     min-width: 33.333vw !important;
     max-width: 66.667vw !important;
 }
 
-.fi-modal-slide-over-window:has(.hm-drawer-width--wide) {
+.fi-modal.fi-modal-slide-over:has(.hm-drawer-width--wide) > .fi-modal-window-ctn > .fi-modal-window {
     width: clamp(33.333vw, 56vw, 66.667vw) !important;
     min-width: 33.333vw !important;
     max-width: 66.667vw !important;
 }
 
 @media (max-width: 1023px) {
-    .fi-modal-slide-over-window:has(.hm-drawer-width--compact),
-    .fi-modal-slide-over-window:has(.hm-drawer-width--medium),
-    .fi-modal-slide-over-window:has(.hm-drawer-width--wide) {
+    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--compact),
+    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--medium),
+    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--wide) > .fi-modal-window-ctn > .fi-modal-window {
         width: 100vw !important;
         min-width: 100vw !important;
         max-width: 100vw !important;
