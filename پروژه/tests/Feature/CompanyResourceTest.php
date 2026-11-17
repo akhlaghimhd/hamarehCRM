@@ -64,10 +64,12 @@ class CompanyResourceTest extends TestCase
             'slug' => 'persian-digits-company',
             'national_id' => '۱۲۳۴۵۶۷۸۹۰۱',
             'phone' => '۰۲۱۱۲۳۴۵۶۷۸',
+            'website' => 'https://example.test',
         ], $creator);
 
         $this->assertSame('12345678901', $company->national_id);
         $this->assertSame('02112345678', $company->phone);
+        $this->assertSame('https://example.test', $company->website);
         $this->assertTrue($company->is_active);
     }
 
