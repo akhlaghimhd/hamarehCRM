@@ -152,3 +152,22 @@ html {
   color: #b45309;
   font-weight: 600;
 }
+
+
+/* تراکم واقعی جدول: خود TD و محتوای داخلی متن/توضیحات */
+.fi-ta-cell.fi-ta-cell-name,
+.fi-ta-cell {
+  padding-block: 0.15rem !important;
+  padding-inline: 0.5rem !important;
+  vertical-align: middle !important;
+}
+.fi-ta-cell .fi-ta-text,
+.fi-ta-cell .fi-ta-text-has-descriptions {
+  padding-block: 0 !important;
+  margin-block: 0 !important;
+  line-height: 1.2 !important;
+}
+.fi-ta-cell .fi-ta-text-description {
+  margin-block-start: 0 !important;
+  line-height: 1.1 !important;
+}
