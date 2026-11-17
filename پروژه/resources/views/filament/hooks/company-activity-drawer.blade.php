@@ -244,7 +244,7 @@
         const rect = drawer.getBoundingClientRect();
         const drawerOnRight = rect.left > window.innerWidth / 2;
         const left = drawerOnRight ? 0 : rect.right;
-        const width = Math.max(0, window.innerWidth - (drawerOnRight ? rect.width + rect.left : rect.right));
+        const width = Math.max(0, drawerOnRight ? rect.left : window.innerWidth - rect.right);
 
         stage.style.left = left + 'px';
         stage.style.width = width + 'px';
