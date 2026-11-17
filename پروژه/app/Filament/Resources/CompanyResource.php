@@ -16,6 +16,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -115,53 +116,67 @@ class CompanyResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->label('نام شرکت')
-                    ->required()
-                    ->maxLength(255)
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(function ($state, callable $set, callable $get): void {
-                        if (filled($get('slug'))) {
-                            return;
-                        }
+                Section::make('اطلاعات هویتی و ثبتی')
+                    ->description('مشخصات اصلی شرکت و شناسه‌های رسمی آن را ثبت کنید.')
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('نام شرکت')
+                            ->required()
+                            ->maxLength(255)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, callable $set, callable $get): void {
+                                if (filled($get('slug'))) {
+                                    return;
+                                }
 
-                        $suggestedSlug = Str::slug((string) $state);
+                                $suggestedSlug = Str::slug((string) $state);
 
-                        if ($suggestedSlug !== '') {
-                            $set('slug', $suggestedSlug);
-                        }
-                    }),
-                TextInput::make('slug')
-                    ->label('اسلاگ')
-                    ->required()
-                    ->maxLength(255)
-                    ->helperText('شناسه یکتای لاتین شرکت؛ فقط حروف کوچک انگلیسی، عدد و خط تیره.')
-                    ->rules(['regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'])
-                    ->unique(ignoreRecord: true),
-                TextInput::make('national_id')
-                    ->label('شناسه ملی / اقتصادی')
-                    ->maxLength(50),
-                TextInput::make('registration_number')
-                    ->label('شماره ثبت')
-                    ->maxLength(50),
-                TextInput::make('phone')
-                    ->label('تلفن')
-                    ->tel()
-                    ->maxLength(50),
-                TextInput::make('email')
-                    ->label('ایمیل')
-                    ->email()
-                    ->maxLength(255),
-                Textarea::make('address')
-                    ->label('آدرس')
-                    ->rows(3)
-                    ->columnSpanFull(),
-                Toggle::make('is_active')
-                    ->label('فعال')
-                    ->default(true)
-                    ->disabled(fn (): bool => ! (auth()->user()?->isCompanyAdmin() ?? false))
-                    ->dehydrated()
-                    ->helperText('تغییر وضعیت شرکت فقط برای مدیر شرکت مجاز است.'),
+                                if ($suggestedSlug !== '') {
+                                    $set('slug', $suggestedSlug);
+                                }
+                            }),
+                        TextInput::make('slug')
+                            ->label('شناسه یکتای شرکت')
+                            ->required()
+                            ->maxLength(255)
+                            ->helperText('شناسه لاتین برای آدرس‌ها و ارجاع‌های سیستمی؛ فقط حروف کوچک انگلیسی، عدد و خط تیره.')
+                            ->rules(['regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'])
+                            ->unique(ignoreRecord: true),
+                        TextInput::make('national_id')
+                            ->label('شناسه ملی / اقتصادی')
+                            ->maxLength(50),
+                        TextInput::make('registration_number')
+                            ->label('شماره ثبت')
+                            ->maxLength(50),
+                    ]),
+                Section::make('اطلاعات تماس')
+                    ->description('راه‌های ارتباطی و نشانی رسمی شرکت.')
+                    ->columns(['default' => 1, 'md' => 2])
+                    ->schema([
+                        TextInput::make('phone')
+                            ->label('تلفن')
+                            ->tel()
+                            ->maxLength(50),
+                        TextInput::make('email')
+                            ->label('ایمیل')
+                            ->email()
+                            ->maxLength(255),
+                        Textarea::make('address')
+                            ->label('نشانی')
+                            ->rows(3)
+                            ->columnSpanFull(),
+                    ]),
+                Section::make('وضعیت شرکت')
+                    ->description('وضعیت فعال بودن شرکت در فضای کاری.')
+                    ->schema([
+                        Toggle::make('is_active')
+                            ->label('شرکت فعال است')
+                            ->default(true)
+                            ->disabled(fn (): bool => ! (auth()->user()?->isCompanyAdmin() ?? false))
+                            ->dehydrated()
+                            ->helperText('غیرفعال‌سازی شرکت فقط توسط مدیر همان شرکت انجام می‌شود.'),
+                    ]),
             ]);
     }
 
