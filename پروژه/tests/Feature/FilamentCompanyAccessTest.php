@@ -38,8 +38,8 @@ class FilamentCompanyAccessTest extends TestCase
         session()->forget('current_company_id');
 
         Livewire::test(ListCompanies::class)
-            ->assertSee('هنوز شرکتی ثبت نشده است')
-            ->assertSee('برای شروع، اولین شرکت خود را ایجاد کنید.')
+            ->assertSee('شرکتی برای نمایش وجود ندارد')
+            ->assertSee('شرکت‌هایی که عضو آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
             ->assertSee('ایجاد شرکت');
     }
 
@@ -121,8 +121,7 @@ class FilamentCompanyAccessTest extends TestCase
             ->pluck('companies.id')
             ->all();
 
-        $this->assertSame([$companyA->id], $companyIds);
-        $this->assertNotContains($companyB->id, $companyIds);
+        $this->assertEqualsCanonicalizing([$companyA->id, $companyB->id], $companyIds);
     }
 
     public function test_company_resource_lists_memberships_even_without_a_selected_company_context(): void
