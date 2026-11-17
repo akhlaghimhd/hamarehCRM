@@ -14,7 +14,7 @@ use App\Support\CompanyMembershipAccess;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DatePicker;\nuse Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -182,9 +182,19 @@ class CompanyResource extends Resource
         $companyTextFilter = static fn (string $name, string $label): Filter => Filter::make($name)
             ->label($label)
             ->schema([TextInput::make('value')->label($label)])
-            ->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null)
-                ? $query->where($name, 'like', '%'.$data['value'].'%')
-                : $query);
+            ->query(function (Builder $query, array $data) use ($name): Builder {
+                $value = (string) ($data['value'] ?? '');
+
+                if (! filled($value)) {
+                    return $query;
+                }
+
+                if (in_array($name, ['national_id', 'phone', 'registration_number'], true)) {
+                    $value = Fa::toEnglishDigits($value);
+                }
+
+                return $query->where($name, 'like', '%'.$value.'%');
+            });
 
         return $table
             ->columns([
@@ -196,19 +206,19 @@ class CompanyResource extends Resource
                 Tables\Columns\TextColumn::make('national_id')
                     ->label('شناسه ملی')
                     ->formatStateUsing(fn ($state): string => Fa::digits($state))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where('national_id', 'like', '%'.Fa::toEnglishDigits($search).'%'))
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('registration_number')
                     ->label('شماره ثبت')
                     ->formatStateUsing(fn ($state): string => Fa::digits($state))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where('registration_number', 'like', '%'.Fa::toEnglishDigits($search).'%'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('تلفن')
                     ->formatStateUsing(fn ($state): string => Fa::digits($state))
-                    ->searchable()
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->where('phone', 'like', '%'.Fa::toEnglishDigits($search).'%'))
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('email')
@@ -291,6 +301,11 @@ class CompanyResource extends Resource
                     ->label('ویرایش')
                     ->slideOver()
                     ->closeModalByClickingAway(false)
+                    ->closeModalByEscaping(false)
+                    ->modalCloseButton(false)
+                    ->modalCancelActionLabel('انصراف')
+                    ->modalSubmitActionLabel('ذخیره تغییرات')
+                    ->successNotificationTitle('اطلاعات شرکت ذخیره شد')
                     ->visible(fn (Company $record): bool => static::canEdit($record))
                     ->using(function (Company $record, array $data): Company {
                         $actor = auth()->user();
