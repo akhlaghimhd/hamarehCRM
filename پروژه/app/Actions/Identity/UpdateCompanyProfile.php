@@ -20,7 +20,7 @@ class UpdateCompanyProfile
         }
 
         $data['national_id'] = Fa::toEnglishDigits($data['national_id'] ?? '');
-        $data['phone'] = Fa::toEnglishDigits($data['phone'] ?? '');
+        $data['phone'] = Fa::toEnglishDigits($data['phone'] ?? '');\n        $data['registration_number'] = Fa::toEnglishDigits($data['registration_number'] ?? '');
 
         $validated = Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
