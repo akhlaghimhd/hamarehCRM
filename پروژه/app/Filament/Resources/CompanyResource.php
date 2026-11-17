@@ -317,6 +317,8 @@ class CompanyResource extends Resource
                     ->modalCancelActionLabel('انصراف')
                     ->modalSubmitActionLabel('ثبت شرکت')
                     ->successNotificationTitle('شرکت با موفقیت ایجاد شد')
+                    ->failureNotificationTitle('ثبت شرکت انجام نشد')
+                    ->failureNotificationBody('لطفاً اطلاعات شرکت را بررسی کنید و دوباره تلاش کنید.')
                     ->using(function (array $data): Company {
                         $actor = auth()->user();
                         abort_unless($actor instanceof User, 403);
@@ -340,6 +342,8 @@ class CompanyResource extends Resource
                     ->modalCancelActionLabel('انصراف')
                     ->modalSubmitActionLabel('ذخیره تغییرات')
                     ->successNotificationTitle('اطلاعات شرکت ذخیره شد')
+                    ->failureNotificationTitle('ذخیره اطلاعات شرکت انجام نشد')
+                    ->failureNotificationBody('لطفاً اطلاعات شرکت را بررسی کنید و دوباره تلاش کنید.')
                     ->visible(fn (Company $record): bool => static::canEdit($record))
                     ->using(function (Company $record, array $data): Company {
                         $actor = auth()->user();
