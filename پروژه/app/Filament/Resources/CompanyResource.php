@@ -231,11 +231,10 @@ class CompanyResource extends Resource
 
     public static function getPages(): array
     {
+        // Company create, view, and edit are intentionally handled by slide-over
+        // actions on the list page so the experience stays consistent and contextual.
         return [
             'index' => Pages\ListCompanies::route('/'),
-            'create' => Pages\CreateCompany::route('/create'),
-            'view' => Pages\ViewCompany::route('/{record}'),
-            'edit' => Pages\EditCompany::route('/{record}/edit'),
         ];
     }
 }
