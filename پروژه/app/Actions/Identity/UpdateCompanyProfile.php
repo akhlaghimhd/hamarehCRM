@@ -19,9 +19,10 @@ class UpdateCompanyProfile
             throw new AuthorizationException('فقط مدیر همان شرکت اجازه ویرایش اطلاعات آن را دارد.');
         }
 
-        $data['national_id'] = Fa::toEnglishDigits($data['national_id'] ?? '');
-        $data['phone'] = Fa::toEnglishDigits($data['phone'] ?? '');
-        $data['registration_number'] = Fa::toEnglishDigits($data['registration_number'] ?? '');
+        foreach (['national_id', 'phone', 'registration_number'] as $field) {
+            $value = trim((string) ($data[$field] ?? ''));
+            $data[$field] = $value === '' ? null : Fa::toEnglishDigits($value);
+        }
 
         $validated = Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
