@@ -112,6 +112,10 @@ class CompanyResource extends Resource
                         ->label('نام شرکت')
                         ->required()
                         ->maxLength(255)
+                        ->validationMessages([
+                            'required' => 'وارد کردن نام شرکت الزامی است.',
+                            'max' => 'نام شرکت نباید بیشتر از ۲۵۵ نویسه باشد.',
+                        ])
                         ->columnSpanFull()
                         ->extraInputAttributes(['lang' => 'fa', 'dir' => 'rtl'])
                         ->live(onBlur: true)
@@ -127,6 +131,11 @@ class CompanyResource extends Resource
                         ->label('شناسه سیستمی')
                         ->required()
                         ->maxLength(255)
+                        ->validationMessages([
+                            'required' => 'شناسه سیستمی الزامی است.',
+                            'max' => 'شناسه سیستمی بیش از حد مجاز طولانی است.',
+                            'unique' => 'این شناسه سیستمی قبلاً ثبت شده است.',
+                        ])
                         ->columnSpan(1)
                         ->extraInputAttributes([
                             'lang' => 'en',
@@ -141,27 +150,38 @@ class CompanyResource extends Resource
                     TextInput::make('national_id')
                         ->label('شناسه ملی')
                         ->maxLength(11)
-                        ->rules(['regex:/^[0-9۰-۹٠-٩]{11}$/'])
-                        ->validationMessages(['regex' => 'شناسه ملی شرکت باید دقیقاً ۱۱ رقم باشد.'])
+                        ->rules(['nullable', 'regex:/^[0-9۰-۹٠-٩]{11}$/'])
+                        ->validationMessages([
+                            'regex' => 'شناسه ملی شرکت باید دقیقاً ۱۱ رقم باشد.',
+                            'max' => 'شناسه ملی شرکت باید دقیقاً ۱۱ رقم باشد.',
+                        ])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'fa', 'dir' => 'ltr', 'inputmode' => 'numeric']),
                     TextInput::make('registration_number')
                         ->label('شماره ثبت')
                         ->maxLength(50)
+                        ->validationMessages(['max' => 'شماره ثبت بیش از حد مجاز طولانی است.'])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'fa', 'dir' => 'rtl', 'inputmode' => 'numeric']),
                     TextInput::make('phone')
                         ->label('تلفن')
                         ->tel()
                         ->maxLength(11)
-                        ->rules(['regex:/^[0-9۰-۹٠-٩]{8,11}$/'])
-                        ->validationMessages(['regex' => 'شماره تلفن باید بین ۸ تا ۱۱ رقم باشد.'])
+                        ->rules(['nullable', 'regex:/^[0-9۰-۹٠-٩]{8,11}$/'])
+                        ->validationMessages([
+                            'regex' => 'شماره تلفن باید بین ۸ تا ۱۱ رقم باشد.',
+                            'max' => 'شماره تلفن نباید بیشتر از ۱۱ رقم باشد.',
+                        ])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'fa', 'dir' => 'ltr', 'inputmode' => 'tel']),
                     TextInput::make('email')
                         ->label('ایمیل')
                         ->email()
                         ->maxLength(255)
+                        ->validationMessages([
+                            'email' => 'قالب ایمیل معتبر نیست.',
+                            'max' => 'ایمیل بیش از حد مجاز طولانی است.',
+                        ])
                         ->columnSpanFull()
                         ->extraInputAttributes([
                             'lang' => 'en',
@@ -173,6 +193,8 @@ class CompanyResource extends Resource
                     Textarea::make('address')
                         ->label('نشانی')
                         ->rows(3)
+                        ->maxLength(2000)
+                        ->validationMessages(['max' => 'نشانی نباید بیشتر از ۲۰۰۰ نویسه باشد.'])
                         ->columnSpanFull()
                         ->extraInputAttributes(['lang' => 'fa', 'dir' => 'rtl']),
                 ]),
