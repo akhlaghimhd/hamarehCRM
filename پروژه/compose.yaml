@@ -1,0 +1,45 @@
+name: myoffice
+services:
+  app:
+    build:
+      context: .
+      network: host
+    container_name: myoffice-app
+    ports:
+      - 8088:80
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - myoffice-net
+    restart: unless-stopped
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html/public
+  db:
+    image: mariadb:10.4
+    container_name: myoffice-db
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: myoffice
+      MYSQL_USER: sail
+      MYSQL_PASSWORD: password
+    volumes:
+      - myoffice_db_data:/var/lib/mysql
+    networks:
+      - myoffice-net
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: [CMD, mysqladmin, ping, -h, localhost, -u, root, -prootpass]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+volumes:
+  myoffice_db_data:
+networks:
+  myoffice-net:
+    driver: bridge

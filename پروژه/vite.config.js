@@ -1,0 +1,20 @@
+import { defineConfig } from 'vite';
+import laravel from 'laravel-vite-plugin';
+import tailwindcss from '@tailwindcss/vite';
+
+export default defineConfig({
+    plugins: [
+        laravel({
+            input: [
+                'resources/js/app.js',
+                'resources/css/filament/admin/theme.css',
+            ],
+            refresh: true,
+        }),
+        tailwindcss(),
+    ],
+    // Kinetics/Tailwind v4 emit directives lightningcss minify does not understand
+    build: {
+        cssMinify: false,
+    },
+});

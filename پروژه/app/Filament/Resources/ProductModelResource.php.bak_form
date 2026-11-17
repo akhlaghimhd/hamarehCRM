@@ -1,0 +1,214 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Concerns\ChecksResourcePermission;
+use App\Filament\Resources\ProductModelResource\Pages;
+use App\Models\ProductLine;
+use App\Models\ProductModel;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
+use App\Support\Fa;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\BulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+
+class ProductModelResource extends Resource
+{
+public static function shouldRegisterNavigation(): bool
+    {
+        return true;
+    }
+
+
+    use ChecksResourcePermission;
+protected static ?string $permissionView = 'products.view';
+    protected static ?string $permissionManage = 'products.manage';
+    protected static ?string $model = ProductModel::class;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cube-transparent';
+    protected static ?string $modelLabel = 'مدل محصول';
+    protected static ?string $pluralModelLabel = 'مدل‌های محصول';
+    protected static ?string $navigationLabel = 'مدل‌ها';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'نوتوپیا';
+    protected static ?int $navigationSort = 2;
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $notopiaId = ProductLine::query()->where('code', 'notopia')->value('id');
+        if ($notopiaId) {
+            $query->where('product_line_id', $notopiaId);
+        }
+
+        return $query;
+    }
+
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Select::make('product_line_id')
+                ->label('محصول')
+                ->options(fn () => ProductLine::query()->where('code', 'notopia')->pluck('name', 'id'))
+                ->default(fn () => ProductLine::query()->where('code', 'notopia')->value('id'))
+                ->required()
+                ->disabled()
+                ->dehydrated(),
+            TextInput::make('code')->label('کد')->required()->maxLength(50),
+            TextInput::make('name')->label('نام')->required()->maxLength(100),
+            Textarea::make('description')->label('توضیحات')->rows(2)->columnSpanFull(),
+            TextInput::make('base_price')->label('قیمت پایه (ریال)')->numeric(),
+            TextInput::make('cost_price')->label('بهای تمام‌شده (ریال)')->numeric(),
+            Toggle::make('has_special_paper')->label('کاغذ مخصوص'),
+            Toggle::make('includes_erasable_pen')->label('خودکار پاک‌شو'),
+            Toggle::make('includes_cloth')->label('دستمال'),
+            Toggle::make('is_active')->label('فعال')->default(true),
+            TextInput::make('sort')->label('ترتیب')->numeric()->default(0),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->recordUrl(null)
+            ->recordAction(null)
+            ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('نام')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
+                    ->weight('medium')
+                    ->description(fn ($record) => $record?->code)
+                    ->url(fn ($record) => static::getUrl('edit', ['record' => $record]))
+                    ->color('primary'),
+                Tables\Columns\TextColumn::make('base_price')
+                    ->label('قیمت پایه')
+                    ->sortable()
+                    ->toggleable()
+                    ->alignCenter()
+                    ->formatStateUsing(fn ($state) => $state === null || $state === '' ? '—' : Fa::number($state, 0)),
+                Tables\Columns\IconColumn::make('has_special_paper')
+                    ->label('کاغذ مخصوص')
+                    ->boolean()
+                    ->toggleable(),
+                IconColumn::make('is_active')
+                    ->label('وضعیت')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-no-symbol')
+                    ->trueColor('success')
+                    ->falseColor('gray')
+                    ->sortable()
+                    ->toggleable()
+                    ->tooltip(fn ($record) => $record->is_active
+                        ? 'وضعیت فعلی: فعال — برای غیرفعال کردن کلیک کنید'
+                        : 'وضعیت فعلی: غیرفعال — برای فعال کردن کلیک کنید')
+                    ->action(
+                        \Filament\Actions\Action::make('toggleActive')
+                            ->requiresConfirmation()
+                            ->modalHeading(fn ($record) => $record->is_active ? 'غیرفعال کردن مدل' : 'فعال کردن مدل')
+                            ->modalDescription('یادآوری: پس از راه‌اندازی ماژول سفارش، اگر این مورد در سفارش باز باشد تغییر وضعیت مسدود می‌شود. فعلاً فقط تأیید دستی است.')
+                            ->modalSubmitActionLabel('تأیید')
+                            ->action(function ($record) {
+                                $record->update(['is_active' => ! $record->is_active]);
+                            })
+                    ),
+                Tables\Columns\TextColumn::make('sort')
+                    ->label('ترتیب')
+                    ->sortable()
+                    ->toggleable()
+                    ->alignCenter()
+                    ->formatStateUsing(fn ($state) => Fa::digits($state ?? 0)),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('آخرین تغییر')
+                    ->formatStateUsing(fn ($state) => Fa::dateTime($state))
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('deleted_at')
+                    ->label('حذف شده در')
+                    ->formatStateUsing(fn ($state) => Fa::dateTime($state))
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->placeholder('—'),
+            ])
+            ->defaultSort('sort')
+            ->striped()
+            ->paginated([10, 15, 25, 50, 100])
+            ->defaultPaginationPageOption(10)
+            ->filters([
+                TrashedFilter::make()->label('حذف‌شده‌ها'),
+                TernaryFilter::make('is_active')
+                    ->label('وضعیت فعال')
+                    ->trueLabel('فقط فعال')
+                    ->falseLabel('فقط غیرفعال')
+                    ->placeholder('همه'),
+            ])
+            ->emptyStateHeading('مدلی ثبت نشده')
+            ->emptyStateDescription('مدل‌های محصول نوتوپیا را اینجا تعریف کنید.')
+            ->emptyStateActions([
+                \Filament\Actions\CreateAction::make()
+                    ->label('ثبت مدل جدید')
+                    ->icon('heroicon-o-plus'),
+            ])
+            ->recordActions([
+                EditAction::make()
+                    ->label('ویرایش')
+                    ->visible(fn ($record) => static::canEdit($record) && ! $record->trashed()),
+                RestoreAction::make()
+                    ->label('بازگردانی')
+                    ->visible(fn ($record) => $record->trashed()),
+                ForceDeleteAction::make()
+                    ->label('حذف دائم')
+                    ->visible(fn ($record) => $record->trashed()),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->label('حذف (قابل بازگشت)'),
+                    RestoreBulkAction::make()->label('بازگردانی'),
+                    ForceDeleteBulkAction::make()->label('حذف دائم'),
+                    BulkAction::make('activate')
+                        ->label('فعال‌سازی')
+                        ->icon('heroicon-o-check-circle')
+                        ->requiresConfirmation()
+                        ->modalHeading('فعال‌سازی موارد انتخاب‌شده')
+                        ->modalDescription('یادآوری: بعداً اگر مورد در سفارش باز باشد، فعال/غیرفعال مسدود می‌شود.')
+                        ->action(fn ($records) => $records->each->update(['is_active' => true]))
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('deactivate')
+                        ->label('غیرفعال‌سازی')
+                        ->icon('heroicon-o-no-symbol')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('غیرفعال‌سازی موارد انتخاب‌شده')
+                        ->action(fn ($records) => $records->each->update(['is_active' => false]))
+                        ->deselectRecordsAfterCompletion(),
+                ]),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListProductModels::route('/'),
+            'create' => Pages\CreateProductModel::route('/create'),
+            'edit' => Pages\EditProductModel::route('/{record}/edit'),
+        ];
+    }
+}
