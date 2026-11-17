@@ -19,6 +19,7 @@ class Company extends Model
         'phone',
         'email',
         'address',
+        'website',
         'is_active',
     ];
 
