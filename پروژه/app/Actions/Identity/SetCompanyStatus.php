@@ -5,6 +5,7 @@ namespace App\Actions\Identity;
 use App\Models\Company;
 use App\Models\User;
 use App\Support\CompanyMembershipAccess;
+use Filament\Notifications\Notification;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 
