@@ -231,7 +231,7 @@
 
     stage.dataset.initialized = 'true';
 
-    const drawerSelector = '.fi-modal-slide-over-window';
+    const drawerSelector = '.fi-modal.fi-modal-slide-over > .fi-modal-window-ctn > .fi-modal-window';
     const sync = () => {
         const drawer = [...document.querySelectorAll(drawerSelector)]
             .find((element) => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden');
