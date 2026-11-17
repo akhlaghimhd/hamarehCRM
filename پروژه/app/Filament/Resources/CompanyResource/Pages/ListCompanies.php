@@ -37,7 +37,7 @@ class ListCompanies extends ListRecords
                 ->label('ایجاد شرکت')
                 ->slideOver()
                 ->slideOverPosition(SlideOverPosition::Start)
-                ->modalWidth(Width::TwoExtraLarge)
+                ->modalWidth(Width::Large)
                 ->closeModalByClickingAway(false)
                 ->closeModalByEscaping(false)
                 ->modalCloseButton(false)
