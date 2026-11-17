@@ -34,7 +34,7 @@ class CompanyFinancialIdentityResource extends Resource
     {
         $user = auth()->user();
 
-        return $user instanceof User && $user->is_active && ($user->isPlatformOwner() || $user->companies()->exists());
+        return $user instanceof User && $user->is_active && ($user->isPlatformOwner() || self::manageableCompanies() !== []);
     }
 
     public static function shouldRegisterNavigation(): bool
@@ -44,15 +44,7 @@ class CompanyFinancialIdentityResource extends Resource
 
     public static function canCreate(): bool
     {
-        $user = auth()->user();
-
-        if (! $user instanceof User || ! $user->is_active) {
-            return false;
-        }
-
-        return $user->isPlatformOwner() || $user->companies()->get()->contains(
-            fn (Company $company) => app(CompanyMembershipAccess::class)->canManage($user, (int) $company->id)
-        );
+        return false; // Each company receives exactly one official and one unofficial identity at creation.
     }
 
     public static function canView($record): bool
@@ -61,7 +53,7 @@ class CompanyFinancialIdentityResource extends Resource
 
         return $record instanceof CompanyFinancialIdentity
             && $user instanceof User
-            && ($user->isPlatformOwner() || app(CompanyMembershipAccess::class)->isMember($user, (int) $record->company_id));
+            && ($user->isPlatformOwner() || app(CompanyMembershipAccess::class)->canManage($user, (int) $record->company_id));
     }
 
     public static function canEdit($record): bool
@@ -86,7 +78,11 @@ class CompanyFinancialIdentityResource extends Resource
             return $query;
         }
 
-        return $query->whereIn('company_id', $user->companies()->select('companies.id'));
+        $companyIds = $user->companies()->get()
+            ->filter(fn (Company $company) => app(CompanyMembershipAccess::class)->canManage($user, (int) $company->id))
+            ->pluck('id');
+
+        return $query->whereIn('company_id', $companyIds);
     }
 
     public static function form(Schema $schema): Schema
@@ -95,7 +91,7 @@ class CompanyFinancialIdentityResource extends Resource
             Section::make('شرکت و نوع هویت')
                 ->columns(2)
                 ->schema([
-                    Select::make('company_id')->label('شرکت')->options(fn () => self::manageableCompanies())->searchable()->required()->disabledOn('edit'),
+                    Select::make('company_id')->label('شرکت')->options(fn () => self::manageableCompanies())->searchable()->required()->disabled(),
                     Select::make('type')->label('نوع هویت مالی')->options(['official' => 'رسمی', 'unofficial' => 'غیررسمی'])->required()->native(false)->disabledOn('edit'),
                     Toggle::make('is_active')->label('فعال')->default(true)->inline(false),
                 ]),
@@ -135,6 +131,25 @@ class CompanyFinancialIdentityResource extends Resource
             ->filter(fn (Company $company) => $user->isPlatformOwner() || app(CompanyMembershipAccess::class)->canManage($user, (int) $company->id))
             ->mapWithKeys(fn (Company $company) => [$company->id => $company->name])
             ->all();
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\\Columns\\TextColumn::make('company.name')->label('شرکت')->searchable()->sortable(),
+                Tables\\Columns\\TextColumn::make('type')->label('نوع هویت')->formatStateUsing(fn (string $state): string => $state === 'official' ? 'رسمی' : 'غیررسمی')->badge(),
+                Tables\\Columns\\TextColumn::make('legal_name')->label('نام حقوقی')->searchable()->wrap(),
+                Tables\\Columns\\TextColumn::make('national_id')->label('شناسه ملی')->toggleable(),
+                Tables\\Columns\\TextColumn::make('version')->label('نسخه')->alignCenter(),
+                Tables\\Columns\\IconColumn::make('is_active')->label('فعال')->boolean(),
+            ])
+            ->recordActions([
+                EditAction::make()->label('مدیریت هویت و حساب‌ها')->visible(fn (CompanyFinancialIdentity $record): bool => static::canEdit($record)),
+            ])
+            ->defaultSort('company_id')
+            ->emptyStateHeading('هویت مالی ثبت‌شده‌ای وجود ندارد')
+            ->emptyStateDescription('برای هر شرکت، هویت رسمی و غیررسمی به‌صورت خودکار ایجاد می‌شود.');
     }
 
     public static function getRelations(): array

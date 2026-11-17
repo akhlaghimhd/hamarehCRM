@@ -68,6 +68,42 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['company_bank_account_id', 'version'], 'bank_account_version_unique');
         });
+
+        $now = now();
+        foreach (DB::table('companies')->get() as $company) {
+            foreach (['official', 'unofficial'] as $type) {
+                $identityData = [
+                    'company_id' => $company->id,
+                    'type' => $type,
+                    'legal_name' => $company->name,
+                    'national_id' => $company->national_id,
+                    'economic_code' => null,
+                    'registration_number' => $company->registration_number,
+                    'phone' => $company->phone,
+                    'email' => $company->email,
+                    'postal_code' => null,
+                    'address' => $company->address,
+                    'website' => $company->website ?? null,
+                    'version' => 1,
+                    'is_active' => true,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+                $identityId = DB::table('company_financial_identities')->insertGetId($identityData);
+                $snapshot = $identityData;
+                unset($snapshot['created_at'], $snapshot['updated_at']);
+
+                DB::table('company_financial_identity_versions')->insert([
+                    'company_id' => $company->id,
+                    'company_financial_identity_id' => $identityId,
+                    'version' => 1,
+                    'snapshot' => json_encode($snapshot, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
+                    'created_by_user_id' => null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+        }
     }
 
     public function down(): void

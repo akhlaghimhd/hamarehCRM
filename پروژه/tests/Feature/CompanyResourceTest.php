@@ -83,9 +83,15 @@ class CompanyResourceTest extends TestCase
     public function test_invalid_national_id_and_phone_lengths_are_rejected(): void
     {
         $creator = User::factory()->create();
+        PlatformOwner::query()->create(['user_id' => $creator->id]);
 
         try {
             app(CreateCompanyForUser::class)->handle([
+                'admin_name' => 'مدیر اولیه',
+                'admin_username' => 'invalid-number-manager',
+                'admin_email' => 'invalid-number-manager@example.test',
+                'admin_password' => 'SecurePass123',
+                'admin_password_confirmation' => 'SecurePass123',
                 'name' => 'شرکت نامعتبر',
                 'slug' => 'invalid-company-numbers',
                 'national_id' => '۱۲۳۴۵',

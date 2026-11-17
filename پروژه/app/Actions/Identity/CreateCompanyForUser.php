@@ -125,6 +125,13 @@ class CreateCompanyForUser
                 $identity = CompanyFinancialIdentity::query()->create([
                     'company_id' => $company->id,
                     'type' => $identityType,
+                    'legal_name' => $company->name,
+                    'national_id' => $company->national_id,
+                    'registration_number' => $company->registration_number,
+                    'phone' => $company->phone,
+                    'email' => $company->email,
+                    'address' => $company->address,
+                    'website' => $company->website,
                     'version' => 1,
                     'is_active' => true,
                 ]);
