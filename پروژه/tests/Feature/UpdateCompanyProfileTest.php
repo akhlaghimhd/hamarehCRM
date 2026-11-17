@@ -31,7 +31,7 @@ class UpdateCompanyProfileTest extends TestCase
         $updated = app(UpdateCompanyProfile::class)->handle($company, [
             'name' => 'شرکت هم‌ره نو',
             'slug' => 'hamareh-new',
-            'national_id' => '1234567890',
+            'national_id' => '12345678901',
             'registration_number' => 'REG-10',
             'phone' => '02112345678',
             'email' => 'office@example.test',
