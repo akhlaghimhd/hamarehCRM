@@ -16,6 +16,17 @@ class ListCompanies extends ListRecords
 
     protected static ?string $title = 'شرکت‌ها';
 
+    protected function onValidationError(ValidationException $exception): void
+    {
+        $message = collect($exception->errors())->flatten()->first();
+
+        Notification::make()
+            ->title('اطلاعات واردشده معتبر نیست')
+            ->body($message ?: 'لطفاً فیلدهای مشخص‌شده را بررسی کنید.')
+            ->danger()
+            ->send();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
