@@ -21,6 +21,12 @@ class ListCompanies extends ListRecords
             CreateAction::make()
                 ->label('ایجاد شرکت')
                 ->slideOver()
+                ->closeModalByClickingAway(false)
+                ->closeModalByEscaping(false)
+                ->modalCloseButton(false)
+                ->modalCancelActionLabel('انصراف')
+                ->modalSubmitActionLabel('ثبت شرکت')
+                ->successNotificationTitle('شرکت با موفقیت ایجاد شد')
                 ->using(function (array $data): Company {
                     $actor = auth()->user();
                     abort_unless($actor instanceof User, 403);
