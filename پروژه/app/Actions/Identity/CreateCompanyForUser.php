@@ -22,7 +22,8 @@ class CreateCompanyForUser
     public function handle(array $attributes, User $creator): Company
     {
         $attributes['national_id'] = Fa::toEnglishDigits($attributes['national_id'] ?? '');
-        $attributes['phone'] = Fa::toEnglishDigits($attributes['phone'] ?? '');\n        $attributes['registration_number'] = Fa::toEnglishDigits($attributes['registration_number'] ?? '');
+        $attributes['phone'] = Fa::toEnglishDigits($attributes['phone'] ?? '');
+        $attributes['registration_number'] = Fa::toEnglishDigits($attributes['registration_number'] ?? '');
 
         if (blank($attributes['slug'] ?? null)) {
             $slug = Str::slug((string) ($attributes['name'] ?? ''));
@@ -41,7 +42,7 @@ class CreateCompanyForUser
         $attributes = Validator::make($attributes, [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', 'unique:companies,slug'],
-            'national_id' => ['nullable', 'regex:/^\d{10}$/'],
+            'national_id' => ['nullable', 'regex:/^\d{11}$/'],
             'registration_number' => ['nullable', 'string', 'max:50'],
             'phone' => ['nullable', 'regex:/^\d{8,11}$/'],
             'email' => ['nullable', 'email', 'max:255'],
