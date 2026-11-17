@@ -6,11 +6,13 @@ use App\Actions\Identity\CreateCompanyForUser;
 use App\Filament\Resources\CompanyResource;
 use App\Models\Company;
 use App\Models\User;
+use App\Support\Filament\FormDrawerWidth;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
 use Filament\Support\Enums\SlideOverPosition;
+use Filament\Support\Enums\Width;
 
 class ListCompanies extends ListRecords
 {
@@ -36,6 +38,10 @@ class ListCompanies extends ListRecords
                 ->label('ایجاد شرکت')
                 ->slideOver()
                 ->slideOverPosition(SlideOverPosition::Start)
+                ->modalWidth(Width::Screen)
+                ->modalContent(view('filament.components.drawer-width-marker', [
+                    'widthClass' => FormDrawerWidth::markerClass(7, 2),
+                ]))
                 ->closeModalByClickingAway(false)
                 ->closeModalByEscaping(false)
                 ->modalCloseButton(false)
