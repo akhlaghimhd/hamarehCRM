@@ -20,12 +20,13 @@ class UpdateCompanyProfile
         }
 
         $data['national_id'] = Fa::toEnglishDigits($data['national_id'] ?? '');
-        $data['phone'] = Fa::toEnglishDigits($data['phone'] ?? '');\n        $data['registration_number'] = Fa::toEnglishDigits($data['registration_number'] ?? '');
+        $data['phone'] = Fa::toEnglishDigits($data['phone'] ?? '');
+        $data['registration_number'] = Fa::toEnglishDigits($data['registration_number'] ?? '');
 
         $validated = Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('companies', 'slug')->ignore($record->getKey())],
-            'national_id' => ['nullable', 'regex:/^\d{10}$/'],
+            'national_id' => ['nullable', 'regex:/^\d{11}$/'],
             'registration_number' => ['nullable', 'string', 'max:50'],
             'phone' => ['nullable', 'regex:/^\d{8,11}$/'],
             'email' => ['nullable', 'email', 'max:255'],
