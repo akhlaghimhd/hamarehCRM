@@ -194,3 +194,29 @@ html {
     margin-block-start: 0 !important;
     line-height: 1.1 !important;
 }
+
+
+/* Final compact table density: target the actual Filament cell and text wrappers. */
+td.fi-ta-cell,
+td.fi-ta-cell.fi-ta-cell-name {
+    padding-top: 0.125rem !important;
+    padding-bottom: 0.125rem !important;
+    padding-inline: 0.5rem !important;
+    vertical-align: middle !important;
+}
+
+td.fi-ta-cell > div,
+td.fi-ta-cell div.fi-ta-text,
+td.fi-ta-cell div.fi-ta-text.fi-ta-text-has-descriptions {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    min-height: 0 !important;
+    line-height: 1.15 !important;
+}
+
+td.fi-ta-cell .fi-ta-text-description {
+    margin-top: 0 !important;
+    line-height: 1.1 !important;
+}
