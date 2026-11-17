@@ -11,7 +11,6 @@ use App\Models\Company;
 use App\Models\User;
 use App\Support\Fa;
 use App\Support\CompanyMembershipAccess;
-use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -306,26 +305,6 @@ class CompanyResource extends Resource
             ->recordUrl(null)
             ->emptyStateHeading('شرکتی برای نمایش وجود ندارد')
             ->emptyStateDescription('شرکت‌هایی که عضو آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
-            ->emptyStateActions([
-                CreateAction::make()
-                    ->label('ایجاد شرکت')
-                    ->slideOver()
-                    ->slideOverPosition(SlideOverPosition::Start)
-                    ->closeModalByClickingAway(false)
-                    ->closeModalByEscaping(false)
-                    ->modalCloseButton(false)
-                    ->modalCancelActionLabel('انصراف')
-                    ->modalSubmitActionLabel('ثبت شرکت')
-                    ->successNotificationTitle('شرکت با موفقیت ایجاد شد')
-                    ->failureNotificationTitle('ثبت شرکت انجام نشد')
-                    ->failureNotificationBody('لطفاً اطلاعات شرکت را بررسی کنید و دوباره تلاش کنید.')
-                    ->using(function (array $data): Company {
-                        $actor = auth()->user();
-                        abort_unless($actor instanceof User, 403);
-
-                        return app(CreateCompanyForUser::class)->handle($data, $actor);
-                    }),
-            ])
             ->recordActions([
                 ViewAction::make()
                     ->label('مشاهده')
