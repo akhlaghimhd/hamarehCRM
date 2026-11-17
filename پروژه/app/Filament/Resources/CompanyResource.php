@@ -140,7 +140,7 @@ class CompanyResource extends Resource
                         ->extraInputAttributes([
                             'lang' => 'en',
                             'dir' => 'ltr',
-                            'inputmode' => 'text',
+                            'inputmode' => 'url',
                             'autocapitalize' => 'off',
                             'spellcheck' => 'false',
                         ])
