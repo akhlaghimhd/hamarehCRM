@@ -140,7 +140,7 @@ class CompanyResource extends Resource
                         ->label('شناسه ملی')
                         ->maxLength(10)
                         ->rules(['regex:/^[0-9۰-۹٠-٩]{10}$/'])
-                        ->validationMessages(['regex' => 'شناسه ملی باید دقیقاً ۱۰ رقم باشد.'])
+                        ->validationMessages(['regex' => 'شناسه ملی شرکت باید دقیقاً ۱۱ رقم باشد.'])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'numeric']),
                     TextInput::make('registration_number')
