@@ -26,14 +26,13 @@ class CreateCompanyForUser
 
         if (blank($attributes['slug'] ?? null)) {
             $slug = Str::slug((string) ($attributes['name'] ?? ''));
-            $attributes['slug'] = $slug !== '' ? $slug : 'company-'.Str::lower(Str::random(8));
-        }
+            $baseSlug = $slug !== '' ? $slug : 'company-'.Str::lower(Str::random(8));
+            $attributes['slug'] = $baseSlug;
+            $suffix = 1;
 
-        $baseSlug = $attributes['slug'];
-        $suffix = 1;
-
-        while (DB::table('companies')->where('slug', $attributes['slug'])->exists()) {
-            $attributes['slug'] = $baseSlug.'-'.$suffix++;
+            while (DB::table('companies')->where('slug', $attributes['slug'])->exists()) {
+                $attributes['slug'] = $baseSlug.'-'.$suffix++;
+            }
         }
 
         // Newly created companies are active by default. Status is managed from the table.
