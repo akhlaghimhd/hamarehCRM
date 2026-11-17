@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Company;
+use App\Models\CompanyFinancialIdentity;
+use App\Models\CompanyFinancialIdentityVersion;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;

@@ -12,6 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Actions\EditAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -137,12 +138,12 @@ class CompanyFinancialIdentityResource extends Resource
     {
         return $table
             ->columns([
-                Tables\\Columns\\TextColumn::make('company.name')->label('شرکت')->searchable()->sortable(),
-                Tables\\Columns\\TextColumn::make('type')->label('نوع هویت')->formatStateUsing(fn (string $state): string => $state === 'official' ? 'رسمی' : 'غیررسمی')->badge(),
-                Tables\\Columns\\TextColumn::make('legal_name')->label('نام حقوقی')->searchable()->wrap(),
-                Tables\\Columns\\TextColumn::make('national_id')->label('شناسه ملی')->toggleable(),
-                Tables\\Columns\\TextColumn::make('version')->label('نسخه')->alignCenter(),
-                Tables\\Columns\\IconColumn::make('is_active')->label('فعال')->boolean(),
+                Tables\Columns\TextColumn::make('company.name')->label('شرکت')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('type')->label('نوع هویت')->formatStateUsing(fn (string $state): string => $state === 'official' ? 'رسمی' : 'غیررسمی')->badge(),
+                Tables\Columns\TextColumn::make('legal_name')->label('نام حقوقی')->searchable()->wrap(),
+                Tables\Columns\TextColumn::make('national_id')->label('شناسه ملی')->toggleable(),
+                Tables\Columns\TextColumn::make('version')->label('نسخه')->alignCenter(),
+                Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
             ])
             ->recordActions([
                 EditAction::make()->label('مدیریت هویت و حساب‌ها')->visible(fn (CompanyFinancialIdentity $record): bool => static::canEdit($record)),
@@ -161,7 +162,6 @@ class CompanyFinancialIdentityResource extends Resource
     {
         return [
             'index' => Pages\ListCompanyFinancialIdentities::route('/'),
-            'create' => Pages\CreateCompanyFinancialIdentity::route('/create'),
             'edit' => Pages\EditCompanyFinancialIdentity::route('/{record}/edit'),
         ];
     }
