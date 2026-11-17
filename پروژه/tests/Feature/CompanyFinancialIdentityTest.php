@@ -114,7 +114,13 @@ class CompanyFinancialIdentityTest extends TestCase
         $this->assertContains(BankAccountsRelationManager::class, $page->instance()->getRelationManagers());
         $this->assertContains(BankAccountsRelationManager::class, $page->instance()->getCachedRelationManagers());
 
-        $page->assertOk()
+        $page->assertOk();
+
+        Livewire::test(BankAccountsRelationManager::class, [
+            'ownerRecord' => $identity,
+            'pageClass' => EditCompanyFinancialIdentity::class,
+        ])
+            ->assertOk()
             ->assertSee('حساب‌های دریافت')
             ->assertSee('افزودن حساب')
             ->assertSee('شماره حساب');
