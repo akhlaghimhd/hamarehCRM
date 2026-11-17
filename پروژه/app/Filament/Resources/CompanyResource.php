@@ -77,7 +77,7 @@ class CompanyResource extends Resource
     public static function canEdit($record): bool
     {
         return $record instanceof Company
-            && app(CompanyMembershipAccess::class)->isAdmin(auth()->user(), (int) $record->id);
+            && app(CompanyMembershipAccess::class)->canManage(auth()->user(), (int) $record->id);
     }
 
     public static function canDelete($record): bool
