@@ -7,6 +7,7 @@ use App\Actions\Identity\SaveCompanyBankAccount;
 use App\Actions\Identity\SaveCompanyFinancialIdentity;
 use App\Filament\Resources\CompanyFinancialIdentityResource;
 use App\Filament\Resources\CompanyFinancialIdentityResource\Pages\EditCompanyFinancialIdentity;
+use App\Filament\Resources\CompanyFinancialIdentityResource\RelationManagers\BankAccountsRelationManager;
 use App\Models\Company;
 use App\Models\CompanyBankAccount;
 use App\Models\CompanyFinancialIdentity;
@@ -107,8 +108,13 @@ class CompanyFinancialIdentityTest extends TestCase
         $this->assertTrue(CompanyFinancialIdentityResource::canViewAny());
         $this->assertTrue(CompanyFinancialIdentityResource::canEdit($identity));
 
-        Livewire::test(EditCompanyFinancialIdentity::class, ['record' => $identity->getRouteKey()])
-            ->assertOk()
+        $this->assertTrue(BankAccountsRelationManager::canViewForRecord($identity, EditCompanyFinancialIdentity::class));
+
+        $page = Livewire::test(EditCompanyFinancialIdentity::class, ['record' => $identity->getRouteKey()]);
+        $this->assertContains(BankAccountsRelationManager::class, $page->instance()->getRelationManagers());
+        $this->assertContains(BankAccountsRelationManager::class, $page->instance()->getCachedRelationManagers());
+
+        $page->assertOk()
             ->assertSee('حساب‌های دریافت')
             ->assertSee('افزودن حساب')
             ->assertSee('شماره حساب');
