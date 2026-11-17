@@ -8,6 +8,8 @@ use App\Models\Company;
 use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Notifications\Notification;
+use Illuminate\Validation\ValidationException;
 use Filament\Support\Enums\SlideOverPosition;
 
 class ListCompanies extends ListRecords
