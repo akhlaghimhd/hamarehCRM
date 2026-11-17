@@ -63,6 +63,10 @@ class SaveCompanyBankAccount
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            if (! $lockedIdentity->is_active) {
+                throw new AuthorizationException('هویت مالی در همین فاصله غیرفعال شده است.');
+            }
+
             $account = $record
                 ? CompanyBankAccount::query()->where('company_id', $lockedIdentity->company_id)->where('company_financial_identity_id', $lockedIdentity->id)->whereKey($record->id)->lockForUpdate()->firstOrFail()
                 : new CompanyBankAccount([
@@ -88,6 +92,7 @@ class SaveCompanyBankAccount
                     ->get();
 
                 foreach ($siblings as $sibling) {
+                    $oldSnapshot = $sibling->only(['company_id', 'company_financial_identity_id', 'label', 'account_holder', 'bank_name', 'account_number', 'iban', 'card_number', 'branch', 'version', 'is_default', 'is_active']);
                     $sibling->forceFill(['is_default' => false, 'version' => $sibling->version + 1])->save();
                     CompanyBankAccountVersion::query()->create([
                         'company_id' => $lockedIdentity->company_id,
@@ -95,6 +100,20 @@ class SaveCompanyBankAccount
                         'version' => $sibling->version,
                         'snapshot' => $sibling->only(['company_id', 'company_financial_identity_id', 'label', 'account_holder', 'bank_name', 'account_number', 'iban', 'card_number', 'branch', 'version', 'is_default', 'is_active']),
                         'created_by_user_id' => $actor->id,
+                    ]);
+                    $now = now();
+                    DB::table('audit_events')->insert([
+                        'company_id' => $lockedIdentity->company_id,
+                        'auditable_type' => $sibling->getMorphClass(),
+                        'auditable_id' => $sibling->id,
+                        'actor_user_id' => $actor->id,
+                        'event' => 'bank_account_default_cleared',
+                        'old_values' => json_encode($oldSnapshot, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
+                        'new_values' => json_encode($sibling->only(['company_id', 'company_financial_identity_id', 'label', 'account_holder', 'bank_name', 'account_number', 'iban', 'card_number', 'branch', 'version', 'is_default', 'is_active']), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE),
+                        'metadata' => json_encode(['financial_identity_id' => $lockedIdentity->id], JSON_THROW_ON_ERROR),
+                        'occurred_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
                     ]);
                 }
             }
