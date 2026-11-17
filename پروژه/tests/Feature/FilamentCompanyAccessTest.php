@@ -8,6 +8,7 @@ use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\UserResource;
 use App\Models\Company;
 use App\Models\Permission;
+use App\Models\PlatformOwner;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,9 +20,10 @@ class FilamentCompanyAccessTest extends TestCase
     use RefreshDatabase;
 
 
-    public function test_active_user_without_memberships_can_access_first_company_creation(): void
+    public function test_only_platform_owner_without_memberships_can_access_company_creation(): void
     {
         $user = User::factory()->create();
+        PlatformOwner::query()->create(['user_id' => $user->id]);
 
         $this->actingAs($user);
         session()->forget('current_company_id');
@@ -30,16 +32,17 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertTrue(CompanyResource::canCreate());
     }
 
-    public function test_first_company_list_shows_a_clear_empty_state_and_create_action(): void
+    public function test_platform_owner_company_list_shows_a_clear_empty_state_and_create_action(): void
     {
         $user = User::factory()->create();
+        PlatformOwner::query()->create(['user_id' => $user->id]);
 
         $this->actingAs($user);
         session()->forget('current_company_id');
 
         Livewire::test(ListCompanies::class)
             ->assertSee('شرکتی برای نمایش وجود ندارد')
-            ->assertSee('شرکت‌هایی که عضو آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
+            ->assertSee('شرکت‌هایی که مجاز به مشاهده آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
             ->assertSee('ایجاد شرکت');
     }
 

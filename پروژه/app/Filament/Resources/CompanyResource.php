@@ -332,7 +332,7 @@ class CompanyResource extends Resource
             ->filtersFormMaxHeight('min(70vh, 36rem)')
             ->recordUrl(null)
             ->emptyStateHeading('شرکتی برای نمایش وجود ندارد')
-            ->emptyStateDescription('شرکت‌هایی که عضو آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
+            ->emptyStateDescription('شرکت‌هایی که مجاز به مشاهده آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
             ->recordActions([
                 ViewAction::make()
                     ->label('مشاهده')
