@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Actions\Identity\UpdateCompanyProfile;
+use App\Actions\Identity\SetCompanyStatus;\nuse App\Actions\Identity\UpdateCompanyProfile;
 use App\Filament\Pages\SwitchCompany;
 use App\Filament\Resources\CompanyResource\Pages\EditCompany;
 use App\Models\Company;
