@@ -98,12 +98,6 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => app(CompanyTheme::class)->styleTag()
             )
             ->renderHook(
-                PanelsRenderHook::PAGE_START,
-                fn (): ?string => request()->routeIs('filament.admin.resources.companies.*')
-                    ? view('filament.hooks.company-activity-drawer')->render()
-                    : null,
-            )
-            ->renderHook(
                 PanelsRenderHook::BODY_START,
                 fn (): string => '<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.lang="fa";document.documentElement.dataset.hmDensity=' . json_encode(app(CompanyTheme::class)->density(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) . ';</script>',
             )
