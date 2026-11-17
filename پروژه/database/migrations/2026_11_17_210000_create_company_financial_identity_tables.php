@@ -44,7 +44,7 @@ return new class extends Migration
             $table->boolean('is_default')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
-            $table->index(['company_id', 'company_financial_identity_id']);
+            $table->index(['company_id', 'company_financial_identity_id'], 'bank_accounts_company_identity_idx');
             $table->index(['company_financial_identity_id', 'is_default', 'is_active'], 'bank_accounts_default_lookup');
         });
 
