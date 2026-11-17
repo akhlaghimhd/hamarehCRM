@@ -139,7 +139,7 @@ class CompanyResource extends Resource
                     TextInput::make('national_id')
                         ->label('شناسه ملی')
                         ->maxLength(10)
-                        ->rules(['regex:/^\\d{10}$/'])
+                        ->rules(['regex:/^[0-9۰-۹٠-٩]{10}$/'])
                         ->validationMessages(['regex' => 'شناسه ملی باید دقیقاً ۱۰ رقم باشد.'])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'numeric']),
@@ -152,7 +152,7 @@ class CompanyResource extends Resource
                         ->label('تلفن')
                         ->tel()
                         ->maxLength(11)
-                        ->rules(['regex:/^\\d{8,11}$/'])
+                        ->rules(['regex:/^[0-9۰-۹٠-٩]{8,11}$/'])
                         ->validationMessages(['regex' => 'شماره تلفن باید بین ۸ تا ۱۱ رقم باشد.'])
                         ->columnSpan(1)
                         ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'tel']),
