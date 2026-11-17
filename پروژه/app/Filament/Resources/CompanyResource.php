@@ -51,9 +51,9 @@ class CompanyResource extends Resource
             return false;
         }
 
-        return DB::table('company_user')->where('user_id', $user->id)->exists()
-            || ! DB::table('company_user')->where('user_id', $user->id)->exists()
-            || static::allowed(static::$permissionView);
+        $hasMembership = DB::table('company_user')->where('user_id', $user->id)->exists();
+
+        return $hasMembership || static::canCreate() || static::allowed(static::$permissionView);
     }
 
     public static function canCreate(): bool
@@ -254,6 +254,11 @@ class CompanyResource extends Resource
                     ->label('ایجاد شرکت')
                     ->slideOver()
                     ->closeModalByClickingAway(false)
+                    ->closeModalByEscaping(false)
+                    ->modalCloseButton(false)
+                    ->modalCancelActionLabel('انصراف')
+                    ->modalSubmitActionLabel('ثبت شرکت')
+                    ->successNotificationTitle('شرکت با موفقیت ایجاد شد')
                     ->using(function (array $data): Company {
                         $actor = auth()->user();
                         abort_unless($actor instanceof User, 403);
