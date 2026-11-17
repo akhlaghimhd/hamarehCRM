@@ -3,27 +3,30 @@
 namespace App\Filament\Resources;
 
 use App\Actions\Identity\CreateCompanyForUser;
+use App\Actions\Identity\SetCompanyStatus;
 use App\Actions\Identity\UpdateCompanyProfile;
 use App\Filament\Concerns\ChecksResourcePermission;
-
 use App\Filament\Resources\CompanyResource\Pages;
 use App\Models\Company;
 use App\Models\User;
+use App\Support\Fa;
+use App\Support\CompanyMembershipAccess;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
-use Illuminate\Support\Str;
+use Filament\Tables\Table;
+use Filament\Tables\Columns\ToggleColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 class CompanyResource extends Resource
@@ -32,209 +35,253 @@ class CompanyResource extends Resource
 
     protected static ?string $permissionView = 'companies.manage';
     protected static ?string $permissionManage = 'companies.manage';
-
     protected static ?string $model = Company::class;
-
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
-
     protected static ?string $modelLabel = 'شرکت';
-
     protected static ?string $pluralModelLabel = 'شرکت‌ها';
-
     protected static ?string $navigationLabel = 'شرکت‌ها';
-
     protected static string|UnitEnum|null $navigationGroup = 'مدیریت سازمان';
-
     protected static ?int $navigationSort = 2;
 
     public static function canViewAny(): bool
     {
         $user = auth()->user();
 
-        if ($user && $user->is_active && ! DB::table('company_user')->where('user_id', $user->id)->exists()) {
-            return true;
+        if (! $user || ! $user->is_active) {
+            return false;
         }
 
-        return static::allowed(static::$permissionView);
+        return DB::table('company_user')->where('user_id', $user->id)->exists()
+            || ! DB::table('company_user')->where('user_id', $user->id)->exists()
+            || static::allowed(static::$permissionView);
     }
 
     public static function canCreate(): bool
     {
         $user = auth()->user();
 
-        if ($user && $user->is_active && ! DB::table('company_user')->where('user_id', $user->id)->exists()) {
-            return true;
+        if (! $user || ! $user->is_active) {
+            return false;
         }
 
-        return $user && $user->is_active && $user->isCompanyAdmin();
+        return ! DB::table('company_user')->where('user_id', $user->id)->exists()
+            || $user->isCompanyAdmin();
     }
 
     public static function canView($record): bool
     {
-        return static::belongsToCurrentCompany($record)
-            && static::allowed(static::$permissionView);
+        return $record instanceof Company
+            && app(CompanyMembershipAccess::class)->isMember(auth()->user(), (int) $record->id);
     }
 
     public static function canEdit($record): bool
     {
-        return static::belongsToCurrentCompany($record)
-            && static::allowed(static::$permissionManage);
+        return $record instanceof Company
+            && app(CompanyMembershipAccess::class)->isAdmin(auth()->user(), (int) $record->id);
     }
 
     public static function canDelete($record): bool
     {
-        $user = auth()->user();
-
-        return static::belongsToCurrentCompany($record)
-            && $user !== null
-            && $user->is_active
-            && $user->isCompanyAdmin();
-    }
-
-    protected static function belongsToCurrentCompany(mixed $record): bool
-    {
-        $companyId = auth()->user()?->currentCompanyId();
-
-        return $record instanceof Company
-            && $companyId !== null
-            && (int) $record->id === (int) $companyId;
+        return false;
     }
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
-        $companyId = auth()->user()?->currentCompanyId();
+        $user = auth()->user();
 
-        if (! $companyId) {
-            return $query->whereRaw('1 = 0');
+        if (! $user || ! $user->is_active) {
+            return parent::getEloquentQuery()->whereRaw('1 = 0');
         }
 
-        return $query->whereKey($companyId);
+        $companyIds = DB::table('company_user')
+            ->where('user_id', $user->id)
+            ->pluck('company_id');
+
+        return parent::getEloquentQuery()->whereIn('companies.id', $companyIds);
     }
 
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->components([
-                Section::make('اطلاعات هویتی و ثبتی')
-                    ->description('مشخصات اصلی شرکت و شناسه‌های رسمی آن را ثبت کنید.')
-                    ->columns(['default' => 1, 'md' => 2])
-                    ->schema([
-                        TextInput::make('name')
-                            ->label('نام شرکت')
-                            ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state, callable $set, callable $get): void {
-                                if (filled($get('slug'))) {
-                                    return;
-                                }
+        return $schema->components([
+            Section::make('اطلاعات شرکت')
+                ->columns(['default' => 1, 'md' => 2])
+                ->schema([
+                    TextInput::make('name')
+                        ->label('نام شرکت')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull()
+                        ->extraInputAttributes(['lang' => 'fa', 'dir' => 'rtl'])
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(function ($state, callable $set, callable $get): void {
+                            if (filled($get('slug'))) {
+                                return;
+                            }
 
-                                $suggestedSlug = Str::slug((string) $state);
-
-                                if ($suggestedSlug !== '') {
-                                    $set('slug', $suggestedSlug);
-                                }
-                            }),
-                        TextInput::make('slug')
-                            ->label('شناسه یکتای شرکت')
-                            ->required()
-                            ->maxLength(255)
-                            ->helperText('شناسه لاتین برای آدرس‌ها و ارجاع‌های سیستمی؛ فقط حروف کوچک انگلیسی، عدد و خط تیره.')
-                            ->rules(['regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'])
-                            ->unique(ignoreRecord: true),
-                        TextInput::make('national_id')
-                            ->label('شناسه ملی / اقتصادی')
-                            ->maxLength(50),
-                        TextInput::make('registration_number')
-                            ->label('شماره ثبت')
-                            ->maxLength(50),
-                    ]),
-                Section::make('اطلاعات تماس')
-                    ->description('راه‌های ارتباطی و نشانی رسمی شرکت.')
-                    ->columns(['default' => 1, 'md' => 2])
-                    ->schema([
-                        TextInput::make('phone')
-                            ->label('تلفن')
-                            ->tel()
-                            ->maxLength(50),
-                        TextInput::make('email')
-                            ->label('ایمیل')
-                            ->email()
-                            ->maxLength(255),
-                        Textarea::make('address')
-                            ->label('نشانی')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                    ]),
-                Section::make('وضعیت شرکت')
-                    ->description('وضعیت فعال بودن شرکت در فضای کاری.')
-                    ->schema([
-                        Toggle::make('is_active')
-                            ->label('شرکت فعال است')
-                            ->default(true)
-                            ->disabled(fn (): bool => ! (auth()->user()?->isCompanyAdmin() ?? false))
-                            ->dehydrated()
-                            ->helperText('غیرفعال‌سازی شرکت فقط توسط مدیر همان شرکت انجام می‌شود.'),
-                    ]),
-            ]);
+                            $slug = Str::slug((string) $state);
+                            $set('slug', $slug !== '' ? $slug : 'company-'.Str::lower(Str::random(8)));
+                        }),
+                    TextInput::make('slug')
+                        ->label('شناسه سیستمی')
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpan(1)
+                        ->extraInputAttributes([
+                            'lang' => 'en',
+                            'dir' => 'ltr',
+                            'inputmode' => 'text',
+                            'autocapitalize' => 'off',
+                            'spellcheck' => 'false',
+                        ])
+                        ->rules(['regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'])
+                        ->unique(ignoreRecord: true),
+                    TextInput::make('national_id')
+                        ->label('شناسه ملی')
+                        ->maxLength(10)
+                        ->minLength(10)
+                        ->columnSpan(1)
+                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'numeric']),
+                    TextInput::make('registration_number')
+                        ->label('شماره ثبت')
+                        ->maxLength(50)
+                        ->columnSpan(1)
+                        ->extraInputAttributes(['lang' => 'fa', 'dir' => 'rtl', 'inputmode' => 'numeric']),
+                    TextInput::make('phone')
+                        ->label('تلفن')
+                        ->tel()
+                        ->maxLength(11)
+                        ->columnSpan(1)
+                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'tel']),
+                    TextInput::make('email')
+                        ->label('ایمیل')
+                        ->email()
+                        ->maxLength(255)
+                        ->columnSpanFull()
+                        ->extraInputAttributes([
+                            'lang' => 'en',
+                            'dir' => 'ltr',
+                            'inputmode' => 'email',
+                            'autocapitalize' => 'off',
+                            'spellcheck' => 'false',
+                        ]),
+                    Textarea::make('address')
+                        ->label('نشانی')
+                        ->rows(3)
+                        ->columnSpanFull()
+                        ->extraInputAttributes(['lang' => 'fa', 'dir' => 'rtl']),
+                ]),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
+        $companyTextFilter = static fn (string $name, string $label): Filter => Filter::make($name)
+            ->label($label)
+            ->schema([TextInput::make('value')->label($label)])
+            ->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null)
+                ? $query->where($name, 'like', '%'.$data['value'].'%')
+                : $query);
+
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('نام')
+                    ->label('نام شرکت')
                     ->description(fn (Company $record): string => (string) $record->slug)
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('national_id')
                     ->label('شناسه ملی')
+                    ->formatStateUsing(fn ($state): string => Fa::digits($state))
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('registration_number')
+                    ->label('شماره ثبت')
+                    ->formatStateUsing(fn ($state): string => Fa::digits($state))
+                    ->searchable()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('phone')
                     ->label('تلفن')
+                    ->formatStateUsing(fn ($state): string => Fa::digits($state))
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->label('ایمیل')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('slug')
+                    ->label('شناسه سیستمی')
+                    ->searchable()
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\IconColumn::make('is_active')
-                    ->label('فعال')
-                    ->boolean(),
+                ToggleColumn::make('is_active')
+                    ->label('وضعیت')
+                    ->disabled(fn (Company $record): bool => ! static::canEdit($record))
+                    ->updateStateUsing(function (Company $record, bool $state): bool {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof User, 403);
+
+                        return app(SetCompanyStatus::class)->handle($record, $state, $actor);
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('ایجاد')
-                    ->dateTime('Y/m/d')
+                    ->label('تاریخ ایجاد')
+                    ->formatStateUsing(fn ($state): string => Fa::dateTime($state, 'Y/m/d'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('id', 'desc')
+            ->defaultSort('created_at', 'desc')
             ->stackedOnMobile()
-            ->filters([TernaryFilter::make('is_active')->label('وضعیت شرکت')->trueLabel('فعال')->falseLabel('غیرفعال')])
+            ->filters([
+                TernaryFilter::make('is_active')
+                    ->label('وضعیت شرکت')
+                    ->trueLabel('فعال')
+                    ->falseLabel('غیرفعال'),
+                $companyTextFilter('name', 'نام شرکت'),
+                $companyTextFilter('slug', 'شناسه سیستمی'),
+                $companyTextFilter('national_id', 'شناسه ملی'),
+                $companyTextFilter('registration_number', 'شماره ثبت'),
+                $companyTextFilter('phone', 'تلفن'),
+                $companyTextFilter('email', 'ایمیل'),
+            ])
             ->recordUrl(null)
-            ->emptyStateHeading('هنوز شرکتی ثبت نشده است')
-            ->emptyStateDescription('برای شروع، اولین شرکت خود را ایجاد کنید.')
+            ->emptyStateHeading('شرکتی برای نمایش وجود ندارد')
+            ->emptyStateDescription('شرکت‌هایی که عضو آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
             ->emptyStateActions([
-                CreateAction::make()->label('ایجاد شرکت')->slideOver()->using(function (array $data): Company {
-                    $actor = auth()->user();
-                    abort_unless($actor instanceof User, 403);
+                CreateAction::make()
+                    ->label('ایجاد شرکت')
+                    ->slideOver()
+                    ->closeModalByClickingAway(false)
+                    ->using(function (array $data): Company {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof User, 403);
 
-                    return app(CreateCompanyForUser::class)->handle($data, $actor);
-                }),
+                        return app(CreateCompanyForUser::class)->handle($data, $actor);
+                    }),
             ])
             ->recordActions([
-                ViewAction::make()->slideOver(),
-                EditAction::make()->slideOver()->using(function (Company $record, array $data): Company {
-                    $actor = auth()->user();
-                    abort_unless($actor instanceof User, 403);
+                ViewAction::make()
+                    ->label('مشاهده')
+                    ->slideOver()
+                    ->closeModalByClickingAway(false),
+                EditAction::make()
+                    ->label('ویرایش')
+                    ->slideOver()
+                    ->closeModalByClickingAway(false)
+                    ->visible(fn (Company $record): bool => static::canEdit($record))
+                    ->using(function (Company $record, array $data): Company {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof User, 403);
 
-                    return app(UpdateCompanyProfile::class)->handle($record, $data, $actor);
-                }),
+                        return app(UpdateCompanyProfile::class)->handle($record, $data, $actor);
+                    }),
             ]);
     }
 
     public static function getPages(): array
     {
-        // Company create, view, and edit are intentionally handled by slide-over
-        // actions on the list page so the experience stays consistent and contextual.
-        return [
-            'index' => Pages\ListCompanies::route('/'),
-        ];
+        return ['index' => Pages\ListCompanies::route('/')];
     }
 }
