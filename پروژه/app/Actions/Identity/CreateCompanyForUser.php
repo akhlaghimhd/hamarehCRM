@@ -48,6 +48,7 @@ class CreateCompanyForUser
             'phone' => ['nullable', 'regex:/^\d{8,11}$/'],
             'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string', 'max:2000'],
+            'website' => ['nullable', 'string', 'max:255'],
             'is_active' => ['required', 'boolean'],
         ], [
             'name.required' => 'وارد کردن نام شرکت الزامی است.',
@@ -62,6 +63,7 @@ class CreateCompanyForUser
             'email.email' => 'قالب ایمیل معتبر نیست.',
             'email.max' => 'ایمیل بیش از حد مجاز طولانی است.',
             'address.max' => 'نشانی نباید بیشتر از ۲۰۰۰ نویسه باشد.',
+            'website.max' => 'نشانی وب‌سایت نباید بیشتر از ۲۵۵ نویسه باشد.',
         ], [
             'name' => 'نام شرکت',
             'slug' => 'شناسه سیستمی',
@@ -69,6 +71,7 @@ class CreateCompanyForUser
             'phone' => 'تلفن',
             'email' => 'ایمیل',
             'address' => 'نشانی',
+            'website' => 'وب‌سایت',
         ])->validate();
 
         $company = DB::transaction(function () use ($attributes, $creator): Company {
