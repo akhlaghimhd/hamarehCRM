@@ -7,6 +7,7 @@ use App\Actions\Identity\SetCompanyStatus;
 use App\Filament\Resources\CompanyResource;
 use App\Models\Company;
 use App\Models\Role;
+use App\Models\PlatformOwner;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -58,8 +59,14 @@ class CompanyResourceTest extends TestCase
     public function test_persian_national_id_and_phone_digits_are_normalized_before_storage(): void
     {
         $creator = User::factory()->create();
+        PlatformOwner::query()->create(['user_id' => $creator->id]);
 
         $company = app(CreateCompanyForUser::class)->handle([
+            'admin_name' => 'مدیر اولیه',
+            'admin_username' => 'digits-manager',
+            'admin_email' => 'digits-manager@example.test',
+            'admin_password' => 'SecurePass123',
+            'admin_password_confirmation' => 'SecurePass123',
             'name' => 'شرکت ارقام فارسی',
             'slug' => 'persian-digits-company',
             'national_id' => '۱۲۳۴۵۶۷۸۹۰۱',

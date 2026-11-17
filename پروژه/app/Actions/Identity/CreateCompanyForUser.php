@@ -3,6 +3,8 @@
 namespace App\Actions\Identity;
 
 use App\Models\Company;
+use App\Models\CompanyFinancialIdentity;
+use App\Models\CompanyFinancialIdentityVersion;
 use App\Models\Permission;
 use App\Models\PlatformOwner;
 use App\Models\Role;
@@ -118,6 +120,24 @@ class CreateCompanyForUser
             }
 
             $company = Company::query()->create($attributes);
+
+            foreach (['official', 'unofficial'] as $identityType) {
+                $identity = CompanyFinancialIdentity::query()->create([
+                    'company_id' => $company->id,
+                    'type' => $identityType,
+                    'version' => 1,
+                    'is_active' => true,
+                ]);
+
+                CompanyFinancialIdentityVersion::query()->create([
+                    'company_id' => $company->id,
+                    'company_financial_identity_id' => $identity->id,
+                    'version' => 1,
+                    'snapshot' => $identity->only(['company_id', 'type', 'legal_name', 'national_id', 'economic_code', 'registration_number', 'phone', 'email', 'postal_code', 'address', 'website', 'version', 'is_active']),
+                    'created_by_user_id' => $lockedCreator->id,
+                ]);
+            }
+
             $initialAdmin = User::query()->create([
                 'name' => $manager['name'],
                 'username' => $manager['username'],

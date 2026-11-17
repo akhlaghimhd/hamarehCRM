@@ -13,12 +13,16 @@ class SetCompanyStatus
 {
     public function handle(Company $record, bool $isActive, User $actor): bool
     {
-        if (! app(CompanyMembershipAccess::class)->isAdmin($actor, (int) $record->id)) {
+        if (! $actor->isPlatformOwner() && ! app(CompanyMembershipAccess::class)->isAdmin($actor, (int) $record->id)) {
             throw new AuthorizationException('فقط مدیر همان شرکت می‌تواند وضعیت آن را تغییر دهد.');
         }
 
         return DB::transaction(function () use ($record, $isActive, $actor): bool {
             $company = Company::query()->whereKey($record->id)->lockForUpdate()->firstOrFail();
+
+            if (! $actor->isPlatformOwner() && ! app(CompanyMembershipAccess::class)->isAdmin($actor, (int) $company->id)) {
+                throw new AuthorizationException('فقط مدیر همان شرکت یا مالک پلتفرم می‌تواند وضعیت آن را تغییر دهد.');
+            }
             $oldState = (bool) $company->is_active;
 
             if ($oldState === $isActive) {

@@ -37,6 +37,11 @@ class Company extends Model
             ->withTimestamps();
     }
 
+    public function financialIdentities(): HasMany
+    {
+        return $this->hasMany(CompanyFinancialIdentity::class);
+    }
+
     public function customers(): HasMany
     {
         return $this->hasMany(Customer::class);
