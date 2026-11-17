@@ -197,6 +197,17 @@ label {
 .fi-ta-header-cell {
     background: var(--hm-surface-muted);
     font-weight: 700;
+    padding-block: .35rem;
+    line-height: 1.25;
+}
+
+.fi-ta-cell {
+    line-height: 1.25;
+}
+
+.fi-ta-cell .fi-btn,
+.fi-ta-cell .fi-icon-btn {
+    min-height: 1.8rem;
 }
 
 .fi-ta-row {
@@ -350,23 +361,54 @@ label {
 }
 
 html[data-hm-density="compact"] {
-    --hm-density-table-y: .4rem;
+    --hm-density-table-y: .2rem;
     --hm-density-section-padding: .75rem;
     --hm-density-control-height: 2.2rem;
 }
 
 html[data-hm-density="balanced"] {
-    --hm-density-table-y: .65rem;
+    --hm-density-table-y: .3rem;
     --hm-density-section-padding: 1rem;
     --hm-density-control-height: 2.4rem;
 }
 
 html[data-hm-density="comfortable"] {
-    --hm-density-table-y: .85rem;
+    --hm-density-table-y: .4rem;
     --hm-density-section-padding: 1.25rem;
     --hm-density-control-height: 2.65rem;
 }
 
+
+
+/* Shared responsive Filament slide-over sizing. Each form supplies a marker
+   based on its field count and effective column count. */
+.fi-modal-slide-over-window:has(.hm-drawer-width--compact) {
+    width: clamp(33.333vw, 36vw, 66.667vw) !important;
+    min-width: 33.333vw !important;
+    max-width: 66.667vw !important;
+}
+
+.fi-modal-slide-over-window:has(.hm-drawer-width--medium) {
+    width: clamp(33.333vw, 42vw, 66.667vw) !important;
+    min-width: 33.333vw !important;
+    max-width: 66.667vw !important;
+}
+
+.fi-modal-slide-over-window:has(.hm-drawer-width--wide) {
+    width: clamp(33.333vw, 56vw, 66.667vw) !important;
+    min-width: 33.333vw !important;
+    max-width: 66.667vw !important;
+}
+
+@media (max-width: 1023px) {
+    .fi-modal-slide-over-window:has(.hm-drawer-width--compact),
+    .fi-modal-slide-over-window:has(.hm-drawer-width--medium),
+    .fi-modal-slide-over-window:has(.hm-drawer-width--wide) {
+        width: 100vw !important;
+        min-width: 100vw !important;
+        max-width: 100vw !important;
+    }
+}
 
 /* Preserve comfortable touch targets on mobile, even with compact company density. */
 @media (max-width: 1023px) {
