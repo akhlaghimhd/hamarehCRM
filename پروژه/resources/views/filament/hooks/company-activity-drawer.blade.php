@@ -242,12 +242,16 @@
         }
 
         const rect = drawer.getBoundingClientRect();
-        const drawerOnRight = rect.left > window.innerWidth / 2;
+        const drawerOnRight = (rect.left + (rect.width / 2)) > (window.innerWidth / 2);
         const left = drawerOnRight ? 0 : rect.right;
         const width = Math.max(0, drawerOnRight ? rect.left : window.innerWidth - rect.right);
 
-        stage.style.left = left + 'px';
-        stage.style.width = width + 'px';
+        const nextLeft = left + 'px';
+        const nextWidth = width + 'px';
+
+        if (stage.style.left !== nextLeft) stage.style.left = nextLeft;
+        if (stage.style.width !== nextWidth) stage.style.width = nextWidth;
+
         stage.hidden = width < 180;
     };
 
@@ -260,7 +264,7 @@
         requestAnimationFrame(tick);
     };
 
-    const observer = new MutationObserver(syncDuringTransition);
+    const observer = new MutationObserver(sync);
     observer.observe(document.body, {
         subtree: true,
         childList: true,
