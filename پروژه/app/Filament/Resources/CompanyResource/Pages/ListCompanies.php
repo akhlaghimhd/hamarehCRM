@@ -38,7 +38,7 @@ class ListCompanies extends ListRecords
                 ->label('ایجاد شرکت')
                 ->slideOver()
                 ->slideOverPosition(SlideOverPosition::Start)
-                ->modalWidth(Width::Screen)
+                ->modalWidth(Width::TwoExtraLarge)
                 ->modalContent(view('filament.components.drawer-width-marker', [
                     'widthClass' => FormDrawerWidth::markerClass(7, 2),
                 ]))
