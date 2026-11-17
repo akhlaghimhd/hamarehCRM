@@ -32,7 +32,7 @@ return new class extends Migration
         Schema::create('company_bank_accounts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('company_financial_identity_id')->constrained('company_financial_identities')->restrictOnDelete();
+            $table->foreignId('company_financial_identity_id')->constrained('company_financial_identities', 'id', 'financial_identity_version_identity_fk')->restrictOnDelete();
             $table->string('label')->nullable();
             $table->string('account_holder');
             $table->string('bank_name');
