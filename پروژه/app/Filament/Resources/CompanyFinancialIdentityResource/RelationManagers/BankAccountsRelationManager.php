@@ -6,6 +6,7 @@ use App\Actions\Identity\SaveCompanyBankAccount;
 use App\Models\CompanyBankAccount;
 use App\Models\CompanyFinancialIdentity;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use App\Support\CompanyMembershipAccess;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
@@ -22,6 +23,16 @@ class BankAccountsRelationManager extends RelationManager
 {
     protected static string $relationship = 'bankAccounts';
     protected static ?string $title = 'حساب‌های دریافت';
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        $actor = auth()->user();
+
+        return $ownerRecord instanceof CompanyFinancialIdentity
+            && $actor instanceof User
+            && $actor->is_active
+            && ($actor->isPlatformOwner() || app(CompanyMembershipAccess::class)->canManage($actor, (int) $ownerRecord->company_id));
+    }
 
     public function form(Schema $schema): Schema
     {
