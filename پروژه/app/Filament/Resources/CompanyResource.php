@@ -142,7 +142,7 @@ class CompanyResource extends Resource
                         ->rules(['regex:/^[0-9۰-۹٠-٩]{10}$/'])
                         ->validationMessages(['regex' => 'شناسه ملی شرکت باید دقیقاً ۱۱ رقم باشد.'])
                         ->columnSpan(1)
-                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'numeric']),
+                        ->extraInputAttributes(['lang' => 'fa', 'dir' => 'ltr', 'inputmode' => 'numeric']),
                     TextInput::make('registration_number')
                         ->label('شماره ثبت')
                         ->maxLength(50)
@@ -155,7 +155,7 @@ class CompanyResource extends Resource
                         ->rules(['regex:/^[0-9۰-۹٠-٩]{8,11}$/'])
                         ->validationMessages(['regex' => 'شماره تلفن باید بین ۸ تا ۱۱ رقم باشد.'])
                         ->columnSpan(1)
-                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'tel']),
+                        ->extraInputAttributes(['lang' => 'fa', 'dir' => 'ltr', 'inputmode' => 'tel']),
                     TextInput::make('email')
                         ->label('ایمیل')
                         ->email()
