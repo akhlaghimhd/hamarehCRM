@@ -17,7 +17,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
@@ -105,8 +105,8 @@ class CompanyResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('اطلاعات شرکت')
-                ->columns(['default' => 1, 'md' => 2])
+            Grid::make(['default' => 1, 'md' => 2])
+                ->columnSpanFull()
                 ->schema([
                     TextInput::make('name')
                         ->label('نام شرکت')
@@ -282,7 +282,7 @@ class CompanyResource extends Resource
                     ->label('مشاهده')
                     ->slideOver()
                     ->slideOverPosition(SlideOverPosition::Start)
-                    ->modalWidth(Width::Large)
+                    ->modalWidth(Width::Medium)
                     ->closeModalByClickingAway(false),
                 EditAction::make()
                     ->label('ویرایش')
