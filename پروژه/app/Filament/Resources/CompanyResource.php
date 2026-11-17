@@ -14,7 +14,8 @@ use App\Support\CompanyMembershipAccess;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\DatePicker;\nuse Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -24,6 +25,7 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Support\Enums\SlideOverPosition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -279,6 +281,7 @@ class CompanyResource extends Resource
                 CreateAction::make()
                     ->label('ایجاد شرکت')
                     ->slideOver()
+                    ->slideOverPosition(SlideOverPosition::Start)
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalCloseButton(false)
@@ -296,10 +299,12 @@ class CompanyResource extends Resource
                 ViewAction::make()
                     ->label('مشاهده')
                     ->slideOver()
+                    ->slideOverPosition(SlideOverPosition::Start)
                     ->closeModalByClickingAway(false),
                 EditAction::make()
                     ->label('ویرایش')
                     ->slideOver()
+                    ->slideOverPosition(SlideOverPosition::Start)
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalCloseButton(false)
