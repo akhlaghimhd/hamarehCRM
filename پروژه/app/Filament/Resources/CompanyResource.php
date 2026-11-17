@@ -304,6 +304,9 @@ class CompanyResource extends Resource
                             ->when(filled($data['until'] ?? null), fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $data['until']));
                     }),
             ])
+            ->filtersFormColumns(2)
+            ->filtersFormWidth(Width::FourExtraLarge)
+            ->filtersFormMaxHeight('min(70vh, 36rem)')
             ->recordUrl(null)
             ->emptyStateHeading('شرکتی برای نمایش وجود ندارد')
             ->emptyStateDescription('شرکت‌هایی که عضو آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
@@ -312,7 +315,7 @@ class CompanyResource extends Resource
                     ->label('مشاهده')
                     ->slideOver()
                     ->slideOverPosition(SlideOverPosition::Start)
-                    ->modalWidth(Width::Screen)
+                    ->modalWidth(Width::TwoExtraLarge)
                     ->modalContent(view('filament.components.drawer-width-marker', [
                         'widthClass' => FormDrawerWidth::markerClass(7, 2),
                     ]))
