@@ -106,7 +106,7 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertFalse(CompanyResource::canDelete($companyB));
     }
 
-    public function test_company_resource_only_exposes_the_current_company(): void
+    public function test_company_resource_lists_all_companies_the_user_belongs_to(): void
     {
         [$companyA, $companyB] = $this->createCompanies();
 
@@ -125,7 +125,7 @@ class FilamentCompanyAccessTest extends TestCase
         $this->assertNotContains($companyB->id, $companyIds);
     }
 
-    public function test_company_resource_fails_closed_without_a_valid_company_context(): void
+    public function test_company_resource_lists_memberships_even_without_a_selected_company_context(): void
     {
         [$companyA] = $this->createCompanies();
 
@@ -135,7 +135,7 @@ class FilamentCompanyAccessTest extends TestCase
         $this->actingAs($user);
         session(['current_company_id' => null]);
 
-        $this->assertSame([], CompanyResource::getEloquentQuery()->pluck('companies.id')->all());
+        $this->assertSame([$companyA->id], CompanyResource::getEloquentQuery()->pluck('companies.id')->all());
     }
 
 
