@@ -255,6 +255,12 @@ class CompanyResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('address')
+                    ->label('نشانی')
+                    ->limit(40)
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 ToggleColumn::make('is_active')
                     ->label('وضعیت')
                     ->sortable()
@@ -284,6 +290,7 @@ class CompanyResource extends Resource
                 $companyTextFilter('registration_number', 'شماره ثبت'),
                 $companyTextFilter('phone', 'تلفن'),
                 $companyTextFilter('email', 'ایمیل'),
+                $companyTextFilter('address', 'نشانی'),
                 Filter::make('created_at')
                     ->label('تاریخ ایجاد')
                     ->schema([
