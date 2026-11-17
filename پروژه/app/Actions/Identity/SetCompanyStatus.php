@@ -40,6 +40,11 @@ class SetCompanyStatus
 
             $company->forceFill(['is_active' => $isActive])->save();
 
+            Notification::make()
+                ->title($isActive ? 'شرکت فعال شد' : 'شرکت غیرفعال شد')
+                ->success()
+                ->send();
+
             if (! $isActive && (int) session('current_company_id') === (int) $company->id) {
                 session()->forget('current_company_id');
             }
