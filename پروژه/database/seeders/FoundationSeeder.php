@@ -60,6 +60,32 @@ class FoundationSeeder extends Seeder
         );
 
         foreach ([$companyA, $companyB] as $company) {
+            foreach (['official', 'unofficial'] as $type) {
+                $identity = CompanyFinancialIdentity::query()->firstOrCreate(
+                    ['company_id' => $company->id, 'type' => $type],
+                    [
+                        'legal_name' => $company->name,
+                        'national_id' => $company->national_id,
+                        'registration_number' => $company->registration_number,
+                        'phone' => $company->phone,
+                        'email' => $company->email,
+                        'address' => $company->address,
+                        'website' => $company->website,
+                        'version' => 1,
+                        'is_active' => true,
+                    ],
+                );
+
+                if ($identity->wasRecentlyCreated) {
+                    CompanyFinancialIdentityVersion::query()->create([
+                        'company_id' => $company->id,
+                        'company_financial_identity_id' => $identity->id,
+                        'version' => $identity->version,
+                        'snapshot' => $identity->only(['company_id', 'type', 'legal_name', 'national_id', 'economic_code', 'registration_number', 'phone', 'email', 'postal_code', 'address', 'website', 'version', 'is_active']),
+                    ]);
+                }
+            }
+
             $adminRole = Role::query()->updateOrCreate(
                 ['company_id' => $company->id, 'name' => 'admin'],
                 ['label' => 'مدیر', 'is_system' => true]

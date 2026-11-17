@@ -92,7 +92,7 @@ class CompanyFinancialIdentityResource extends Resource
                 ->columns(2)
                 ->schema([
                     Select::make('company_id')->label('شرکت')->options(fn () => self::manageableCompanies())->searchable()->required()->disabled(),
-                    Select::make('type')->label('نوع هویت مالی')->options(['official' => 'رسمی', 'unofficial' => 'غیررسمی'])->required()->native(false)->disabledOn('edit'),
+                    Select::make('type')->label('نوع هویت مالی')->options(['official' => 'رسمی', 'unofficial' => 'غیررسمی'])->required()->native(false)->disabled(),
                     Toggle::make('is_active')->label('فعال')->default(true)->inline(false),
                 ]),
             Section::make('اطلاعات هویتی و ثبتی')
