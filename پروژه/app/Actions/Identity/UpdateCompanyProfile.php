@@ -15,7 +15,7 @@ class UpdateCompanyProfile
 {
     public function handle(Company $record, array $data, User $actor): Company
     {
-        if (! app(CompanyMembershipAccess::class)->canManage($actor, (int) $record->id)) {
+        if (! $actor->isPlatformOwner() && ! app(CompanyMembershipAccess::class)->canManage($actor, (int) $record->id)) {
             throw new AuthorizationException('فقط مدیر همان شرکت اجازه ویرایش اطلاعات آن را دارد.');
         }
 
@@ -63,7 +63,7 @@ class UpdateCompanyProfile
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if (! $company->is_active || ! app(CompanyMembershipAccess::class)->canManage($actor, (int) $company->id)) {
+            if (! $company->is_active || (! $actor->isPlatformOwner() && ! app(CompanyMembershipAccess::class)->canManage($actor, (int) $company->id))) {
                 throw new AuthorizationException('شرکت غیرفعال است یا دسترسی مدیریت آن را ندارید.');
             }
 

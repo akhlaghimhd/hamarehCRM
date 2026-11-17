@@ -4,6 +4,7 @@ namespace App\Actions\Identity;
 
 use App\Models\Company;
 use App\Models\Permission;
+use App\Models\PlatformOwner;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\Fa;
@@ -15,12 +16,24 @@ use Illuminate\Support\Str;
 class CreateCompanyForUser
 {
     /**
-     * Create a company and make its creator an administrator in one transaction.
+     * Create a company and its initial administrator atomically; only platform owners may do so.
      *
      * @param array<string, mixed> $attributes
      */
     public function handle(array $attributes, User $creator): Company
     {
+        if (! $creator->is_active || ! $creator->isPlatformOwner()) {
+            throw new AuthorizationException('فقط مالک پلتفرم اجازه ایجاد شرکت دارد.');
+        }
+
+        $manager = [
+            'name' => trim((string) ($attributes['admin_name'] ?? '')),
+            'username' => trim((string) ($attributes['admin_username'] ?? '')),
+            'email' => trim((string) ($attributes['admin_email'] ?? '')),
+            'password' => (string) ($attributes['admin_password'] ?? ''),
+            'password_confirmation' => (string) ($attributes['admin_password_confirmation'] ?? ''),
+        ];
+        unset($attributes['admin_name'], $attributes['admin_username'], $attributes['admin_email'], $attributes['admin_password'], $attributes['admin_password_confirmation']);
         foreach (['national_id', 'phone', 'registration_number'] as $field) {
             $value = trim((string) ($attributes[$field] ?? ''));
             $attributes[$field] = $value === '' ? null : Fa::toEnglishDigits($value);
@@ -39,6 +52,22 @@ class CreateCompanyForUser
 
         // Newly created companies are active by default. Status is managed from the table.
         $attributes['is_active'] = true;
+
+        $manager = Validator::make($manager, [
+            'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:100', 'alpha_dash', 'unique:users,username'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'same:password_confirmation'],
+            'password_confirmation' => ['required', 'string'],
+        ], [
+            'name.required' => 'نام مدیر اولیه الزامی است.',
+            'username.required' => 'نام کاربری مدیر اولیه الزامی است.',
+            'username.unique' => 'این نام کاربری قبلاً ثبت شده است.',
+            'email.required' => 'ایمیل مدیر اولیه الزامی است.',
+            'email.unique' => 'این ایمیل قبلاً ثبت شده است.',
+            'password.min' => 'گذرواژه مدیر اولیه باید حداقل ۸ نویسه باشد.',
+            'password.same' => 'تکرار گذرواژه با گذرواژه یکسان نیست.',
+        ])->validate();
 
         $attributes = Validator::make($attributes, [
             'name' => ['required', 'string', 'max:255'],
@@ -74,7 +103,7 @@ class CreateCompanyForUser
             'website' => 'وب‌سایت',
         ])->validate();
 
-        $company = DB::transaction(function () use ($attributes, $creator): Company {
+        $company = DB::transaction(function () use ($attributes, $creator, $manager): Company {
             $lockedCreator = User::query()
                 ->whereKey($creator->id)
                 ->lockForUpdate()
@@ -84,15 +113,18 @@ class CreateCompanyForUser
                 throw new AuthorizationException('حساب کاربری غیرفعال اجازه ایجاد شرکت ندارد.');
             }
 
-            $hasMembership = DB::table('company_user')
-                ->where('user_id', $lockedCreator->id)
-                ->exists();
-
-            if ($hasMembership && ! $lockedCreator->isCompanyAdmin()) {
-                throw new AuthorizationException('فقط مدیر شرکت جاری می‌تواند شرکت جدید ایجاد کند.');
+            if (! PlatformOwner::query()->where('user_id', $lockedCreator->id)->exists()) {
+                throw new AuthorizationException('فقط مالک پلتفرم اجازه ایجاد شرکت دارد.');
             }
 
             $company = Company::query()->create($attributes);
+            $initialAdmin = User::query()->create([
+                'name' => $manager['name'],
+                'username' => $manager['username'],
+                'email' => $manager['email'],
+                'password' => $manager['password'],
+                'is_active' => true,
+            ]);
 
             $adminRole = Role::query()->create([
                 'company_id' => $company->id,
@@ -104,19 +136,14 @@ class CreateCompanyForUser
 
             $adminRole->permissions()->sync(Permission::query()->pluck('id'));
 
-            $hasDefaultCompany = DB::table('company_user')
-                ->where('user_id', $lockedCreator->id)
-                ->where('is_default', true)
-                ->exists();
-
-            $lockedCreator->companies()->attach($company->id, [
+            $initialAdmin->companies()->attach($company->id, [
                 'role_id' => $adminRole->id,
-                'is_default' => ! $hasDefaultCompany,
+                'is_default' => true,
             ]);
 
             $membershipId = DB::table('company_user')
                 ->where('company_id', $company->id)
-                ->where('user_id', $lockedCreator->id)
+                ->where('user_id', $initialAdmin->id)
                 ->value('id');
 
             DB::table('company_user_role')->insert([
@@ -148,8 +175,6 @@ class CreateCompanyForUser
 
             return $company;
         });
-
-        session(['current_company_id' => $company->id]);
 
         return $company;
     }

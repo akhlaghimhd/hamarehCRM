@@ -44,6 +44,11 @@ class User extends Authenticatable implements FilamentUser
         return (bool) $this->is_active;
     }
 
+    public function isPlatformOwner(): bool
+    {
+        return DB::table('platform_owners')->where('user_id', $this->id)->exists();
+    }
+
     public function currentCompanyId(): ?int
     {
         return app(CompanyContext::class)->currentCompanyId($this);

@@ -55,7 +55,7 @@ class CompanyResource extends Resource
 
         $hasMembership = DB::table('company_user')->where('user_id', $user->id)->exists();
 
-        return $hasMembership || static::canCreate() || static::allowed(static::$permissionView);
+        return $user->isPlatformOwner() || $hasMembership;
     }
 
     public static function canCreate(): bool
@@ -66,20 +66,25 @@ class CompanyResource extends Resource
             return false;
         }
 
-        return ! DB::table('company_user')->where('user_id', $user->id)->exists()
-            || $user->isCompanyAdmin();
+        return $user->isPlatformOwner();
     }
 
     public static function canView($record): bool
     {
+        $user = auth()->user();
+
         return $record instanceof Company
-            && app(CompanyMembershipAccess::class)->isMember(auth()->user(), (int) $record->id);
+            && $user instanceof User
+            && ($user->isPlatformOwner() || app(CompanyMembershipAccess::class)->isMember($user, (int) $record->id));
     }
 
     public static function canEdit($record): bool
     {
+        $user = auth()->user();
+
         return $record instanceof Company
-            && app(CompanyMembershipAccess::class)->canManage(auth()->user(), (int) $record->id);
+            && $user instanceof User
+            && ($user->isPlatformOwner() || app(CompanyMembershipAccess::class)->canManage($user, (int) $record->id));
     }
 
     public static function canDelete($record): bool
@@ -93,6 +98,10 @@ class CompanyResource extends Resource
 
         if (! $user || ! $user->is_active) {
             return parent::getEloquentQuery()->whereRaw('1 = 0');
+        }
+
+        if ($user->isPlatformOwner()) {
+            return parent::getEloquentQuery();
         }
 
         $companyIds = DB::table('company_user')
@@ -210,6 +219,40 @@ class CompanyResource extends Resource
                         ->validationMessages(['max' => 'نشانی وب‌سایت نباید بیشتر از ۲۵۵ نویسه باشد.'])
                         ->columnSpanFull()
                         ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'url', 'autocapitalize' => 'off', 'spellcheck' => 'false']),
+                    TextInput::make('admin_name')
+                        ->label('نام مدیر اولیه')
+                        ->required()
+                        ->maxLength(255)
+                        ->visibleOn('create')
+                        ->columnSpanFull(),
+                    TextInput::make('admin_username')
+                        ->label('نام کاربری مدیر اولیه')
+                        ->required()
+                        ->alphaDash()
+                        ->maxLength(100)
+                        ->visibleOn('create')
+                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'autocapitalize' => 'off']),
+                    TextInput::make('admin_email')
+                        ->label('ایمیل مدیر اولیه')
+                        ->email()
+                        ->required()
+                        ->maxLength(255)
+                        ->visibleOn('create')
+                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'email']),
+                    TextInput::make('admin_password')
+                        ->label('گذرواژه مدیر اولیه')
+                        ->password()
+                        ->revealable()
+                        ->required()
+                        ->minLength(8)
+                        ->visibleOn('create'),
+                    TextInput::make('admin_password_confirmation')
+                        ->label('تکرار گذرواژه')
+                        ->password()
+                        ->revealable()
+                        ->required()
+                        ->visibleOn('create'),
+
                 ]),
         ]);
     }
