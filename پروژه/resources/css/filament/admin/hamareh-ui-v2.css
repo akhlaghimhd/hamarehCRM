@@ -401,8 +401,8 @@ html[data-hm-density="comfortable"] {
 }
 
 @media (max-width: 1023px) {
-    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--compact),
-    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--medium),
+    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--compact) > .fi-modal-window-ctn > .fi-modal-window,
+    .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--medium) > .fi-modal-window-ctn > .fi-modal-window,
     .fi-modal.fi-modal-slide-over:has(.hm-drawer-width--wide) > .fi-modal-window-ctn > .fi-modal-window {
         width: 100vw !important;
         min-width: 100vw !important;
