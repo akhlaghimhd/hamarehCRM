@@ -62,11 +62,11 @@ class CompanyResourceTest extends TestCase
         $company = app(CreateCompanyForUser::class)->handle([
             'name' => 'شرکت ارقام فارسی',
             'slug' => 'persian-digits-company',
-            'national_id' => '۱۲۳۴۵۶۷۸۹۰',
+            'national_id' => '۱۲۳۴۵۶۷۸۹۰۱',
             'phone' => '۰۲۱۱۲۳۴۵۶۷۸',
         ], $creator);
 
-        $this->assertSame('1234567890', $company->national_id);
+        $this->assertSame('12345678901', $company->national_id);
         $this->assertSame('02112345678', $company->phone);
         $this->assertTrue($company->is_active);
     }
