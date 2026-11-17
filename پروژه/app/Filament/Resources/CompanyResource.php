@@ -11,7 +11,6 @@ use App\Models\Company;
 use App\Models\User;
 use App\Support\Fa;
 use App\Support\CompanyMembershipAccess;
-use App\Support\Filament\FormDrawerWidth;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
@@ -204,23 +203,6 @@ class CompanyResource extends Resource
 
     public static function table(Table $table): Table
     {
-        $companyTextFilter = static fn (string $name, string $label): Filter => Filter::make($name)
-            ->label($label)
-            ->schema([TextInput::make('value')->label($label)])
-            ->query(function (Builder $query, array $data) use ($name): Builder {
-                $value = (string) ($data['value'] ?? '');
-
-                if (! filled($value)) {
-                    return $query;
-                }
-
-                if (in_array($name, ['national_id', 'phone', 'registration_number'], true)) {
-                    $value = Fa::toEnglishDigits($value);
-                }
-
-                return $query->where($name, 'like', '%'.$value.'%');
-            });
-
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
@@ -285,24 +267,9 @@ class CompanyResource extends Resource
                     ->label('وضعیت شرکت')
                     ->trueLabel('فعال')
                     ->falseLabel('غیرفعال'),
-                $companyTextFilter('name', 'نام شرکت'),
-                $companyTextFilter('slug', 'شناسه سیستمی'),
-                $companyTextFilter('national_id', 'شناسه ملی'),
-                $companyTextFilter('registration_number', 'شماره ثبت'),
-                $companyTextFilter('phone', 'تلفن'),
-                $companyTextFilter('email', 'ایمیل'),
-                $companyTextFilter('address', 'نشانی'),
-                Filter::make('created_at')
-                    ->label('تاریخ ایجاد')
-                    ->schema([
-                        DatePicker::make('from')->label('از تاریخ'),
-                        DatePicker::make('until')->label('تا تاریخ'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(filled($data['from'] ?? null), fn (Builder $query): Builder => $query->whereDate('created_at', '>=', $data['from']))
-                            ->when(filled($data['until'] ?? null), fn (Builder $query): Builder => $query->whereDate('created_at', '<=', $data['until']));
-                    }),
+                Filter::make('name')->label('نام شرکت')->schema([TextInput::make('value')->label('نام شرکت')])->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null) ? $query->where('name', 'like', '%'.$data['value'].'%') : $query),
+                Filter::make('national_id')->label('شناسه ملی')->schema([TextInput::make('value')->label('شناسه ملی')])->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null) ? $query->where('national_id', 'like', '%'.Fa::toEnglishDigits($data['value']).'%') : $query),
+                Filter::make('phone')->label('تلفن')->schema([TextInput::make('value')->label('تلفن')])->query(fn (Builder $query, array $data): Builder => filled($data['value'] ?? null) ? $query->where('phone', 'like', '%'.Fa::toEnglishDigits($data['value']).'%') : $query),
             ])
             ->filtersFormColumns(2)
             ->filtersFormWidth(Width::FourExtraLarge)
@@ -316,18 +283,12 @@ class CompanyResource extends Resource
                     ->slideOver()
                     ->slideOverPosition(SlideOverPosition::Start)
                     ->modalWidth(Width::TwoExtraLarge)
-                    ->modalContent(view('filament.components.drawer-width-marker', [
-                        'widthClass' => FormDrawerWidth::markerClass(7, 2),
-                    ]))
                     ->closeModalByClickingAway(false),
                 EditAction::make()
                     ->label('ویرایش')
                     ->slideOver()
                     ->slideOverPosition(SlideOverPosition::Start)
-                    ->modalWidth(Width::Screen)
-                    ->modalContent(view('filament.components.drawer-width-marker', [
-                        'widthClass' => FormDrawerWidth::markerClass(7, 2),
-                    ]))
+                    ->modalWidth(Width::TwoExtraLarge)
                     ->closeModalByClickingAway(false)
                     ->closeModalByEscaping(false)
                     ->modalCloseButton(false)
