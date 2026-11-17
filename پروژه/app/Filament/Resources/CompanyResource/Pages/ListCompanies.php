@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\User;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Enums\SlideOverPosition;
 
 class ListCompanies extends ListRecords
 {
@@ -21,6 +22,7 @@ class ListCompanies extends ListRecords
             CreateAction::make()
                 ->label('ایجاد شرکت')
                 ->slideOver()
+                ->slideOverPosition(SlideOverPosition::Start)
                 ->closeModalByClickingAway(false)
                 ->closeModalByEscaping(false)
                 ->modalCloseButton(false)
