@@ -20,4 +20,9 @@ class CreateCompany extends CreateRecord
             auth()->user(),
         );
     }
+
+    protected function getRedirectUrl(): ?string
+    {
+        return CompanyResource::getUrl('view', ['record' => $this->record]);
+    }
 }
