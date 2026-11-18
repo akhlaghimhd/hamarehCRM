@@ -24,6 +24,7 @@ class Opportunity extends Model
         'customer_id',
         'stage_id',
         'owner_user_id',
+        'sales_representative_id',
         'followup_user_id',
         'title',
         'organization_name',
@@ -182,6 +183,11 @@ class Opportunity extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
+    public function salesRepresentative(): BelongsTo
+    {
+        return $this->belongsTo(SalesRepresentative::class);
     }
 
     public function followupUser(): BelongsTo
