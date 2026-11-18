@@ -4,10 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers\OrderLinesRelationManager;
+use App\Filament\Resources\OrderResource\RelationManagers\LinesRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\WorkPackagesRelationManager;
 use App\Models\Order;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -32,9 +31,9 @@ class OrderResource extends Resource
 
     protected static ?string $modelLabel = 'سفارش';
 
-    protected static ?string $pluralModelLabel = 'سفارش‌ها';
+    protected static ?string $pluralModelLabel = 'سفارش\u200cها';
 
-    protected static ?string $navigationLabel = 'سفارش‌ها';
+    protected static ?string $navigationLabel = 'سفارش\u200cها';
 
     protected static string|UnitEnum|null $navigationGroup = 'فروش و سفارش';
 
@@ -43,8 +42,8 @@ class OrderResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('سفارش (snapshot قفل‌شده)')
-                ->description('پس از تأیید، قیمت و پیکربندی خطوط تغییر نمی‌کند. وضعیت را از دکمه‌های بالای صفحه تغییر دهید.')
+            Section::make('سفارش (snapshot قفل\u200cشده)')
+                ->description('پس از تأیید، قیمت و پیکربندی خطوط تغییر نمی\u200cکند. وضعیت را از دکمه\u200cهای بالای صفحه تغییر دهید.')
                 ->schema([
                     TextInput::make('number')
                         ->label('شماره')
@@ -55,6 +54,9 @@ class OrderResource extends Resource
                         ->columnSpanFull(),
                     TextInput::make('customer.name')
                         ->label('مشتری')
+                        ->disabled(),
+                    TextInput::make('salesRepresentative.name')
+                        ->label('نماینده فروش')
                         ->disabled(),
                     Select::make('status')
                         ->label('وضعیت')
@@ -98,7 +100,7 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('وضعیت')
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => Order::statusOptions()[$state] ?? ($state ?? '—'))
+                    ->formatStateUsing(fn (?string $state): string => Order::statusOptions()[$state] ?? ($state ?? '\u2014'))
                     ->color(fn (?string $state): string => match ($state) {
                         'draft' => 'gray',
                         'confirmed' => 'success',
@@ -114,31 +116,21 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('owner.name')
                     ->label('مسئول')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('salesRepresentative.name')
+                    ->label('نماینده')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('confirmed_at')
                     ->label('تأیید')
                     ->dateTime('Y/m/d')
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('به‌روزرسانی')
-                    ->since()
-                    ->sortable(),
             ])
-            ->defaultSort('updated_at', 'desc')
-            ->filters([
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('وضعیت')
-                    ->options(Order::statusOptions()),
-            ])
-            ->emptyStateHeading('سفارشی نیست')
-            ->recordActions([
-                EditAction::make()->label('مشاهده / وضعیت'),
-            ]);
+            ->defaultSort('id', 'desc');
     }
 
     public static function getRelations(): array
     {
         return [
-            OrderLinesRelationManager::class,
+            LinesRelationManager::class,
             WorkPackagesRelationManager::class,
         ];
     }
@@ -149,10 +141,5 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
-    }
-
-    public static function canCreate(): bool
-    {
-        return false;
     }
 }
