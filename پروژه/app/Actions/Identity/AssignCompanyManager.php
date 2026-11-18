@@ -1,15 +1,15 @@
 <?php
 
-namespace App\\Actions\\Identity;
+namespace App\Actions\Identity;
 
-use App\\Models\\Company;
-use App\\Models\\Permission;
-use App\\Models\\Role;
-use App\\Models\\User;
-use App\\Support\\CompanyMembershipAccess;
-use Illuminate\\Auth\\Access\\AuthorizationException;
-use Illuminate\\Support\\Facades\\DB;
-use Illuminate\\Support\\Facades\\Validator;
+use App\Models\Company;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
+use App\Support\CompanyMembershipAccess;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class AssignCompanyManager
 {
@@ -65,7 +65,7 @@ class AssignCompanyManager
                     ->lockForUpdate()
                     ->firstOrFail();
             } else {
-                throw new \\Illuminate\\Validation\\ValidationException(
+                throw new \Illuminate\Validation\ValidationException(
                     Validator::make([], ['mode' => ['required', 'in:existing,new']])->errors()
                 );
             }
