@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             MarketingSeeder::class,
             SalesSeeder::class,
             ProductionSeeder::class,
+            FinanceSeeder::class,
         ]);
     }
 }
