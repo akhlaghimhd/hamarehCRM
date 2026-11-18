@@ -309,6 +309,8 @@ class CompanyResource extends Resource
                 \Filament\Actions\Action::make('assignManager')
                     ->label('تعیین مدیر شرکت')
                     ->icon('heroicon-o-user-plus')
+                    ->iconButton()
+                    ->tooltip('مدیریت مدیر شرکت')
                     ->modalHeading('تعیین مدیر شرکت')
                     ->modalDescription('یک کاربر موجود را انتخاب کنید یا حساب کاربری جدید بسازید. مدیر شرکت عضو مستقل همین شرکت خواهد بود.')
                     ->schema([
@@ -345,6 +347,8 @@ class CompanyResource extends Resource
                 \Filament\Actions\Action::make('manageFinancial')
                     ->label('هویت مالی و حساب‌ها')
                     ->icon('heroicon-o-building-library')
+                    ->iconButton()
+                    ->tooltip('مدیریت هویت مالی و حساب‌ها')
                     ->modalHeading('مدیریت پروفایل مالی شرکت')
                     ->schema([
                         Select::make('type')
@@ -364,10 +368,14 @@ class CompanyResource extends Resource
                 ViewAction::make()
                     ->label('داشبورد شرکت')
                     ->icon('heroicon-o-squares-2x2')
+                    ->iconButton()
+                    ->tooltip('داشبورد جامع شرکت')
                     ->url(fn (Company $record): string => static::getUrl('view', ['record' => $record])),
                 EditAction::make()
                     ->label('ویرایش اطلاعات شرکت')
                     ->icon('heroicon-o-pencil-square')
+                    ->iconButton()
+                    ->tooltip('ویرایش اطلاعات شرکت')
                     ->url(fn (Company $record): string => static::getUrl('edit', ['record' => $record]))
                     ->visible(fn (Company $record): bool => static::canEdit($record)),
             ]);
