@@ -199,6 +199,11 @@ class Opportunity extends Model
         return $this->hasMany(OpportunityStep::class)->orderByDesc('id');
     }
 
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class)->orderByDesc('id');
+    }
+
     public function openStep(): ?OpportunityStep
     {
         return $this->steps()->where('is_open', true)->orderByDesc('id')->first();
