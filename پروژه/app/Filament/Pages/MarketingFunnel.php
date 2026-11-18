@@ -107,7 +107,8 @@ class MarketingFunnel extends Page
                     'owner' => $o->owner?->name,
                     'next_step' => $o->next_step,
                     'due' => optional($o->next_step_due)?->format('Y/m/d'),
-                    'url' => OpportunityResource::getUrl('edit', ['record' => $o]),
+                    // Workspace (ManageOpportunity), not the raw edit form.
+                    'url' => OpportunityResource::getUrl('view', ['record' => $o]),
                 ])->values()->all(),
             ];
         }
@@ -116,7 +117,8 @@ class MarketingFunnel extends Page
             ->where(function ($q) {
                 $q->whereNull('status')
                     ->orWhere('status', Opportunity::STATUS_ACTIVE)
-                    ->orWhere('status', Opportunity::STATUS_PAUSED);
+                    ->orWhere('status', Opportunity::STATUS_PAUSED)
+                    ->orWhere('status', Opportunity::STATUS_NURTURING);
             })
             ->count();
 
@@ -125,7 +127,11 @@ class MarketingFunnel extends Page
             ->whereDate('next_step_due', '<=', now()->addDays(3))
             ->where(function ($q) {
                 $q->whereNull('status')
-                    ->orWhereIn('status', [Opportunity::STATUS_ACTIVE, Opportunity::STATUS_PAUSED]);
+                    ->orWhereIn('status', [
+                        Opportunity::STATUS_ACTIVE,
+                        Opportunity::STATUS_PAUSED,
+                        Opportunity::STATUS_NURTURING,
+                    ]);
             })
             ->count();
 
