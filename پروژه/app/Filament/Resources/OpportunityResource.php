@@ -457,6 +457,8 @@ class OpportunityResource extends Resource
                     ->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
+            ->paginationPageOptions([10, 15, 25, 50, 100])
+            ->stackedOnMobile()
             ->filters([
                 SelectFilter::make('stage_id')
                     ->label('مرحله')
@@ -472,7 +474,11 @@ class OpportunityResource extends Resource
             ->emptyStateHeading('فرصتی ثبت نشده')
             ->emptyStateDescription('اولین فرصت فروش را ایجاد کنید.')
             ->emptyStateActions([
-                \Filament\Actions\Action::make('quick')->label('ثبت سریع')->url(static::getUrl('quick-create'))->icon('heroicon-o-bolt'),
+                \\Filament\\Actions\\Action::make('quick')
+                    ->label('ثبت سریع')
+                    ->url(static::getUrl('quick-create'))
+                    ->icon('heroicon-o-bolt')
+                    ->visible(fn (): bool => static::canCreate()),
             ])
             ->recordActions([
                 EditAction::make(),
