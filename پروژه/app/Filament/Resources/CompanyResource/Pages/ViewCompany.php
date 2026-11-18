@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\CompanyResource\Pages;
 
 use App\Actions\Identity\AssignCompanyManager;
+use App\Actions\Identity\DeleteCompanyForUser;
 use App\Actions\Identity\SaveCompanyBankAccount;
 use App\Actions\Identity\SaveCompanyFinancialIdentity;
 use App\Actions\Identity\UpdateCompanyProfile;
 use App\Filament\Resources\CompanyResource;
+use App\Filament\Pages\SwitchCompany;
 use App\Models\Company;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -178,6 +180,22 @@ class ViewCompany extends ViewRecord
                 }
             }
         }
+
+        $actions[] = Action::make('deleteCompany')
+            ->label('حذف نرم شرکت')
+            ->icon('heroicon-o-trash')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->modalHeading('حذف نرم شرکت')
+            ->modalDescription('شرکت از فهرست فعال خارج می‌شود؛ داده‌ها و سوابق مالی حذف فیزیکی نمی‌شوند.')
+            ->visible(fn (): bool => (bool) (auth()->user()?->isCompanyAdmin() ?? false)
+                && auth()->user()?->currentCompanyId() === (int) $this->record->id)
+            ->action(function (): void {
+                $actor = auth()->user();
+                abort_unless($actor instanceof User, 403);
+                app(DeleteCompanyForUser::class)->handle($this->record, $actor);
+                $this->redirect(SwitchCompany::getUrl());
+            });
 
         $actions[] = Action::make('backToCompanies')->label('بازگشت به فهرست')->icon('heroicon-o-arrow-right')->color('gray')->url(CompanyResource::getUrl('index'));
 
