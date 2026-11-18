@@ -169,7 +169,6 @@ class OpportunityResource extends Resource
                                 : null),
                     ])
                     ->columns(['default' => 1, 'md' => 2, 'xl' => 4])
-            ->stackedOnMobile()
                     ->columnSpanFull(),
 
                 Section::make('۲. ایمیل و آدرس')
