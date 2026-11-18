@@ -4,7 +4,7 @@ namespace App\\Filament\\Resources\\CompanyResource\\Pages;
 
 use App\\Actions\\Identity\\AssignCompanyManager;
 use App\\Actions\\Identity\\SaveCompanyBankAccount;
-use App\\Actions\\Identity\\SaveCompanyFinancialIdentity;
+use App\\Actions\\Identity\\SaveCompanyFinancialIdentity;\nuse App\\Actions\\Identity\\UpdateCompanyProfile;
 use App\\Filament\\Resources\\CompanyFinancialIdentityResource;
 use App\\Filament\\Resources\\CompanyResource;
 use App\\Models\\Company;
@@ -12,7 +12,7 @@ use App\\Models\\CompanyBankAccount;
 use App\\Models\\CompanyFinancialIdentity;
 use App\\Models\\User;
 use App\\Support\\CompanyMembershipAccess;
-use Filament\\Actions\\Action;
+use Filament\\Actions\\Action;\nuse Filament\\Actions\\EditAction;
 use Filament\\Notifications\\Notification;
 use Filament\\Forms\\Components\\Select;
 use Filament\\Forms\\Components\\Textarea;
@@ -35,6 +35,15 @@ class ViewCompany extends ViewRecord
         $actions = [];
 
         if (CompanyResource::canEdit($this->record)) {
+            $actions[] = EditAction::make()
+                ->label('ویرایش اطلاعات شرکت')
+                ->icon('heroicon-o-pencil-square')
+                ->using(function (Company $record, array $data): Company {
+                    $actor = auth()->user();
+                    abort_unless($actor instanceof User, 403);
+                    return app(UpdateCompanyProfile::class)->handle($record, $data, $actor);
+                });
+
             $actions[] = Action::make('assignManager')
                 ->label('مدیریت مدیر شرکت')
                 ->icon('heroicon-o-user-plus')
