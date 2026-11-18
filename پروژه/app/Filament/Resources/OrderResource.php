@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers\OrderLinesRelationManager;
+use App\Filament\Resources\OrderResource\RelationManagers\WorkPackagesRelationManager;
 use App\Models\Order;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -138,6 +139,7 @@ class OrderResource extends Resource
     {
         return [
             OrderLinesRelationManager::class,
+            WorkPackagesRelationManager::class,
         ];
     }
 
