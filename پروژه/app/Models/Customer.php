@@ -46,8 +46,25 @@ class Customer extends Model
         return $this->hasMany(Opportunity::class);
     }
 
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class)->latest('id');
+    }
+
     public function isOrganization(): bool
     {
         return $this->type === self::TYPE_ORGANIZATION;
+    }
+
+    /**
+     * مانده باز فاکتورهای فعال (صادر/جزئی) برای این مشتری در شرکت جاری.
+     */
+    public function openBalance(): float
+    {
+        $rows = $this->invoices()
+            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIAL])
+            ->get(['total', 'paid_amount']);
+
+        return (float) $rows->sum(fn (Invoice $invoice) => max(0, (float) $invoice->total - (float) $invoice->paid_amount));
     }
 }
