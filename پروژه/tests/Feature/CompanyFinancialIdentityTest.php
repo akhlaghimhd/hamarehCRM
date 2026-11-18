@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Actions\Identity\CreateCompanyForUser;
 use App\Actions\Identity\SaveCompanyBankAccount;
 use App\Actions\Identity\SaveCompanyFinancialIdentity;
-use App\Filament\Resources\CompanyFinancialIdentityResource;
+use App\Filament\Resources\CompanyFinancialIdentityResource;\nuse App\Filament\Resources\CompanyResource\Pages\ViewCompany;
 use App\Filament\Resources\CompanyFinancialIdentityResource\Pages\EditCompanyFinancialIdentity;
 use App\Filament\Resources\CompanyFinancialIdentityResource\RelationManagers\BankAccountsRelationManager;
 use App\Models\Company;
@@ -129,6 +129,24 @@ class CompanyFinancialIdentityTest extends TestCase
             ->assertSee('حساب‌های دریافت')
             ->assertSee('افزودن حساب')
             ->assertSee('شماره حساب');
+    }
+
+    public function test_company_dashboard_shows_manager_and_both_financial_profiles(): void
+    {
+        [$company, $owner] = $this->companyAndOwner();
+        $this->actingAs($owner);
+
+        $page = Livewire::test(ViewCompany::class, ['record' => $company->getRouteKey()])
+            ->assertOk()
+            ->assertSee('داشبورد مدیریت شرکت')
+            ->assertSee('مدیر مالی')
+            ->assertSee('هویت مالی رسمی')
+            ->assertSee('هویت مالی غیررسمی')
+            ->assertSee('مدیریت مدیر شرکت')
+            ->assertSee('هویت رسمی')
+            ->assertSee('هویت غیررسمی');
+
+        $this->assertNotNull($page->instance()->getRecord());
     }
 
     public function test_member_of_another_company_cannot_edit_financial_identity(): void
