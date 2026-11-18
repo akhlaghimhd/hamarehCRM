@@ -246,4 +246,22 @@ class Order extends Model
             return $order->fresh(['lines', 'customer']);
         });
     }
+
+    public function remainingDeliveryQty(): float
+    {
+        $this->loadMissing('lines');
+
+        return (float) $this->lines->sum(fn ($line) => $line->remainingQty());
+    }
+
+    public function isFullyDelivered(): bool
+    {
+        $this->loadMissing('lines');
+
+        if ($this->lines->isEmpty()) {
+            return false;
+        }
+
+        return $this->lines->every(fn ($line) => $line->isFullyDelivered());
+    }
 }
