@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\CustomerResource\Pages;
 use App\Filament\Resources\CustomerResource\RelationManagers\ContactsRelationManager;
+use App\Filament\Resources\CustomerResource\RelationManagers\InvoicesRelationManager;
 use App\Models\Customer;
 use App\Support\Fa;
 use Filament\Actions\BulkActionGroup;
@@ -158,6 +159,13 @@ class CustomerResource extends Resource
                     ->searchable()
                     ->toggleable()
                     ->visibleFrom('lg'),
+                Tables\Columns\TextColumn::make('open_balance')
+                    ->label('مانده باز')
+                    ->state(fn (Customer $record): float => $record->openBalance())
+                    ->numeric()
+                    ->alignEnd()
+                    ->toggleable()
+                    ->visibleFrom('md'),
                 Tables\Columns\TextColumn::make('national_id')
                     ->label('شناسه')
                     ->searchable()
@@ -228,6 +236,7 @@ class CustomerResource extends Resource
     {
         return [
             ContactsRelationManager::class,
+            InvoicesRelationManager::class,
         ];
     }
 
