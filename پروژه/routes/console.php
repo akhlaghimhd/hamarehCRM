@@ -2,44 +2,40 @@
 
 use Illuminate\Support\Facades\Schedule;
 
+use App\Models\PlatformOwner;
+use App\Models\User;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use App\Models\PlatformOwner;
-use App\Models\User;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Artisan::command('platform-owner:grant {user}', function (string $user): int {
-    $resolved = User::query()
-        ->where('id', $user)
-        ->orWhere('username', $user)
-        ->orWhere('email', $user)
-        ->first();
+Artisan::command('platform-owner:grant {userId}', function (string $userId): int {
+    $user = User::query()->find($userId);
 
-    if (! $resolved) {
+    if (! $user) {
         $this->error('کاربر یافت نشد.');
 
         return self::FAILURE;
     }
 
-    if (! $resolved->is_active) {
+    if (! $user->is_active) {
         $this->error('حساب غیرفعال نمی‌تواند مالک پلتفرم شود.');
 
         return self::FAILURE;
     }
 
-    if (! $this->confirm("مالکیت پلتفرم به حساب {$resolved->name} ({$resolved->id}) اعطا شود؟")) {
+    if (! $this->confirm("مالکیت پلتفرم به حساب {$user->name} ({$user->id}) اعطا شود؟")) {
         $this->comment('عملیات لغو شد.');
 
         return self::SUCCESS;
     }
 
     PlatformOwner::query()->firstOrCreate(
-        ['user_id' => $resolved->id],
+        ['user_id' => $user->id],
         ['granted_by_user_id' => null],
     );
 
