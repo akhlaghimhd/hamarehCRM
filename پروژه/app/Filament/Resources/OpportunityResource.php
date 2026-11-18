@@ -474,7 +474,7 @@ class OpportunityResource extends Resource
             ->emptyStateHeading('فرصتی ثبت نشده')
             ->emptyStateDescription('اولین فرصت فروش را ایجاد کنید.')
             ->emptyStateActions([
-                \\Filament\\Actions\\Action::make('quick')
+                \Filament\Actions\Action::make('quick')
                     ->label('ثبت سریع')
                     ->url(static::getUrl('quick-create'))
                     ->icon('heroicon-o-bolt')
