@@ -6,18 +6,13 @@ use App\Actions\Identity\AssignCompanyManager;
 use App\Actions\Identity\SaveCompanyBankAccount;
 use App\Actions\Identity\SaveCompanyFinancialIdentity;
 use App\Actions\Identity\UpdateCompanyProfile;
-use App\Filament\Resources\CompanyFinancialIdentityResource;
 use App\Filament\Resources\CompanyResource;
 use App\Models\Company;
-use App\Models\CompanyBankAccount;
-use App\Models\CompanyFinancialIdentity;
 use App\Models\User;
-use App\Support\CompanyMembershipAccess;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Pages\ViewRecord;
@@ -61,6 +56,7 @@ class ViewCompany extends ViewRecord
                     ->label('ویرایش اطلاعات مدیر')
                     ->icon('heroicon-o-identification')
                     ->modalHeading('ویرایش حساب مدیر شرکت')
+                    ->modalDescription('این حساب کاربری در همه شرکت‌هایی که عضو آن است مشترک است؛ تغییر نام، ایمیل یا گذرواژه در تمام آن شرکت‌ها اعمال می‌شود.')
                     ->fillForm(fn () => $managerAccount->only(['name', 'username', 'email']))
                     ->form([
                         TextInput::make('name')->label('نام')->required()->maxLength(255),
