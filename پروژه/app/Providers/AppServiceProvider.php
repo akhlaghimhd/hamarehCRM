@@ -7,6 +7,7 @@ use App\Models\Attachment;
 use App\Models\Order;
 use App\Models\Quote;
 use App\Models\Task;
+use App\Models\WorkPackage;
 use App\Observers\AuditObserver;
 use App\Policies\ActivityPolicy;
 use App\Policies\AttachmentPolicy;
@@ -48,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
         Order::observe(AuditObserver::class);
         Quote::observe(AuditObserver::class);
         Task::observe(AuditObserver::class);
+        WorkPackage::observe(AuditObserver::class);
 
         FilamentView::registerRenderHook(
             PanelsRenderHook::HEAD_END,
