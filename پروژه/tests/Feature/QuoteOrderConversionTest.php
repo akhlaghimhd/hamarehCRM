@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Opportunity;
 use App\Models\Order;
 use App\Models\Quote;
+use App\Models\QuoteLine;
 use App\Models\User;
 use App\Support\CompanyContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,6 +66,61 @@ class QuoteOrderConversionTest extends TestCase
 
         $this->assertSame($order->id, $again->id);
         $this->assertSame(1, Order::query()->where('quote_id', $quote->id)->count());
+    }
+
+    public function test_config_snapshot_is_copied_from_quote_line_to_order_line(): void
+    {
+        [$company, $user, $customer] = $this->seedPath(createOpportunity: false);
+        $context = app(CompanyContext::class);
+
+        $snapshot = [
+            'captured_at' => now()->toIso8601String(),
+            'product_type' => 'notopia',
+            'model' => ['id' => 9, 'code' => 'KEYVAN-ZIBA-1405', 'name' => 'زیبا', 'base_price' => 1800000],
+            'size' => ['id' => 3, 'code' => 'A5', 'name' => 'A5'],
+            'cover_sku' => ['id' => 7, 'code' => 'CV-RED', 'name' => 'جلد قرمز'],
+            'options' => [['id' => 1, 'name' => 'قلم پاک‌شو']],
+            'price' => ['unit_price' => 1800000.0, 'currency' => 'IRR', 'breakdown' => ['base' => 1800000.0]],
+        ];
+
+        $quote = $context->runForCompany($company->id, function () use ($company, $customer, $user, $snapshot) {
+            $quote = new Quote([
+                'company_id' => $company->id,
+                'customer_id' => $customer->id,
+                'owner_user_id' => $user->id,
+                'number' => Quote::nextNumber($company->id),
+                'title' => 'پیش‌فاکتور با snapshot',
+                'status' => Quote::STATUS_DRAFT,
+                'subtotal' => 1_800_000,
+                'total' => 1_800_000,
+            ]);
+            $quote->save();
+
+            QuoteLine::query()->create([
+                'company_id' => $company->id,
+                'quote_id' => $quote->id,
+                'sort_order' => 10,
+                'product_type' => 'notopia',
+                'title' => 'KEYVAN-ZIBA-1405 — زیبا',
+                'config_snapshot' => $snapshot,
+                'qty' => 1,
+                'unit_price' => 1_800_000,
+                'line_total' => 1_800_000,
+            ]);
+
+            return $quote->fresh(['lines']);
+        });
+
+        $order = $context->runForCompany(
+            $company->id,
+            fn () => Order::fromQuote($quote),
+        );
+
+        $orderLine = $order->lines->first();
+        $this->assertNotNull($orderLine);
+        $this->assertSame('A5', $orderLine->config_snapshot['size']['name'] ?? null);
+        $this->assertSame('جلد قرمز', $orderLine->config_snapshot['cover_sku']['name'] ?? null);
+        $this->assertSame(1_800_000.0, (float) ($orderLine->config_snapshot['price']['unit_price'] ?? 0));
     }
 
     public function test_empty_quote_cannot_convert_to_order(): void
