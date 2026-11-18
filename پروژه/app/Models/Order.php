@@ -28,6 +28,8 @@ class Order extends Model
         'quote_id',
         'opportunity_id',
         'owner_user_id',
+        'sales_representative_id',
+        'sales_attribution_snapshot',
         'number',
         'title',
         'status',
@@ -48,6 +50,7 @@ class Order extends Model
             'tax_amount' => 'decimal:0',
             'total' => 'decimal:0',
             'confirmed_at' => 'datetime',
+            'sales_attribution_snapshot' => 'array',
         ];
     }
 
@@ -80,6 +83,11 @@ class Order extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
+    public function salesRepresentative(): BelongsTo
+    {
+        return $this->belongsTo(SalesRepresentative::class);
     }
 
     public function lines(): HasMany
@@ -163,7 +171,7 @@ class Order extends Model
             $quote = Quote::query()
                 ->whereKey($quote->id)
                 ->lockForUpdate()
-                ->with('lines')
+                ->with(['lines', 'salesRepresentative'])
                 ->firstOrFail();
 
             if ($quote->status === Quote::STATUS_CONVERTED) {
@@ -189,6 +197,10 @@ class Order extends Model
                 'quote_id' => $quote->id,
                 'opportunity_id' => $quote->opportunity_id,
                 'owner_user_id' => $quote->owner_user_id,
+                'sales_representative_id' => $quote->sales_representative_id,
+                'sales_attribution_snapshot' => $quote->salesRepresentative
+                    ? $quote->salesRepresentative->toAttributionSnapshot()
+                    : null,
                 'number' => self::nextNumber((int) $quote->company_id),
                 'title' => $quote->title,
                 'status' => self::STATUS_CONFIRMED,
