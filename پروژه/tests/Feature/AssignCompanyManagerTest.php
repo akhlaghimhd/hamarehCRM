@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class AssignCompanyManagerTest extends TestCase
@@ -63,22 +64,10 @@ class AssignCompanyManagerTest extends TestCase
         ]);
     }
 
-    public function test_platform_owner_can_create_a_new_manager_account_without_changing_other_default_membership(): void
+    public function test_platform_owner_can_create_a_new_manager_account(): void
     {
         $owner = $this->owner();
         $company = $this->company('manager-new-account');
-        $otherCompany = $this->company('manager-other-company');
-        $user = User::factory()->create();
-        $otherRole = Role::query()->create([
-            'company_id' => $otherCompany->id,
-            'name' => 'admin',
-            'label' => 'مدیر شرکت',
-            'is_system' => true,
-        ]);
-        $user->companies()->attach($otherCompany->id, [
-            'role_id' => $otherRole->id,
-            'is_default' => true,
-        ]);
 
         $created = app(AssignCompanyManager::class)->handle($company, [
             'mode' => 'new',
@@ -91,16 +80,68 @@ class AssignCompanyManagerTest extends TestCase
 
         $this->assertSame('new-company-manager', $created->username);
         $this->assertDatabaseHas('company_user', [
+            'company_id' => $company->id,
+            'user_id' => $created->id,
+            'is_default' => true,
+        ]);
+        $this->assertTrue(Hash::check('SecurePass123', $created->password));
+    }
+
+    public function test_assigning_an_existing_member_preserves_their_default_company_and_other_roles(): void
+    {
+        $owner = $this->owner();
+        $company = $this->company('manager-existing-target');
+        $otherCompany = $this->company('manager-existing-default');
+        $user = User::factory()->create();
+        $otherRole = Role::query()->create([
+            'company_id' => $otherCompany->id,
+            'name' => 'sales',
+            'label' => 'فروش',
+            'is_system' => false,
+        ]);
+        $user->companies()->attach($otherCompany->id, [
+            'role_id' => $otherRole->id,
+            'is_default' => true,
+        ]);
+        $existingRole = Role::query()->create([
+            'company_id' => $company->id,
+            'name' => 'sales',
+            'label' => 'فروش',
+            'is_system' => false,
+        ]);
+        $user->companies()->attach($company->id, [
+            'role_id' => $existingRole->id,
+            'is_default' => false,
+        ]);
+        $membershipId = DB::table('company_user')
+            ->where('company_id', $company->id)
+            ->where('user_id', $user->id)
+            ->value('id');
+        DB::table('company_user_role')->insert([
+            'company_user_id' => $membershipId,
+            'role_id' => $existingRole->id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        app(AssignCompanyManager::class)->handle($company, [
+            'mode' => 'existing',
+            'user_id' => $user->id,
+        ], $owner);
+
+        $this->assertDatabaseHas('company_user', [
             'company_id' => $otherCompany->id,
             'user_id' => $user->id,
             'is_default' => true,
         ]);
-        $this->assertDatabaseHas('company_user', [
-            'company_id' => $company->id,
-            'user_id' => $created->id,
-            'is_default' => false,
+        $this->assertDatabaseHas('company_user_role', [
+            'company_user_id' => $membershipId,
+            'role_id' => $existingRole->id,
         ]);
-        $this->assertTrue(Hash::check('SecurePass123', $created->password));
+        $this->assertDatabaseHas('company_user_role', [
+            'company_user_id' => $membershipId,
+            'role_id' => DB::table('roles')->where('company_id', $company->id)->where('name', 'admin')->value('id'),
+        ]);
     }
 
     public function test_company_manager_assignment_is_denied_to_unrelated_user(): void
