@@ -372,11 +372,11 @@ class CompanyResource extends Resource
                     ->tooltip('داشبورد جامع شرکت')
                     ->url(fn (Company $record): string => static::getUrl('view', ['record' => $record])),
                 EditAction::make()
-                    ->label('ویرایش اطلاعات شرکت')
+                    ->label('مدیریت شرکت')
                     ->icon('heroicon-o-pencil-square')
                     ->iconButton()
-                    ->tooltip('ویرایش اطلاعات شرکت')
-                    ->url(fn (Company $record): string => static::getUrl('edit', ['record' => $record]))
+                    ->tooltip('مدیریت و ویرایش شرکت')
+                    ->url(fn (Company $record): string => static::getUrl('view', ['record' => $record]))
                     ->visible(fn (Company $record): bool => static::canEdit($record)),
             ]);
     }
