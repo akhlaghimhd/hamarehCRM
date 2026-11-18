@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Actions\Identity\AssignCompanyManager;
-use App\Actions\Identity\CreateCompanyForUser;
 use App\Actions\Identity\SetCompanyStatus;
 use App\Actions\Identity\UpdateCompanyProfile;
 use App\Filament\Concerns\ChecksResourcePermission;
@@ -27,7 +26,6 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\ToggleColumn;
-use Filament\Support\Enums\SlideOverPosition;
 use Filament\Support\Enums\Width;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -364,36 +362,24 @@ class CompanyResource extends Resource
                     })
                     ->visible(fn (Company $record): bool => static::canEdit($record)),
                 ViewAction::make()
-                    ->label('مشاهده')
-                    ->slideOver()
-                    ->slideOverPosition(SlideOverPosition::Start)
-                    ->modalWidth(Width::Medium)
-                    ->closeModalByClickingAway(true),
+                    ->label('داشبورد شرکت')
+                    ->icon('heroicon-o-squares-2x2')
+                    ->url(fn (Company $record): string => static::getUrl('view', ['record' => $record])),
                 EditAction::make()
-                    ->label('ویرایش')
-                    ->slideOver()
-                    ->slideOverPosition(SlideOverPosition::Start)
-                    ->modalWidth(Width::Medium)
-                    ->closeModalByClickingAway(false)
-                    ->closeModalByEscaping(false)
-                    ->modalCloseButton(false)
-                    ->modalCancelActionLabel('انصراف')
-                    ->modalSubmitActionLabel('ذخیره تغییرات')
-                    ->successNotificationTitle('اطلاعات شرکت ذخیره شد')
-                    ->failureNotificationTitle('ذخیره اطلاعات شرکت انجام نشد')
-                    ->failureNotificationBody('لطفاً اطلاعات شرکت را بررسی کنید و دوباره تلاش کنید.')
-                    ->visible(fn (Company $record): bool => static::canEdit($record))
-                    ->using(function (Company $record, array $data): Company {
-                        $actor = auth()->user();
-                        abort_unless($actor instanceof User, 403);
-
-                        return app(UpdateCompanyProfile::class)->handle($record, $data, $actor);
-                    }),
+                    ->label('ویرایش اطلاعات شرکت')
+                    ->icon('heroicon-o-pencil-square')
+                    ->url(fn (Company $record): string => static::getUrl('edit', ['record' => $record]))
+                    ->visible(fn (Company $record): bool => static::canEdit($record)),
             ]);
     }
 
     public static function getPages(): array
     {
-        return ['index' => Pages\ListCompanies::route('/')];
+        return [
+            'index' => Pages\ListCompanies::route('/'),
+            'create' => Pages\CreateCompany::route('/create'),
+            'view' => Pages\ViewCompany::route('/{record}'),
+            'edit' => Pages\EditCompany::route('/{record}/edit'),
+        ];
     }
 }
