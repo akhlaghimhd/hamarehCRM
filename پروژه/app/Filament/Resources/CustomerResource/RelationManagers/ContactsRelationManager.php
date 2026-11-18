@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CustomerResource\RelationManagers;
 
+use App\Filament\Resources\CustomerResource;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -77,28 +78,17 @@ class ContactsRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->label('افزودن تماس')
-                    ->visible(fn () => CustomerResourceCanEdit($this)),
+                    ->visible(fn (): bool => CustomerResource::canEdit($this->getOwnerRecord())),
             ])
             ->recordActions([
                 EditAction::make()
                     ->label('ویرایش')
-                    ->visible(fn () => CustomerResourceCanEdit($this)),
+                    ->visible(fn (): bool => CustomerResource::canEdit($this->getOwnerRecord())),
                 DeleteAction::make()
                     ->label('حذف')
-                    ->visible(fn () => CustomerResourceCanEdit($this)),
+                    ->visible(fn (): bool => CustomerResource::canEdit($this->getOwnerRecord())),
             ])
             ->emptyStateHeading('فرد تماسی ثبت نشده')
             ->emptyStateDescription('حداقل یک تماس برای پیگیری فروش اضافه کنید.');
     }
-}
-
-/**
- * Helper keeps visibility aligned with parent resource permissions
- * without importing the full Resource class into every closure scope.
- */
-function CustomerResourceCanEdit(RelationManager $manager): bool
-{
-    $owner = $manager->getOwnerRecord();
-
-    return \App\Filament\Resources\CustomerResource::canEdit($owner);
 }
