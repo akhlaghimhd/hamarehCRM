@@ -2,14 +2,14 @@
     <div class="space-y-5" dir="rtl">
         <section class="grid grid-cols-2 gap-3 xl:grid-cols-4">
             @foreach ([
-                ['کل فرصت‌ها', $summary['total'], 'کل رکوردهای موجود در قیف'],
-                ['فرصت‌های فعال', $summary['open'], 'فرصت‌های در جریان'],
-                ['سررسید نزدیک', $summary['due_soon'], 'نیازمند پیگیری'],
-                ['ارزش قیف', number_format($summary['amount']) . ' ریال', 'مجموع ارزش ثبت‌شده'],
+                ['کل فرصت‌ها', \App\Support\Fa::number($summary['total']), 'کل رکوردهای موجود در قیف'],
+                ['فرصت‌های فعال', \App\Support\Fa::number($summary['open']), 'فرصت‌های در جریان'],
+                ['سررسید نزدیک', \App\Support\Fa::number($summary['due_soon']), 'نیازمند پیگیری'],
+                ['ارزش قیف', \App\Support\Fa::number($summary['amount']) . ' ریال', 'مجموع ارزش ثبت‌شده'],
             ] as [$label, $value, $hint])
                 <article class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
                     <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ $label }}</p>
-                    <p class="mt-2 text-xl font-bold tracking-tight text-gray-950 dark:text-white">{{ is_numeric($value) ? number_format($value) : $value }}</p>
+                    <p class="mt-2 text-xl font-bold tracking-tight text-gray-950 dark:text-white">{{ $value }}</p>
                     <p class="mt-1 text-xs text-gray-400">{{ $hint }}</p>
                 </article>
             @endforeach
@@ -39,10 +39,10 @@
                                         <p class="mt-1 text-xs leading-5 text-gray-500">{{ $column['description'] }}</p>
                                     @endif
                                 </div>
-                                <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-lg bg-primary-100 px-2 text-xs font-bold text-primary-800 dark:bg-primary-950 dark:text-primary-200">{{ $column['count'] }}</span>
+                                <span class="inline-flex h-7 min-w-7 items-center justify-center rounded-lg bg-primary-100 px-2 text-xs font-bold text-primary-800 dark:bg-primary-950 dark:text-primary-200">{{ \App\Support\Fa::number($column['count']) }}</span>
                             </div>
                             @if ($column['amount'] > 0)
-                                <p class="mt-3 text-xs font-semibold tabular-nums text-gray-500">{{ number_format($column['amount']) }} ریال</p>
+                                <p class="mt-3 text-xs font-semibold tabular-nums text-gray-500">{{ \App\Support\Fa::number($column['amount']) }} ریال</p>
                             @endif
                         </header>
                         <div class="space-y-2 p-3">
@@ -60,12 +60,12 @@
                                         <div class="mt-3 rounded-lg bg-gray-50 p-2 text-xs leading-5 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
                                             {{ \Illuminate\Support\Str::limit($item['next_step'], 48) }}
                                             @if ($item['due'])
-                                                <span class="mt-1 block font-semibold text-amber-700 dark:text-amber-300">{{ $item['due'] }}</span>
+                                                <span class="mt-1 block font-semibold text-amber-700 dark:text-amber-300">{{ \App\Support\Fa::digits($item['due']) }}</span>
                                             @endif
                                         </div>
                                     @endif
                                     @if ($item['amount'])
-                                        <p class="mt-3 border-t border-gray-100 pt-2 text-sm font-bold tabular-nums text-primary-700 dark:border-gray-800 dark:text-primary-300">{{ number_format($item['amount']) }} ریال</p>
+                                        <p class="mt-3 border-t border-gray-100 pt-2 text-sm font-bold tabular-nums text-primary-700 dark:border-gray-800 dark:text-primary-300">{{ \App\Support\Fa::number($item['amount']) }} ریال</p>
                                     @endif
                                 </a>
                             @empty
