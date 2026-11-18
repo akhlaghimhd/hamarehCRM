@@ -3,11 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Concerns\ChecksResourcePermission;
-
 use App\Filament\Resources\CustomerResource\Pages;
+use App\Filament\Resources\CustomerResource\RelationManagers\ContactsRelationManager;
 use App\Models\Customer;
 use App\Support\Fa;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -16,8 +17,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -30,6 +31,7 @@ class CustomerResource extends Resource
     use ChecksResourcePermission;
 
     protected static ?string $permissionView = 'customers.view';
+
     protected static ?string $permissionManage = 'customers.manage';
 
     protected static ?string $model = Customer::class;
@@ -70,7 +72,6 @@ class CustomerResource extends Resource
                     ->description('نوع و مشخصات هویتی مشتری را ثبت کنید.')
                     ->icon('heroicon-o-identification')
                     ->columns(['default' => 1, 'md' => 2])
-            ->stackedOnMobile()
                     ->schema([
                         Select::make('type')
                             ->label('نوع مشتری')
@@ -221,6 +222,13 @@ class CustomerResource extends Resource
                         ->visible(fn () => static::canDeleteAny()),
                 ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            ContactsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
