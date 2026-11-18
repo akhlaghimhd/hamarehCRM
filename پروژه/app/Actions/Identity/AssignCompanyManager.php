@@ -10,6 +10,7 @@ use App\Support\CompanyMembershipAccess;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class AssignCompanyManager
 {
@@ -65,9 +66,7 @@ class AssignCompanyManager
                     ->lockForUpdate()
                     ->firstOrFail();
             } else {
-                throw new \Illuminate\Validation\ValidationException(
-                    Validator::make([], ['mode' => ['required', 'in:existing,new']])->errors()
-                );
+                throw ValidationException::withMessages(['mode' => 'روش تعیین مدیر معتبر نیست.']);
             }
 
             $role = Role::query()->firstOrCreate(
@@ -95,13 +94,20 @@ class AssignCompanyManager
                     'role_id' => $role->id,
                     'updated_at' => now(),
                 ]);
-                DB::table('company_user_role')->where('company_user_id', $membership->id)->delete();
-                DB::table('company_user_role')->insert([
-                    'company_user_id' => $membership->id,
-                    'role_id' => $role->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+
+                $hasAdminRole = DB::table('company_user_role')
+                    ->where('company_user_id', $membership->id)
+                    ->where('role_id', $role->id)
+                    ->exists();
+
+                if (! $hasAdminRole) {
+                    DB::table('company_user_role')->insert([
+                        'company_user_id' => $membership->id,
+                        'role_id' => $role->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             } else {
                 $membershipId = DB::table('company_user')->insertGetId([
                     'company_id' => $company->id,
