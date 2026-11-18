@@ -4,9 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\OrderResource\Pages;
-use App\Filament\Resources\OrderResource\RelationManagers\LinesRelationManager;
+use App\Filament\Resources\OrderResource\RelationManagers\OrderLinesRelationManager;
 use App\Filament\Resources\OrderResource\RelationManagers\WorkPackagesRelationManager;
 use App\Models\Order;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -123,14 +124,27 @@ class OrderResource extends Resource
                     ->label('تأیید')
                     ->dateTime('Y/m/d')
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('به\u200cروزرسانی')
+                    ->since()
+                    ->sortable(),
             ])
-            ->defaultSort('id', 'desc');
+            ->defaultSort('updated_at', 'desc')
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('وضعیت')
+                    ->options(Order::statusOptions()),
+            ])
+            ->emptyStateHeading('سفارشی نیست')
+            ->recordActions([
+                EditAction::make()->label('مشاهده / وضعیت'),
+            ]);
     }
 
     public static function getRelations(): array
     {
         return [
-            LinesRelationManager::class,
+            OrderLinesRelationManager::class,
             WorkPackagesRelationManager::class,
         ];
     }
@@ -141,5 +155,10 @@ class OrderResource extends Resource
             'index' => Pages\ListOrders::route('/'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
     }
 }
