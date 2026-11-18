@@ -26,8 +26,9 @@ class CreateLinkedTaskAction
         string $modalHeading = 'ایجاد کار وابسته',
         ?callable $subjectDefault = null,
         string $idempotencyPrefix = 'linked',
+        string $actionName = 'createLinkedTask',
     ): Action {
-        return Action::make('createLinkedTask')
+        return Action::make($actionName)
             ->label('کار تیمی')
             ->icon('heroicon-o-clipboard-document-check')
             ->color('gray')
