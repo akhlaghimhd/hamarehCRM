@@ -76,8 +76,7 @@ class OrderResource extends Resource
                         ->rows(3)
                         ->columnSpanFull(),
                 ])
-                ->columns(['default' => 1, 'md' => 2])
-            ->stackedOnMobile(),
+                ->columns(['default' => 1, 'md' => 2]),
         ]);
     }
 
