@@ -42,13 +42,16 @@ class AdminPanelProvider extends PanelProvider
                 'فروش و سفارش',
                 'کاتالوگ و محصولات',
                 'کارها و تیم',
+                'تولید و برون‌سپاری',
+                'مالی عملیاتی',
+                'موجودی سبک',
                 'گزارش‌ها',
                 'تنظیمات',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Pages\\Dashboard::class,
                 SwitchCompany::class,
             ])
             ->userMenuItems([
@@ -59,9 +62,13 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn (): bool => SwitchCompany::canAccess())
                     ->sort(10),
             ])
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('30s')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                Widgets\\AccountWidget::class,
+                \\App\\Filament\\Widgets\\CrmStatsOverview::class,
+                \\App\\Filament\\Widgets\\FollowUpNeededWidget::class,
             ])
             ->plugins([
                 MobileBottomNav::make()
