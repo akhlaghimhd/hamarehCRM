@@ -32,7 +32,6 @@ use Filament\Support\Enums\SlideOverPosition;
 use Filament\Support\Enums\Width;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use UnitEnum;
 
@@ -348,11 +347,11 @@ class CompanyResource extends Resource
                         DB::transaction(function () use ($data, $record, $actor): void {
                             $company = Company::query()->whereKey($record->id)->lockForUpdate()->firstOrFail();
                             if (! $company->is_active) {
-                                throw new \\Illuminate\\Auth\\Access\\AuthorizationException('شرکت غیرفعال است.');
+                                throw new \Illuminate\Auth\\Access\\AuthorizationException('شرکت غیرفعال است.');
                             }
 
                             if (($data['mode'] ?? 'existing') === 'new') {
-                                $validated = \\Illuminate\\Support\\Facades\\Validator::make($data, [
+                                $validated = \Illuminate\Support\\Facades\\Validator::make($data, [
                                     'name' => ['required', 'string', 'max:255'],
                                     'username' => ['required', 'string', 'max:100', 'alpha_dash', 'unique:users,username'],
                                     'email' => ['required', 'email', 'max:255', 'unique:users,email'],
@@ -433,7 +432,7 @@ class CompanyResource extends Resource
                         abort_unless($actor instanceof User && $actor->is_active, 403);
                         abort_unless($actor->isPlatformOwner() || app(CompanyMembershipAccess::class)->canManage($actor, (int) $record->id), 403);
                         $identity = CompanyFinancialIdentity::query()->where('company_id', $record->id)->where('type', $data['type'])->firstOrFail();
-                        return redirect(\\App\\Filament\\Resources\\CompanyFinancialIdentityResource::getUrl('edit', ['record' => $identity]));
+                        return redirect(\App\Filament\\Resources\\CompanyFinancialIdentityResource::getUrl('edit', ['record' => $identity]));
                     })
                     ->visible(fn (Company $record): bool => static::canEdit($record)),
                 ViewAction::make()

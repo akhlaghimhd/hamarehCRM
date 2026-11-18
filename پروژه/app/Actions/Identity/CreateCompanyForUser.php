@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 class CreateCompanyForUser
 {
     /**
-     * Create a company and its initial administrator atomically; only platform owners may do so.
+     * Create a company and optionally its initial administrator atomically; only platform owners may do so.
      *
      * @param array<string, mixed> $attributes
      */
@@ -148,15 +148,15 @@ class CreateCompanyForUser
                 ]);
             }
 
-            $initialAdmin = User::query()->create([
-                'name' => $manager['name'],
-                'username' => $manager['username'],
-                'email' => $manager['email'],
-                'password' => $manager['password'],
-                'is_active' => true,
-            ]);
-
             if ($hasManager) {
+                $initialAdmin = User::query()->create([
+                    'name' => $manager['name'],
+                    'username' => $manager['username'],
+                    'email' => $manager['email'],
+                    'password' => $manager['password'],
+                    'is_active' => true,
+                ]);
+
                 $adminRole = Role::query()->create([
                     'company_id' => $company->id,
                     'name' => 'admin',
