@@ -43,7 +43,7 @@ class OrderResource extends Resource
     {
         return $schema->components([
             Section::make('سفارش (snapshot قفل‌شده)')
-                ->description('پس از تأیید، قیمت و پیکربندی خطوط تغییر نمی‌کند مگر لغو و صدور مجدد.')
+                ->description('پس از تأیید، قیمت و پیکربندی خطوط تغییر نمی‌کند. وضعیت را از دکمه‌های بالای صفحه تغییر دهید.')
                 ->schema([
                     TextInput::make('number')
                         ->label('شماره')
@@ -58,7 +58,8 @@ class OrderResource extends Resource
                     Select::make('status')
                         ->label('وضعیت')
                         ->options(Order::statusOptions())
-                        ->required()
+                        ->disabled()
+                        ->dehydrated(false)
                         ->native(false),
                     TextInput::make('subtotal')
                         ->label('جمع جزء')
