@@ -213,6 +213,13 @@
                         <div class="opp-empty" style="margin:0;border-radius:0;border-top:1px solid #f3f4f6">هنوز پیش‌فاکتوری از این فرصت ساخته نشده.</div>
                     @endforelse
                 </div>
+
+                <div class="opp-card">
+                    <div class="opp-prev-head">
+                        <h2>کارهای وابسته</h2>
+                    </div>
+                    @include('filament.resources.opportunity-resource.pages.partials.related-tasks')
+                </div>
             </div>
         </aside>
 
