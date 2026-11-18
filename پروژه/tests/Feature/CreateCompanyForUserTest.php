@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -43,6 +44,25 @@ class CreateCompanyForUserTest extends TestCase
         $this->assertDatabaseMissing('company_user', ['company_id' => $company->id, 'user_id' => $owner->id]);
         $this->assertTrue($manager->isCompanyAdmin());
         $this->assertTrue($owner->fresh()->isPlatformOwner());
+    }
+
+    public function test_platform_owner_can_create_company_without_manager(): void
+    {
+        $owner = $this->owner();
+
+        $company = app(CreateCompanyForUser::class)->handle([
+            'name' => 'شرکت بدون مدیر',
+            'slug' => 'company-without-manager',
+        ], $owner);
+
+        $this->assertDatabaseHas('companies', ['id' => $company->id, 'slug' => 'company-without-manager']);
+        $this->assertSame(0, DB::table('company_user')->where('company_id', $company->id)->count());
+        $this->assertSame(2, DB::table('company_financial_identities')->where('company_id', $company->id)->count());
+        $this->assertDatabaseHas('audit_events', [
+            'company_id' => $company->id,
+            'auditable_id' => $company->id,
+            'event' => 'created',
+        ]);
     }
 
     public function test_company_admin_cannot_create_another_company(): void

@@ -49,6 +49,11 @@ class CompanyFinancialIdentityTest extends TestCase
         $this->assertSame(2, CompanyFinancialIdentity::query()->where('company_id', $company->id)->count());
     }
 
+    public function test_financial_identity_resource_is_not_registered_in_navigation(): void
+    {
+        $this->assertFalse(CompanyFinancialIdentityResource::shouldRegisterNavigation());
+    }
+
     public function test_identity_updates_create_version_history(): void
     {
         [$company, $owner] = $this->companyAndOwner();

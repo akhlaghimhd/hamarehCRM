@@ -325,7 +325,6 @@ class CompanyResource extends Resource
                             ->label('کاربر')
                             ->options(fn (Company $record): array => User::query()
                                 ->where('is_active', true)
-                                ->whereDoesntHave('companies', fn ($query) => $query->where('companies.id', $record->id))
                                 ->orderBy('name')
                                 ->get()
                                 ->mapWithKeys(fn (User $user): array => [$user->id => $user->name.' — '.$user->username])
