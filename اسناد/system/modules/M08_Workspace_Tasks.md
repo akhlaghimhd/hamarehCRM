@@ -47,7 +47,7 @@
 - [x] ثبت رویدادهای ایجاد/ویرایش/حذف Task و Activity
 - [x] اتصال UI ایجاد Task از Opportunity/Order
 - [x] نمایش کارهای وابسته روی میزکار فرصت
-- [ ] نمایش Timeline تاریخچه در جزئیات
+- [x] نمایش Timeline تاریخچه در جزئیات Task *(RelationManager تاریخچه تغییرات)*
 - [ ] یادآوری و Escalation از M11
 
 ## DoD
@@ -59,4 +59,4 @@
 - [ ] دسترسی مستقیم URL، Livewire، API و Job نیز Policy دارد
 - [x] سناریوی عدم نشت بین شرکت‌ها در تست پوشش داده شده است
 
-> به‌روزرسانی ۱۸ نوامبر ۲۰۲۶ روی `feature/filament5-upgrade`: اکشن مشترک CreateLinkedTaskAction روی میزکار فرصت و صفحه سفارش.
+> به‌روزرسانی ۱۸ نوامبر ۲۰۲۶ روی `feature/filament5-upgrade`: اکشن مشترک CreateLinkedTaskAction روی میزکار فرصت و صفحه سفارش؛ Timeline Audit روی صفحه ویرایش کار.
