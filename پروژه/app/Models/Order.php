@@ -160,6 +160,8 @@ class Order extends Model
             $this->notes = $note === '' ? $addition : $note."\n".$addition;
         }
 
+        app(\App\Services\OrderInventoryService::class)->releaseForOrder($this, $reason);
+
         $this->save();
 
         return $this;
@@ -228,6 +230,12 @@ class Order extends Model
                     'unit_price' => $line->unit_price,
                     'line_total' => $line->line_total,
                 ]);
+            }
+
+            try {
+                app(\App\Services\OrderInventoryService::class)->reserveForOrder($order->fresh(['lines']));
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidArgumentException('رزرو موجودی ممکن نیست: '.$e->getMessage(), 0, $e);
             }
 
             $quote->status = Quote::STATUS_CONVERTED;
