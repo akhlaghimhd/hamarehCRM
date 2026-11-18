@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\OrderResource\Pages;
+use App\Filament\Resources\OrderResource\RelationManagers\OrderLinesRelationManager;
 use App\Models\Order;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -130,6 +131,13 @@ class OrderResource extends Resource
             ->recordActions([
                 EditAction::make()->label('مشاهده / وضعیت'),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            OrderLinesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
