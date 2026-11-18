@@ -360,7 +360,7 @@ class CompanyResource extends Resource
                         abort_unless($actor instanceof User && $actor->is_active, 403);
                         abort_unless($actor->isPlatformOwner() || app(CompanyMembershipAccess::class)->canManage($actor, (int) $record->id), 403);
                         $identity = CompanyFinancialIdentity::query()->where('company_id', $record->id)->where('type', $data['type'])->firstOrFail();
-                        return redirect(\App\Filament\\Resources\\CompanyFinancialIdentityResource::getUrl('edit', ['record' => $identity]));
+                        return redirect(\App\Filament\Resources\CompanyFinancialIdentityResource::getUrl('edit', ['record' => $identity]));
                     })
                     ->visible(fn (Company $record): bool => static::canEdit($record)),
                 ViewAction::make()

@@ -1,15 +1,14 @@
 <?php
 
-namespace Tests\\Feature;
+namespace Tests\Feature;
 
-use App\\Actions\\Identity\\AssignCompanyManager;
-use App\\Models\\Company;
-use App\\Models\\PlatformOwner;
-use App\\Models\\Role;
-use App\\Models\\User;
-use Illuminate\\Foundation\\Testing\\RefreshDatabase;
-use Illuminate\\Support\\Facades\\DB;
-use Tests\\TestCase;
+use App\Actions\Identity\AssignCompanyManager;
+use App\Models\Company;
+use App\Models\PlatformOwner;
+use App\Models\Role;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class AssignCompanyManagerTest extends TestCase
 {
@@ -108,7 +107,7 @@ class AssignCompanyManagerTest extends TestCase
         $company = $this->company('manager-forbidden');
         $actor = User::factory()->create();
 
-        $this->expectException(\\Illuminate\\Auth\\Access\\AuthorizationException::class);
+        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
 
         app(AssignCompanyManager::class)->handle($company, [
             'mode' => 'new',
