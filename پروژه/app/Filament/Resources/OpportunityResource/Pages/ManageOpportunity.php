@@ -3,10 +3,12 @@
 namespace App\Filament\Resources\OpportunityResource\Pages;
 
 use App\Filament\Resources\OpportunityResource;
+use App\Filament\Resources\QuoteResource;
 use App\Models\Activity;
 use App\Models\Opportunity;
 use App\Models\OpportunityStage;
 use App\Models\OpportunityStep;
+use App\Models\Quote;
 use App\Models\User;
 use App\Support\Fa;
 use Filament\Actions\Action;
@@ -60,6 +62,98 @@ class ManageOpportunity extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('markWon')
+                ->label('برنده')
+                ->icon('heroicon-o-trophy')
+                ->color('success')
+                ->requiresConfirmation()
+                ->modalHeading('ثبت فرصت به‌عنوان برنده؟')
+                ->modalDescription('مرحله و وضعیت به برنده تغییر می‌کند. پس از آن می‌توانید پیش‌فاکتور بسازید.')
+                ->visible(fn () => OpportunityResource::canEdit($this->record)
+                    && $this->record->status !== Opportunity::STATUS_WON
+                    && $this->record->status !== Opportunity::STATUS_LOST)
+                ->action(function (): void {
+                    $this->record->markWon();
+                    $this->record->refresh();
+
+                    Notification::make()
+                        ->title('فرصت برنده ثبت شد')
+                        ->success()
+                        ->send();
+                }),
+
+            Action::make('markLost')
+                ->label('بازنده')
+                ->icon('heroicon-o-x-circle')
+                ->color('danger')
+                ->visible(fn () => OpportunityResource::canEdit($this->record)
+                    && $this->record->status !== Opportunity::STATUS_WON
+                    && $this->record->status !== Opportunity::STATUS_LOST)
+                ->modalHeading('ثبت فرصت به‌عنوان بازنده')
+                ->form([
+                    Select::make('lost_reason_code')
+                        ->label('دلیل باخت')
+                        ->options(Opportunity::lostReasonOptions())
+                        ->required()
+                        ->native(false),
+                    Textarea::make('lost_reason')
+                        ->label('توضیح (اختیاری)')
+                        ->rows(3)
+                        ->maxLength(500),
+                ])
+                ->action(function (array $data): void {
+                    $code = $data['lost_reason_code'] ?? null;
+                    $labels = Opportunity::lostReasonOptions();
+                    $label = $labels[$code] ?? null;
+                    $detail = trim((string) ($data['lost_reason'] ?? ''));
+                    $reason = $detail !== ''
+                        ? ($label ? $label.' — '.$detail : $detail)
+                        : $label;
+
+                    $this->record->markLost($reason, $code);
+                    $this->record->refresh();
+
+                    Notification::make()
+                        ->title('فرصت بازنده ثبت شد')
+                        ->success()
+                        ->send();
+                }),
+
+            Action::make('createQuote')
+                ->label('پیش‌فاکتور')
+                ->icon('heroicon-o-document-text')
+                ->color('primary')
+                ->visible(function (): bool {
+                    if (! OpportunityResource::canEdit($this->record)) {
+                        return false;
+                    }
+
+                    if (! class_exists(QuoteResource::class)) {
+                        return false;
+                    }
+
+                    return QuoteResource::canCreate();
+                })
+                ->requiresConfirmation()
+                ->modalHeading('ایجاد پیش‌فاکتور از این فرصت؟')
+                ->modalDescription('یک پیش‌فاکتور پیش‌نویس با اتصال به همین فرصت ساخته می‌شود.')
+                ->action(function () {
+                    $quote = Quote::fromOpportunity($this->record);
+
+                    if ($this->record->status !== Opportunity::STATUS_WON) {
+                        $this->record->markWon();
+                        $this->record->refresh();
+                    }
+
+                    Notification::make()
+                        ->title('پیش‌فاکتور ساخته شد')
+                        ->body($quote->number)
+                        ->success()
+                        ->send();
+
+                    return redirect(QuoteResource::getUrl('edit', ['record' => $quote]));
+                }),
+
             Action::make('refer')
                 ->label('ارجاع')
                 ->icon('heroicon-o-arrow-path-rounded-square')
