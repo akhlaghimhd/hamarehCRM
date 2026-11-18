@@ -87,6 +87,11 @@ class Order extends Model
         return $this->hasMany(OrderLine::class)->orderBy('sort_order');
     }
 
+    public function workPackages(): HasMany
+    {
+        return $this->hasMany(WorkPackage::class)->latest('id');
+    }
+
     public static function nextNumber(int $companyId): string
     {
         $year = now()->format('Y');
