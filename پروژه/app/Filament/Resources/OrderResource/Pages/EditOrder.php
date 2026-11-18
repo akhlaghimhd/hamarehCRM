@@ -3,8 +3,12 @@
 namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Actions\CreateLinkedTaskAction;
+use App\Filament\Resources\InvoiceResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\WorkPackageResource;
+use App\Models\CompanyBankAccount;
+use App\Models\CompanyFinancialIdentity;
+use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\WorkPackage;
 use Filament\Actions\Action;
@@ -75,6 +79,85 @@ class EditOrder extends EditRecord
                         Notification::make()->title('سفارش لغو شد.')->warning()->send();
                     } catch (InvalidArgumentException $e) {
                         Notification::make()->title($e->getMessage())->danger()->send();
+                    }
+                }),
+            Action::make('issueInvoice')
+                ->label('صدور فاکتور')
+                ->icon('heroicon-o-document-text')
+                ->color('primary')
+                ->visible(fn (): bool => in_array($this->record->status, [
+                    Order::STATUS_CONFIRMED,
+                    Order::STATUS_IN_FULFILLMENT,
+                    Order::STATUS_COMPLETED,
+                ], true)
+                    && (auth()->user()?->isCompanyAdmin() || auth()->user()?->hasPermission('invoices.manage')))
+                ->form([
+                    Select::make('identity_type')
+                        ->label('نوع هویت مالی')
+                        ->options(Invoice::identityTypeOptions())
+                        ->required()
+                        ->live()
+                        ->native(false),
+                    Select::make('company_bank_account_id')
+                        ->label('حساب دریافت')
+                        ->options(function (callable $get): array {
+                            $type = $get('identity_type');
+                            if (! $type) {
+                                return [];
+                            }
+                            $identity = CompanyFinancialIdentity::query()
+                                ->where('company_id', $this->record->company_id)
+                                ->where('type', $type)
+                                ->where('is_active', true)
+                                ->first();
+                            if (! $identity) {
+                                return [];
+                            }
+
+                            return CompanyBankAccount::query()
+                                ->where('company_financial_identity_id', $identity->id)
+                                ->where('is_active', true)
+                                ->orderByDesc('is_default')
+                                ->get()
+                                ->mapWithKeys(fn (CompanyBankAccount $a) => [
+                                    $a->id => trim(($a->label ?: $a->bank_name).' — '.($a->account_number ?: $a->iban ?: '#'.$a->id)),
+                                ])
+                                ->all();
+                        })
+                        ->searchable()
+                        ->native(false),
+                ])
+                ->action(function (array $data) {
+                    try {
+                        $identity = CompanyFinancialIdentity::query()
+                            ->where('company_id', $this->record->company_id)
+                            ->where('type', $data['identity_type'])
+                            ->where('is_active', true)
+                            ->first();
+
+                        $account = null;
+                        if (! empty($data['company_bank_account_id'])) {
+                            $account = CompanyBankAccount::query()->find($data['company_bank_account_id']);
+                        }
+
+                        $invoice = Invoice::fromOrder(
+                            $this->record,
+                            $data['identity_type'],
+                            $account,
+                            $identity,
+                        );
+
+                        Notification::make()
+                            ->title('فاکتور صادر شد.')
+                            ->body($invoice->number)
+                            ->success()
+                            ->send();
+
+                        return redirect(InvoiceResource::getUrl('edit', ['record' => $invoice]));
+                    } catch (InvalidArgumentException $e) {
+                        Notification::make()->title($e->getMessage())->danger()->send();
+
+                        return null;
                     }
                 }),
             Action::make('createWorkPackage')
