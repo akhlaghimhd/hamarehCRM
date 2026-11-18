@@ -72,8 +72,11 @@ class SaveTask
                 'due_at' => $data['due_at'] ?? null,
                 'completed_at' => ($data['status'] ?? null) === Task::STATUS_DONE ? ($task->completed_at ?? now()) : null,
                 'idempotency_key' => $data['idempotency_key'] ?? $task->idempotency_key,
+                'linkable_type' => $data['linkable_type'] ?? $task->linkable_type,
+                'linkable_id' => $data['linkable_id'] ?? $task->linkable_id,
             ]);
             $task->save();
+
             return $task->refresh();
         });
     }
