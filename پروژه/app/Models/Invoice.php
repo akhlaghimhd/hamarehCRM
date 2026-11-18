@@ -65,6 +65,19 @@ class Invoice extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Invoice $invoice): void {
+            $hasActivePayment = $invoice->payments()
+                ->whereNull('voided_at')
+                ->exists();
+
+            if ($hasActivePayment) {
+                throw new InvalidArgumentException('فاکتور دارای پرداخت فعال قابل حذف نیست.');
+            }
+        });
+    }
+
     public static function statusOptions(): array
     {
         return [
