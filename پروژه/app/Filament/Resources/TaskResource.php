@@ -151,6 +151,7 @@ class TaskResource extends Resource
     {
         return [
             RelationManagers\AttachmentsRelationManager::class,
+            RelationManagers\AuditEventsRelationManager::class,
         ];
     }
 
