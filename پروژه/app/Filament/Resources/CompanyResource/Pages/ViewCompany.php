@@ -46,6 +46,52 @@ class ViewCompany extends ViewRecord
                     return app(UpdateCompanyProfile::class)->handle($record, $data, $actor);
                 });
 
+            $managerId = DB::table('company_user')
+                ->join('roles', 'roles.id', '=', 'company_user.role_id')
+                ->where('company_user.company_id', $this->record->id)
+                ->where('roles.name', 'admin')
+                ->orderBy('company_user.id')
+                ->value('company_user.user_id');
+            $managerAccount = $managerId ? User::query()->find($managerId) : null;
+
+            if ($managerAccount) {
+                $actions[] = Action::make('editManagerAccount')
+                    ->label('ویرایش اطلاعات مدیر')
+                    ->icon('heroicon-o-identification')
+                    ->modalHeading('ویرایش حساب مدیر شرکت')
+                    ->fillForm(fn () => $managerAccount->only(['name', 'username', 'email']))
+                    ->form([
+                        TextInput::make('name')->label('نام')->required()->maxLength(255),
+                        TextInput::make('username')->label('نام کاربری')->alphaDash()->required()->maxLength(100),
+                        TextInput::make('email')->label('ایمیل')->email()->required()->maxLength(255),
+                        TextInput::make('password')->label('گذرواژه جدید (اختیاری)')->password()->revealable()->minLength(8),
+                        TextInput::make('password_confirmation')->label('تکرار گذرواژه جدید')->password()->revealable()->same('password'),
+                    ])
+                    ->action(function (array $data) use ($managerAccount): void {
+                        $validated = Validator::make($data, [
+                            'name' => ['required', 'string', 'max:255'],
+                            'username' => ['required', 'string', 'max:100', 'alpha_dash', Rule::unique('users', 'username')->ignore($managerAccount->id)],
+                            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($managerAccount->id)],
+                            'password' => ['nullable', 'string', 'min:8', 'same:password_confirmation'],
+                            'password_confirmation' => ['nullable', 'string', 'required_with:password'],
+                        ], [
+                            'username.unique' => 'این نام کاربری قبلاً ثبت شده است.',
+                            'email.unique' => 'این ایمیل قبلاً ثبت شده است.',
+                            'password.min' => 'گذرواژه باید حداقل ۸ نویسه باشد.',
+                            'password.same' => 'تکرار گذرواژه با گذرواژه یکسان نیست.',
+                        ])->validate();
+
+                        if (blank($validated['password'] ?? null)) {
+                            unset($validated['password'], $validated['password_confirmation']);
+                        } else {
+                            unset($validated['password_confirmation']);
+                        }
+
+                        $managerAccount->fill($validated)->save();
+                        Notification::make()->title('اطلاعات مدیر شرکت ذخیره شد')->success()->send();
+                    });
+            }
+
             $actions[] = Action::make('assignManager')
                 ->label('مدیریت مدیر شرکت')
                 ->icon('heroicon-o-user-plus')
