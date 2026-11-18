@@ -21,6 +21,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
+use InvalidArgumentException;
 use UnitEnum;
 
 class QuoteResource extends Resource
@@ -165,7 +166,18 @@ class QuoteResource extends Resource
                         && $record->status !== Quote::STATUS_CONVERTED
                         && $record->lines()->exists())
                     ->action(function (Quote $record) {
-                        $order = Order::fromQuote($record);
+                        try {
+                            $order = Order::fromQuote($record);
+                        } catch (InvalidArgumentException $e) {
+                            Notification::make()
+                                ->title('تبدیل ممکن نیست')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+
+                            return null;
+                        }
+
                         Notification::make()
                             ->title('سفارش ساخته شد')
                             ->body($order->number)
