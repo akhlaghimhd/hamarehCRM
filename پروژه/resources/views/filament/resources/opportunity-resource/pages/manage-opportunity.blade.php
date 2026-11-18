@@ -2,6 +2,9 @@
     @php
         $dash = '—';
         $hasOpen = $openStep !== null;
+        $relatedQuotes = $opportunity->relationLoaded('quotes')
+            ? $opportunity->quotes
+            : $opportunity->quotes()->orderByDesc('id')->get();
     @endphp
 
     <style>
@@ -102,6 +105,20 @@
         }
         .dark .opp-act { border-color: rgba(255,255,255,.1); }
         .opp-act__meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; font-size: .75rem; color: #6b7280; }
+        .opp-quote {
+            display: block; border-top: 1px solid #f3f4f6; padding: .85rem 1.25rem; text-decoration: none;
+            transition: background .15s ease;
+        }
+        .dark .opp-quote { border-color: rgba(255,255,255,.05); }
+        .opp-quote:hover { background: #f9fafb; }
+        .dark .opp-quote:hover { background: rgba(255,255,255,.04); }
+        .opp-quote__top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; }
+        .opp-quote__num { font-weight: 600; color: #0f766e; font-size: .875rem; }
+        .dark .opp-quote__num { color: #5eead4; }
+        .opp-quote__status { font-size: .75rem; color: #6b7280; }
+        .opp-quote__title { margin-top: .25rem; font-size: .875rem; color: #111827; }
+        .dark .opp-quote__title { color: #f3f4f6; }
+        .opp-quote__total { margin-top: .35rem; font-size: .75rem; font-weight: 600; color: #0d9488; }
     </style>
 
     <div class="opp-ws" dir="rtl">
@@ -171,6 +188,30 @@
                             </div>
                         @endif
                     </dl>
+                </div>
+
+                <div class="opp-card">
+                    <div class="opp-prev-head">
+                        <h2>پیش‌فاکتورها</h2>
+                    </div>
+                    @forelse ($relatedQuotes as $quote)
+                        @php
+                            $quoteUrl = \App\Filament\Resources\QuoteResource::getUrl('edit', ['record' => $quote]);
+                            $statusLabelQuote = \App\Models\Quote::statusOptions()[$quote->status] ?? ($quote->status ?: $dash);
+                        @endphp
+                        <a href="{{ $quoteUrl }}" class="opp-quote">
+                            <div class="opp-quote__top">
+                                <span class="opp-quote__num">{{ \App\Support\Fa::digits($quote->number) }}</span>
+                                <span class="opp-quote__status">{{ $statusLabelQuote }}</span>
+                            </div>
+                            <div class="opp-quote__title">{{ $quote->title }}</div>
+                            @if ($quote->total)
+                                <div class="opp-quote__total">{{ \App\Support\Fa::number($quote->total) }} ریال</div>
+                            @endif
+                        </a>
+                    @empty
+                        <div class="opp-empty" style="margin:0;border-radius:0;border-top:1px solid #f3f4f6">هنوز پیش‌فاکتوری از این فرصت ساخته نشده.</div>
+                    @endforelse
                 </div>
             </div>
         </aside>
