@@ -17,6 +17,7 @@ class CreateLinkedTaskAction
             modalHeading: 'ایجاد کار وابسته به این فرصت',
             subjectDefault: fn (Opportunity $record) => 'پیگیری: '.($record->title ?: $record->organization_name),
             idempotencyPrefix: 'opp',
-        )->name('createTask');
+            actionName: 'createTask',
+        );
     }
 }
