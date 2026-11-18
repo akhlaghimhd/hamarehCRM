@@ -20,6 +20,7 @@ class OrderLine extends Model
         'description',
         'config_snapshot',
         'qty',
+        'qty_delivered',
         'unit_price',
         'line_total',
     ];
@@ -29,6 +30,7 @@ class OrderLine extends Model
         return [
             'config_snapshot' => 'array',
             'qty' => 'decimal:2',
+            'qty_delivered' => 'decimal:2',
             'unit_price' => 'decimal:0',
             'line_total' => 'decimal:0',
         ];
@@ -37,5 +39,15 @@ class OrderLine extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    public function remainingQty(): float
+    {
+        return max(0, (float) $this->qty - (float) $this->qty_delivered);
+    }
+
+    public function isFullyDelivered(): bool
+    {
+        return $this->remainingQty() <= 0;
     }
 }
