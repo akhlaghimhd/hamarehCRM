@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Actions\Identity\AssignCompanyManager;
 use App\Actions\Identity\CreateCompanyForUser;
 use App\Actions\Identity\SetCompanyStatus;
 use App\Actions\Identity\UpdateCompanyProfile;
@@ -9,8 +10,6 @@ use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\CompanyResource\Pages;
 use App\Models\Company;
 use App\Models\CompanyFinancialIdentity;
-use App\Models\Permission;
-use App\Models\Role;
 use App\Models\User;
 use App\Support\Fa;
 use App\Support\CompanyMembershipAccess;
