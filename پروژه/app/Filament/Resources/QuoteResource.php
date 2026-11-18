@@ -8,6 +8,7 @@ use App\Filament\Resources\QuoteResource\RelationManagers\QuoteLinesRelationMana
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Quote;
+use App\Models\SalesRepresentative;
 use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -77,6 +78,11 @@ class QuoteResource extends Resource
                         ->options(fn () => User::query()->where('is_active', true)->pluck('name', 'id'))
                         ->default(fn () => auth()->id())
                         ->searchable(),
+                    Select::make('sales_representative_id')
+                        ->label('نماینده فروش')
+                        ->options(fn () => SalesRepresentative::query()->where('status', 'active')->orderBy('name')->pluck('name', 'id'))
+                        ->searchable()
+                        ->nullable(),
                     TextInput::make('discount_amount')
                         ->label('تخفیف (ریال)')
                         ->numeric()
@@ -122,7 +128,7 @@ class QuoteResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('وضعیت')
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): string => Quote::statusOptions()[$state] ?? ($state ?? '—'))
+                    ->formatStateUsing(fn (?string $state): string => Quote::statusOptions()[$state] ?? ($state ?? '\u2014'))
                     ->color(fn (?string $state): string => match ($state) {
                         'draft' => 'gray',
                         'sent' => 'info',
@@ -141,6 +147,9 @@ class QuoteResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('owner.name')
                     ->label('مسئول')
+                    ->toggleable(),
+                Tables\Columns\TextColumn::make('salesRepresentative.name')
+                    ->label('نماینده')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('به‌روزرسانی')
