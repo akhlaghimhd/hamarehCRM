@@ -3,6 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\SwitchCompany;
+use App\Filament\Widgets\CrmStatsOverview;
+use App\Filament\Widgets\FollowUpNeededWidget;
 use App\Support\CompanyTheme;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -48,10 +50,10 @@ class AdminPanelProvider extends PanelProvider
                 'گزارش‌ها',
                 'تنظیمات',
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Pages\\Dashboard::class,
+                Pages\Dashboard::class,
                 SwitchCompany::class,
             ])
             ->userMenuItems([
@@ -64,11 +66,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                Widgets\\AccountWidget::class,
-                \\App\\Filament\\Widgets\\CrmStatsOverview::class,
-                \\App\\Filament\\Widgets\\FollowUpNeededWidget::class,
+                Widgets\AccountWidget::class,
+                CrmStatsOverview::class,
+                FollowUpNeededWidget::class,
             ])
             ->plugins([
                 MobileBottomNav::make()
