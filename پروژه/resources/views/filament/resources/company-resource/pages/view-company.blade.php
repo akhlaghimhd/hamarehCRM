@@ -55,7 +55,7 @@
                         <div><dt class="text-gray-500 dark:text-gray-400">ایمیل</dt><dd class="mt-1 text-gray-950 dark:text-white">{{ $identity->email ?: '—' }}</dd></div>
                         <div class="sm:col-span-2 xl:col-span-4"><dt class="text-gray-500 dark:text-gray-400">نشانی</dt><dd class="mt-1 text-gray-950 dark:text-white">{{ $identity->address ?: '—' }}</dd></div>
                     </dl>
-                    <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="hidden overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 md:block">
                         <table class="w-full min-w-[42rem] divide-y divide-gray-200 text-sm dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-800">
                                 <tr>
@@ -88,6 +88,24 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    <div class="space-y-3 md:hidden">
+                        @forelse ($identity->bankAccounts as $account)
+                            <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                                <div class="mb-2 flex items-center justify-between gap-2">
+                                    <strong class="text-sm text-gray-950 dark:text-white">{{ $account->label ?: $account->bank_name }}</strong>
+                                    <span class="text-xs {{ $account->is_active ? 'text-success-600' : 'text-gray-500' }}">{{ $account->is_active ? ($account->is_default ? 'فعال · پیش‌فرض' : 'فعال') : 'غیرفعال' }}</span>
+                                </div>
+                                <dl class="grid grid-cols-2 gap-2 text-xs">
+                                    <div><dt class="text-gray-500">بانک</dt><dd class="mt-1 text-gray-900 dark:text-gray-100">{{ $account->bank_name }}</dd></div>
+                                    <div><dt class="text-gray-500">صاحب حساب</dt><dd class="mt-1 text-gray-900 dark:text-gray-100">{{ $account->account_holder }}</dd></div>
+                                    <div class="col-span-2"><dt class="text-gray-500">شماره حساب / شبا</dt><dd class="mt-1 break-all text-gray-900 dark:text-gray-100" dir="ltr">{{ $account->account_number ?: $account->iban ?: $account->card_number ?: '—' }}</dd></div>
+                                    <div><dt class="text-gray-500">نسخه</dt><dd class="mt-1 text-gray-900 dark:text-gray-100">{{ $account->version }}</dd></div>
+                                </dl>
+                            </div>
+                        @empty
+                            <p class="py-3 text-center text-sm text-gray-500">برای این هویت حسابی ثبت نشده است.</p>
+                        @endforelse
                     </div>
                 </article>
             @empty
