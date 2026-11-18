@@ -36,6 +36,7 @@ class CreateCompanyForUser
             'password_confirmation' => (string) ($attributes['admin_password_confirmation'] ?? ''),
         ];
         unset($attributes['admin_name'], $attributes['admin_username'], $attributes['admin_email'], $attributes['admin_password'], $attributes['admin_password_confirmation']);
+        $hasManager = collect($manager)->contains(fn ($value): bool => filled($value));
         foreach (['national_id', 'phone', 'registration_number'] as $field) {
             $value = trim((string) ($attributes[$field] ?? ''));
             $attributes[$field] = $value === '' ? null : Fa::toEnglishDigits($value);
@@ -55,21 +56,23 @@ class CreateCompanyForUser
         // Newly created companies are active by default. Status is managed from the table.
         $attributes['is_active'] = true;
 
-        $manager = Validator::make($manager, [
-            'name' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:100', 'alpha_dash', 'unique:users,username'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'same:password_confirmation'],
-            'password_confirmation' => ['required', 'string'],
-        ], [
-            'name.required' => 'نام مدیر اولیه الزامی است.',
-            'username.required' => 'نام کاربری مدیر اولیه الزامی است.',
-            'username.unique' => 'این نام کاربری قبلاً ثبت شده است.',
-            'email.required' => 'ایمیل مدیر اولیه الزامی است.',
-            'email.unique' => 'این ایمیل قبلاً ثبت شده است.',
-            'password.min' => 'گذرواژه مدیر اولیه باید حداقل ۸ نویسه باشد.',
-            'password.same' => 'تکرار گذرواژه با گذرواژه یکسان نیست.',
-        ])->validate();
+        if ($hasManager) {
+            $manager = Validator::make($manager, [
+                'name' => ['required', 'string', 'max:255'],
+                'username' => ['required', 'string', 'max:100', 'alpha_dash', 'unique:users,username'],
+                'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+                'password' => ['required', 'string', 'min:8', 'same:password_confirmation'],
+                'password_confirmation' => ['required', 'string'],
+            ], [
+                'name.required' => 'نام مدیر اولیه الزامی است.',
+                'username.required' => 'نام کاربری مدیر اولیه الزامی است.',
+                'username.unique' => 'این نام کاربری قبلاً ثبت شده است.',
+                'email.required' => 'ایمیل مدیر اولیه الزامی است.',
+                'email.unique' => 'این ایمیل قبلاً ثبت شده است.',
+                'password.min' => 'گذرواژه مدیر اولیه باید حداقل ۸ نویسه باشد.',
+                'password.same' => 'تکرار گذرواژه با گذرواژه یکسان نیست.',
+            ])->validate();
+        }
 
         $attributes = Validator::make($attributes, [
             'name' => ['required', 'string', 'max:255'],
@@ -105,7 +108,7 @@ class CreateCompanyForUser
             'website' => 'وب‌سایت',
         ])->validate();
 
-        $company = DB::transaction(function () use ($attributes, $creator, $manager): Company {
+        $company = DB::transaction(function () use ($attributes, $creator, $manager, $hasManager): Company {
             $lockedCreator = User::query()
                 ->whereKey($creator->id)
                 ->lockForUpdate()
@@ -153,32 +156,34 @@ class CreateCompanyForUser
                 'is_active' => true,
             ]);
 
-            $adminRole = Role::query()->create([
-                'company_id' => $company->id,
-                'name' => 'admin',
-                'label' => 'مدیر شرکت',
-                'is_system' => true,
-                'inherit_permissions' => false,
-            ]);
-
-            $adminRole->permissions()->sync(Permission::query()->pluck('id'));
-
-            $initialAdmin->companies()->attach($company->id, [
-                'role_id' => $adminRole->id,
-                'is_default' => true,
-            ]);
-
-            $membershipId = DB::table('company_user')
-                ->where('company_id', $company->id)
-                ->where('user_id', $initialAdmin->id)
-                ->value('id');
-
-            DB::table('company_user_role')->insert([
-                'company_user_id' => $membershipId,
-                'role_id' => $adminRole->id,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            if ($hasManager) {
+                $adminRole = Role::query()->create([
+                    'company_id' => $company->id,
+                    'name' => 'admin',
+                    'label' => 'مدیر شرکت',
+                    'is_system' => true,
+                    'inherit_permissions' => false,
+                ]);
+    
+                $adminRole->permissions()->sync(Permission::query()->pluck('id'));
+    
+                $initialAdmin->companies()->attach($company->id, [
+                    'role_id' => $adminRole->id,
+                    'is_default' => true,
+                ]);
+    
+                $membershipId = DB::table('company_user')
+                    ->where('company_id', $company->id)
+                    ->where('user_id', $initialAdmin->id)
+                    ->value('id');
+    
+                DB::table('company_user_role')->insert([
+                    'company_user_id' => $membershipId,
+                    'role_id' => $adminRole->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             $now = now();
 

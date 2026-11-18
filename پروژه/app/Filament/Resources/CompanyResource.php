@@ -8,6 +8,9 @@ use App\Actions\Identity\UpdateCompanyProfile;
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\CompanyResource\Pages;
 use App\Models\Company;
+use App\Models\CompanyFinancialIdentity;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 use App\Support\Fa;
 use App\Support\CompanyMembershipAccess;
@@ -16,6 +19,7 @@ use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
@@ -28,6 +32,7 @@ use Filament\Support\Enums\SlideOverPosition;
 use Filament\Support\Enums\Width;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use UnitEnum;
 
@@ -160,6 +165,7 @@ class CompanyResource extends Resource
                         ->label('شناسه ملی')
                         ->formatStateUsing(fn ($state) => filled($state) ? Fa::digits($state) : null)
                         ->dehydrateStateUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
+                        ->mutateStateForValidationUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
                         ->maxLength(11)
                         ->rules(['nullable', 'regex:/^[0-9۰-۹٠-٩]{11}$/'])
                         ->validationMessages([
@@ -172,6 +178,7 @@ class CompanyResource extends Resource
                         ->label('شماره ثبت')
                         ->formatStateUsing(fn ($state) => filled($state) ? Fa::digits($state) : null)
                         ->dehydrateStateUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
+                        ->mutateStateForValidationUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
                         ->maxLength(50)
                         ->validationMessages(['max' => 'شماره ثبت بیش از حد مجاز طولانی است.'])
                         ->columnSpan(1)
@@ -180,6 +187,7 @@ class CompanyResource extends Resource
                         ->label('تلفن')
                         ->formatStateUsing(fn ($state) => filled($state) ? Fa::digits($state) : null)
                         ->dehydrateStateUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
+                        ->mutateStateForValidationUsing(fn ($state) => filled($state) ? Fa::toEnglishDigits($state) : null)
                         ->tel()
                         ->maxLength(11)
                         ->rules(['nullable', 'regex:/^[0-9۰-۹٠-٩]{8,11}$/'])
@@ -219,39 +227,7 @@ class CompanyResource extends Resource
                         ->validationMessages(['max' => 'نشانی وب‌سایت نباید بیشتر از ۲۵۵ نویسه باشد.'])
                         ->columnSpanFull()
                         ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'url', 'autocapitalize' => 'off', 'spellcheck' => 'false']),
-                    TextInput::make('admin_name')
-                        ->label('نام مدیر اولیه')
-                        ->required()
-                        ->maxLength(255)
-                        ->visibleOn('create')
-                        ->columnSpanFull(),
-                    TextInput::make('admin_username')
-                        ->label('نام کاربری مدیر اولیه')
-                        ->required()
-                        ->alphaDash()
-                        ->maxLength(100)
-                        ->visibleOn('create')
-                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'autocapitalize' => 'off']),
-                    TextInput::make('admin_email')
-                        ->label('ایمیل مدیر اولیه')
-                        ->email()
-                        ->required()
-                        ->maxLength(255)
-                        ->visibleOn('create')
-                        ->extraInputAttributes(['lang' => 'en', 'dir' => 'ltr', 'inputmode' => 'email']),
-                    TextInput::make('admin_password')
-                        ->label('گذرواژه مدیر اولیه')
-                        ->password()
-                        ->revealable()
-                        ->required()
-                        ->minLength(8)
-                        ->visibleOn('create'),
-                    TextInput::make('admin_password_confirmation')
-                        ->label('تکرار گذرواژه')
-                        ->password()
-                        ->revealable()
-                        ->required()
-                        ->visibleOn('create'),
+
 
                 ]),
         ]);
@@ -334,6 +310,132 @@ class CompanyResource extends Resource
             ->emptyStateHeading('شرکتی برای نمایش وجود ندارد')
             ->emptyStateDescription('شرکت‌هایی که مجاز به مشاهده آن‌ها هستید در این فهرست نمایش داده می‌شوند.')
             ->recordActions([
+                \Filament\Actions\Action::make('assignManager')
+                    ->label('تعیین مدیر شرکت')
+                    ->icon('heroicon-o-user-plus')
+                    ->modalHeading('تعیین مدیر شرکت')
+                    ->modalDescription('یک کاربر موجود را انتخاب کنید یا حساب کاربری جدید بسازید. مدیر شرکت عضو مستقل همین شرکت خواهد بود.')
+                    ->schema([
+                        Select::make('mode')
+                            ->label('روش تعیین مدیر')
+                            ->options(['existing' => 'انتخاب کاربر موجود', 'new' => 'ایجاد کاربر جدید'])
+                            ->default('existing')
+                            ->live()
+                            ->required(),
+                        Select::make('user_id')
+                            ->label('کاربر')
+                            ->options(fn (Company $record): array => User::query()
+                                ->where('is_active', true)
+                                ->whereDoesntHave('companies', fn ($query) => $query->where('companies.id', $record->id))
+                                ->orderBy('name')
+                                ->get()
+                                ->mapWithKeys(fn (User $user): array => [$user->id => $user->name.' — '.$user->username])
+                                ->all())
+                            ->searchable()
+                            ->visible(fn (callable $get): bool => $get('mode') === 'existing')
+                            ->required(fn (callable $get): bool => $get('mode') === 'existing'),
+                        TextInput::make('name')->label('نام')->required(fn (callable $get): bool => $get('mode') === 'new')->visible(fn (callable $get): bool => $get('mode') === 'new'),
+                        TextInput::make('username')->label('نام کاربری')->alphaDash()->maxLength(100)->required(fn (callable $get): bool => $get('mode') === 'new')->visible(fn (callable $get): bool => $get('mode') === 'new'),
+                        TextInput::make('email')->label('ایمیل')->email()->required(fn (callable $get): bool => $get('mode') === 'new')->visible(fn (callable $get): bool => $get('mode') === 'new'),
+                        TextInput::make('password')->label('گذرواژه')->password()->revealable()->minLength(8)->required(fn (callable $get): bool => $get('mode') === 'new')->visible(fn (callable $get): bool => $get('mode') === 'new'),
+                        TextInput::make('password_confirmation')->label('تکرار گذرواژه')->password()->revealable()->same('password')->required(fn (callable $get): bool => $get('mode') === 'new')->visible(fn (callable $get): bool => $get('mode') === 'new'),
+                    ])
+                    ->action(function (array $data, Company $record): void {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof User && $actor->is_active, 403);
+                        abort_unless($actor->isPlatformOwner() || app(CompanyMembershipAccess::class)->canManage($actor, (int) $record->id), 403);
+
+                        DB::transaction(function () use ($data, $record, $actor): void {
+                            $company = Company::query()->whereKey($record->id)->lockForUpdate()->firstOrFail();
+                            if (! $company->is_active) {
+                                throw new \\Illuminate\\Auth\\Access\\AuthorizationException('شرکت غیرفعال است.');
+                            }
+
+                            if (($data['mode'] ?? 'existing') === 'new') {
+                                $validated = \\Illuminate\\Support\\Facades\\Validator::make($data, [
+                                    'name' => ['required', 'string', 'max:255'],
+                                    'username' => ['required', 'string', 'max:100', 'alpha_dash', 'unique:users,username'],
+                                    'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+                                    'password' => ['required', 'string', 'min:8', 'same:password_confirmation'],
+                                    'password_confirmation' => ['required', 'string'],
+                                ])->validate();
+                                $user = User::query()->create([
+                                    'name' => $validated['name'],
+                                    'username' => $validated['username'],
+                                    'email' => $validated['email'],
+                                    'password' => $validated['password'],
+                                    'is_active' => true,
+                                ]);
+                            } else {
+                                $user = User::query()->whereKey($data['user_id'] ?? 0)->where('is_active', true)->lockForUpdate()->firstOrFail();
+                            }
+
+                            $role = Role::query()->firstOrCreate(
+                                ['company_id' => $company->id, 'name' => 'admin'],
+                                ['label' => 'مدیر شرکت', 'is_system' => true, 'inherit_permissions' => false],
+                            );
+                            if ($role->wasRecentlyCreated) {
+                                $role->permissions()->sync(Permission::query()->pluck('id'));
+                            }
+
+                            $membership = DB::table('company_user')
+                                ->where('company_id', $company->id)
+                                ->where('user_id', $user->id)
+                                ->lockForUpdate()
+                                ->first();
+
+                            if ($membership) {
+                                DB::table('company_user')->where('id', $membership->id)->update(['role_id' => $role->id, 'updated_at' => now()]);
+                                DB::table('company_user_role')->where('company_user_id', $membership->id)->delete();
+                                DB::table('company_user_role')->insert(['company_user_id' => $membership->id, 'role_id' => $role->id, 'created_at' => now(), 'updated_at' => now()]);
+                            } else {
+                                $membershipId = DB::table('company_user')->insertGetId([
+                                    'company_id' => $company->id,
+                                    'user_id' => $user->id,
+                                    'role_id' => $role->id,
+                                    'manager_user_id' => null,
+                                    'is_default' => ! DB::table('company_user')->where('user_id', $user->id)->where('is_default', true)->exists(),
+                                    'created_at' => now(),
+                                    'updated_at' => now(),
+                                ]);
+                                DB::table('company_user_role')->insert(['company_user_id' => $membershipId, 'role_id' => $role->id, 'created_at' => now(), 'updated_at' => now()]);
+                            }
+
+                            DB::table('audit_events')->insert([
+                                'company_id' => $company->id,
+                                'auditable_type' => $user->getMorphClass(),
+                                'auditable_id' => $user->id,
+                                'actor_user_id' => $actor->id,
+                                'event' => 'company_manager_assigned',
+                                'old_values' => json_encode([], JSON_THROW_ON_ERROR),
+                                'new_values' => json_encode(['user_id' => $user->id, 'role_id' => $role->id], JSON_THROW_ON_ERROR),
+                                'metadata' => json_encode(['source' => 'company_row_action'], JSON_THROW_ON_ERROR),
+                                'occurred_at' => now(),
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        });
+                    })
+                    ->visible(fn (Company $record): bool => static::canEdit($record)),
+                \Filament\Actions\Action::make('manageFinancial')
+                    ->label('هویت مالی و حساب‌ها')
+                    ->icon('heroicon-o-building-library')
+                    ->modalHeading('مدیریت پروفایل مالی شرکت')
+                    ->schema([
+                        Select::make('type')
+                            ->label('نوع پروفایل مالی')
+                            ->options(['official' => 'رسمی', 'unofficial' => 'غیررسمی'])
+                            ->default('official')
+                            ->required(),
+                    ])
+                    ->action(function (array $data, Company $record) {
+                        $actor = auth()->user();
+                        abort_unless($actor instanceof User && $actor->is_active, 403);
+                        abort_unless($actor->isPlatformOwner() || app(CompanyMembershipAccess::class)->canManage($actor, (int) $record->id), 403);
+                        $identity = CompanyFinancialIdentity::query()->where('company_id', $record->id)->where('type', $data['type'])->firstOrFail();
+                        return redirect(\\App\\Filament\\Resources\\CompanyFinancialIdentityResource::getUrl('edit', ['record' => $identity]));
+                    })
+                    ->visible(fn (Company $record): bool => static::canEdit($record)),
                 ViewAction::make()
                     ->label('مشاهده')
                     ->slideOver()

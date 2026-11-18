@@ -40,7 +40,7 @@ class CompanyFinancialIdentityResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return static::canViewAny();
+        return false;
     }
 
     public static function canCreate(): bool
