@@ -25,6 +25,7 @@ class Quote extends Model
         'customer_id',
         'opportunity_id',
         'owner_user_id',
+        'sales_representative_id',
         'number',
         'title',
         'status',
@@ -78,6 +79,11 @@ class Quote extends Model
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    public function salesRepresentative(): BelongsTo
+    {
+        return $this->belongsTo(SalesRepresentative::class);
+    }
+
     public function lines(): HasMany
     {
         return $this->hasMany(QuoteLine::class)->orderBy('sort_order');
@@ -110,6 +116,7 @@ class Quote extends Model
             'customer_id' => $opportunity->customer_id,
             'opportunity_id' => $opportunity->id,
             'owner_user_id' => $opportunity->owner_user_id ?? auth()->id(),
+            'sales_representative_id' => $opportunity->sales_representative_id,
             'number' => self::nextNumber((int) $opportunity->company_id),
             'title' => 'پیش‌فاکتور: '.$opportunity->title,
             'status' => self::STATUS_DRAFT,
