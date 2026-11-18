@@ -21,7 +21,7 @@ class CreateCompany extends CreateRecord
         );
     }
 
-    protected function getRedirectUrl(): ?string
+    protected function getRedirectUrl(): string
     {
         return CompanyResource::getUrl('view', ['record' => $this->record]);
     }
