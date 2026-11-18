@@ -7,6 +7,7 @@ use App\Models\AuditEvent;
 use App\Models\Order;
 use App\Models\Quote;
 use App\Models\Task;
+use App\Models\WorkPackage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +39,11 @@ class AuditObserver
             'customer_id', 'quote_id', 'opportunity_id', 'owner_user_id',
             'number', 'title', 'status', 'subtotal', 'discount_amount',
             'tax_amount', 'total', 'currency', 'confirmed_at',
+        ],
+        WorkPackage::class => [
+            'order_id', 'order_line_id', 'number', 'title', 'description',
+            'execution_mode', 'status', 'contractor_name', 'assignee_user_id',
+            'due_at', 'notes',
         ],
     ];
 
