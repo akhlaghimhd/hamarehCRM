@@ -1,34 +1,45 @@
 <?php
 
+use Illuminate\Support\Facades\Schedule;
+
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-use App\Models\PlatformOwner;
-use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Models\PlatformOwner;
+use App\Models\User;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+Artisan::command('platform-owner:grant {user}', function (string $user): int {
+    $resolved = User::query()
+        ->where('id', $user)
+        ->orWhere('username', $user)
+        ->orWhere('email', $user)
+        ->first();
 
-Artisan::command('platform-owner:grant {userId}', function (string $userId): int {
-    $user = User::query()->findOrFail($userId);
+    if (! $resolved) {
+        $this->error('کاربر یافت نشد.');
 
-    if (! $user->is_active) {
+        return self::FAILURE;
+    }
+
+    if (! $resolved->is_active) {
         $this->error('حساب غیرفعال نمی‌تواند مالک پلتفرم شود.');
 
         return self::FAILURE;
     }
 
-    if (! $this->confirm("مالکیت پلتفرم به حساب {$user->name} ({$user->id}) اعطا شود؟")) {
+    if (! $this->confirm("مالکیت پلتفرم به حساب {$resolved->name} ({$resolved->id}) اعطا شود؟")) {
         $this->comment('عملیات لغو شد.');
 
         return self::SUCCESS;
     }
 
     PlatformOwner::query()->firstOrCreate(
-        ['user_id' => $user->id],
+        ['user_id' => $resolved->id],
         ['granted_by_user_id' => null],
     );
 
@@ -36,7 +47,6 @@ Artisan::command('platform-owner:grant {userId}', function (string $userId): int
 
     return self::SUCCESS;
 })->purpose('اعطای مالکیت سراسری پلتفرم به یک حساب موجود؛ فقط از محیط امن CLI');
-
 
 Artisan::command('platform-owner:create', function (): int {
     $data = [
@@ -87,3 +97,5 @@ Artisan::command('platform-owner:create', function (): int {
 
     return self::SUCCESS;
 })->purpose('ساخت حساب مستقل و اولیه مالک پلتفرم؛ فقط از محیط امن CLI');
+
+Schedule::command('crm:notify-due-items')->hourly();
