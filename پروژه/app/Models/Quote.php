@@ -103,7 +103,6 @@ class Quote extends Model
         return app(NumberSequence::class)->next($companyId, 'quote', 'Q-'.$year.'-');
     }
 
-
     public static function fromOpportunity(Opportunity $opportunity): self
     {
         $quote = new self([
@@ -112,7 +111,7 @@ class Quote extends Model
             'opportunity_id' => $opportunity->id,
             'owner_user_id' => $opportunity->owner_user_id ?? auth()->id(),
             'number' => self::nextNumber((int) $opportunity->company_id),
-            'title' => 'پیش‌فاکتور: ' . $opportunity->title,
+            'title' => 'پیش‌فاکتور: '.$opportunity->title,
             'status' => self::STATUS_DRAFT,
             'valid_until' => now()->addDays(14),
             'notes' => $opportunity->notes,
@@ -123,6 +122,11 @@ class Quote extends Model
 
         $amount = (float) ($opportunity->amount ?? 0);
         if ($amount > 0 || filled($opportunity->title)) {
+            $interestLabel = $opportunity->productInterestLabel();
+            if ($interestLabel === '—') {
+                $interestLabel = null;
+            }
+
             QuoteLine::query()->create([
                 'company_id' => $opportunity->company_id,
                 'quote_id' => $quote->id,
@@ -131,7 +135,7 @@ class Quote extends Model
                 'title' => $opportunity->title,
                 'description' => collect([
                     $opportunity->organization_name,
-                    $opportunity->product_interest,
+                    $interestLabel,
                     $opportunity->qty_approx,
                 ])->filter()->implode(' | '),
                 'qty' => 1,
