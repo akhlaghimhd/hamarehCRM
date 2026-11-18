@@ -4,9 +4,13 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Actions\CreateLinkedTaskAction;
 use App\Filament\Resources\OrderResource;
+use App\Filament\Resources\WorkPackageResource;
 use App\Models\Order;
+use App\Models\WorkPackage;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use InvalidArgumentException;
@@ -73,6 +77,48 @@ class EditOrder extends EditRecord
                         Notification::make()->title($e->getMessage())->danger()->send();
                     }
                 }),
+            Action::make('createWorkPackage')
+                ->label('بسته کاری')
+                ->icon('heroicon-o-cube-transparent')
+                ->color('gray')
+                ->visible(fn (): bool => ! in_array($this->record->status, [Order::STATUS_CANCELLED, Order::STATUS_COMPLETED], true)
+                    && (auth()->user()?->isCompanyAdmin() || auth()->user()?->hasPermission('work_packages.manage')))
+                ->form([
+                    TextInput::make('title')
+                        ->label('عنوان بسته')
+                        ->default(fn (): string => 'بسته کاری سفارش '.($this->record->number ?: ''))
+                        ->required()
+                        ->maxLength(255),
+                    Select::make('execution_mode')
+                        ->label('نوع اجرا')
+                        ->options(WorkPackage::executionModeOptions())
+                        ->default(WorkPackage::MODE_INTERNAL)
+                        ->required()
+                        ->native(false),
+                    TextInput::make('contractor_name')
+                        ->label('پیمانکار / واحد')
+                        ->maxLength(255),
+                    Textarea::make('description')
+                        ->label('شرح')
+                        ->rows(3),
+                ])
+                ->action(function (array $data) {
+                    try {
+                        $package = WorkPackage::createForOrder($this->record, $data);
+
+                        Notification::make()
+                            ->title('بسته کاری ایجاد شد.')
+                            ->body($package->number)
+                            ->success()
+                            ->send();
+
+                        return redirect(WorkPackageResource::getUrl('edit', ['record' => $package]));
+                    } catch (InvalidArgumentException $e) {
+                        Notification::make()->title($e->getMessage())->danger()->send();
+
+                        return null;
+                    }
+                }),
             CreateLinkedTaskAction::make(
                 $this,
                 Order::class,
@@ -92,7 +138,6 @@ class EditOrder extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // وضعیت فقط از اکشن‌های کنترل‌شده تغییر می‌کند
         unset($data['status']);
 
         return $data;
