@@ -94,6 +94,64 @@ class Order extends Model
         return app(NumberSequence::class)->next($companyId, 'order', 'O-'.$year.'-');
     }
 
+    public function canStartFulfillment(): bool
+    {
+        return $this->status === self::STATUS_CONFIRMED;
+    }
+
+    public function canComplete(): bool
+    {
+        return in_array($this->status, [self::STATUS_CONFIRMED, self::STATUS_IN_FULFILLMENT], true);
+    }
+
+    public function canCancel(): bool
+    {
+        return ! in_array($this->status, [self::STATUS_COMPLETED, self::STATUS_CANCELLED], true);
+    }
+
+    public function startFulfillment(): self
+    {
+        if (! $this->canStartFulfillment()) {
+            throw new InvalidArgumentException('فقط سفارش تأییدشده را می‌توان وارد مرحله انجام کرد.');
+        }
+
+        $this->status = self::STATUS_IN_FULFILLMENT;
+        $this->save();
+
+        return $this;
+    }
+
+    public function markCompleted(): self
+    {
+        if (! $this->canComplete()) {
+            throw new InvalidArgumentException('این سفارش در وضعیت فعلی قابل تکمیل نیست.');
+        }
+
+        $this->status = self::STATUS_COMPLETED;
+        $this->save();
+
+        return $this;
+    }
+
+    public function cancel(?string $reason = null): self
+    {
+        if (! $this->canCancel()) {
+            throw new InvalidArgumentException('این سفارش قابل لغو نیست.');
+        }
+
+        $this->status = self::STATUS_CANCELLED;
+
+        if (filled($reason)) {
+            $note = trim((string) $this->notes);
+            $addition = 'لغو: '.trim($reason);
+            $this->notes = $note === '' ? $addition : $note."\n".$addition;
+        }
+
+        $this->save();
+
+        return $this;
+    }
+
     public static function fromQuote(Quote $quote): self
     {
         return DB::transaction(function () use ($quote) {
