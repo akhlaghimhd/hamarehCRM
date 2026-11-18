@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class Order extends Model
 {
@@ -92,49 +94,73 @@ class Order extends Model
         return app(NumberSequence::class)->next($companyId, 'order', 'O-'.$year.'-');
     }
 
-
     public static function fromQuote(Quote $quote): self
     {
-        $order = new self([
-            'company_id' => $quote->company_id,
-            'customer_id' => $quote->customer_id,
-            'quote_id' => $quote->id,
-            'opportunity_id' => $quote->opportunity_id,
-            'owner_user_id' => $quote->owner_user_id,
-            'number' => self::nextNumber((int) $quote->company_id),
-            'title' => $quote->title,
-            'status' => self::STATUS_CONFIRMED,
-            'subtotal' => $quote->subtotal,
-            'discount_amount' => $quote->discount_amount,
-            'tax_amount' => $quote->tax_amount,
-            'total' => $quote->total,
-            'currency' => $quote->currency,
-            'notes' => $quote->notes,
-            'confirmed_at' => now(),
-        ]);
-        $order->save();
+        return DB::transaction(function () use ($quote) {
+            $quote = Quote::query()
+                ->whereKey($quote->id)
+                ->lockForUpdate()
+                ->with('lines')
+                ->firstOrFail();
 
-        foreach ($quote->lines as $line) {
-            OrderLine::query()->create([
+            if ($quote->status === Quote::STATUS_CONVERTED) {
+                $existing = self::query()
+                    ->where('quote_id', $quote->id)
+                    ->orderByDesc('id')
+                    ->first();
+
+                if ($existing) {
+                    return $existing->loadMissing(['lines', 'customer']);
+                }
+
+                throw new InvalidArgumentException('این پیش‌فاکتور قبلاً به سفارش تبدیل شده است.');
+            }
+
+            if ($quote->lines->isEmpty()) {
+                throw new InvalidArgumentException('پیش‌فاکتور بدون خط قابل تبدیل به سفارش نیست.');
+            }
+
+            $order = new self([
                 'company_id' => $quote->company_id,
-                'order_id' => $order->id,
-                'sort_order' => $line->sort_order,
-                'product_type' => $line->product_type,
-                'product_model_id' => $line->product_model_id,
-                'title' => $line->title,
-                'description' => $line->description,
-                'config_snapshot' => $line->config_snapshot,
-                'qty' => $line->qty,
-                'unit_price' => $line->unit_price,
-                'line_total' => $line->line_total,
+                'customer_id' => $quote->customer_id,
+                'quote_id' => $quote->id,
+                'opportunity_id' => $quote->opportunity_id,
+                'owner_user_id' => $quote->owner_user_id,
+                'number' => self::nextNumber((int) $quote->company_id),
+                'title' => $quote->title,
+                'status' => self::STATUS_CONFIRMED,
+                'subtotal' => $quote->subtotal,
+                'discount_amount' => $quote->discount_amount,
+                'tax_amount' => $quote->tax_amount,
+                'total' => $quote->total,
+                'currency' => $quote->currency,
+                'notes' => $quote->notes,
+                'confirmed_at' => now(),
             ]);
-        }
+            $order->save();
 
-        $quote->status = Quote::STATUS_CONVERTED;
-        $quote->converted_at = now();
-        $quote->accepted_at = $quote->accepted_at ?? now();
-        $quote->save();
+            foreach ($quote->lines as $line) {
+                OrderLine::query()->create([
+                    'company_id' => $quote->company_id,
+                    'order_id' => $order->id,
+                    'sort_order' => $line->sort_order,
+                    'product_type' => $line->product_type,
+                    'product_model_id' => $line->product_model_id,
+                    'title' => $line->title,
+                    'description' => $line->description,
+                    'config_snapshot' => $line->config_snapshot,
+                    'qty' => $line->qty,
+                    'unit_price' => $line->unit_price,
+                    'line_total' => $line->line_total,
+                ]);
+            }
 
-        return $order->fresh(['lines', 'customer']);
+            $quote->status = Quote::STATUS_CONVERTED;
+            $quote->converted_at = now();
+            $quote->accepted_at = $quote->accepted_at ?? now();
+            $quote->save();
+
+            return $order->fresh(['lines', 'customer']);
+        });
     }
 }
