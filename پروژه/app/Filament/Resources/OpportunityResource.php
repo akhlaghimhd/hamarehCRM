@@ -93,7 +93,14 @@ class OpportunityResource extends Resource
                             ->native(false),
                         TextInput::make('mobile')
                             ->label('موبایل')
-                            ->maxLength(11),
+                            ->maxLength(15)
+                            ->dehydrateStateUsing(function ($state) {
+                                if ($state === null || $state === '') {
+                                    return $state;
+                                }
+
+                                return preg_replace('/[\s\-()]/', '', Fa::toEnglishDigits((string) $state)) ?? $state;
+                            }),
                         TextInput::make('phone')
                             ->label('تلفن ثابت')
                             ->maxLength(11),
@@ -135,10 +142,17 @@ class OpportunityResource extends Resource
                     ->schema([
                         Select::make('stage_id')
                             ->label('مرحله قیف')
-                            ->options(fn () => OpportunityStage::query()->where('is_active', true)->orderBy('sort_order')->pluck('name', 'id'))
+                            ->options(function () {
+                                OpportunityStage::ensureDefaults();
+
+                                return OpportunityStage::query()->where('is_active', true)->orderBy('sort_order')->pluck('name', 'id');
+                            })
                             ->native(false)
                             ->rules(['required'])
-                            ->markAsRequired(),
+                            ->markAsRequired()
+                            ->validationMessages([
+                                'required' => 'انتخاب مرحله قیف الزامی است.',
+                            ]),
                         Select::make('status')
                             ->label('وضعیت فرصت')
                             ->options(Opportunity::statusOptions())
