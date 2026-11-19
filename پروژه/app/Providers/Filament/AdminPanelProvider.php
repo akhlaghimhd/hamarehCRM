@@ -35,10 +35,11 @@ class AdminPanelProvider extends PanelProvider
         // Use the installed Filament 5 Jalali package for every panel date input.
         DatePicker::configureUsing(fn (DatePicker $field) => $field->jalali());
         DateTimePicker::configureUsing(fn (DateTimePicker $field) => $field->jalali());
+        DateConstraint::configureUsing(fn (DateConstraint $constraint) => $constraint->jalali());
 
         // Date-like fields default to Jalali output, including relation managers and infolists.
         $isDateField = static fn (string $name): bool => (bool) preg_match(
-            '/(?:^|[._])(?:created_at|updated_at|deleted_at|due_at|confirmed_at|occurred_at|issued_on|starts_on|ends_on|valid_until|birth_date|date)$/',
+            '/(?:^|[._])[^.]+_(?:at|on|date)$|(?:^|[._])(?:valid_until|date)$/',
             $name,
         );
 
