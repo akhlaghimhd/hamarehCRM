@@ -6,6 +6,7 @@ use App\Filament\Resources\OpportunityResource;
 use App\Models\Opportunity;
 use App\Models\OpportunityStage;
 use App\Services\OpportunityQuickCreate;
+use App\Support\Fa;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -70,7 +71,31 @@ class QuickCreateOpportunity extends CreateRecord
                         ->placeholder('۰۹۱۲۱۲۳۴۵۶۷')
                         ->tel()
                         ->required()
-                        ->maxLength(30),
+                        ->maxLength(15)
+                        ->dehydrateStateUsing(function ($state) {
+                            if ($state === null || $state === '') {
+                                return $state;
+                            }
+                            $en = Fa::toEnglishDigits((string) $state);
+                            $en = preg_replace('/[\s\-()]/', '', $en) ?? $en;
+
+                            return $en;
+                        })
+                        ->rule(function () {
+                            return function (string $attribute, mixed $value, \Closure $fail): void {
+                                if ($value === null || $value === '') {
+                                    return;
+                                }
+                                $en = Fa::toEnglishDigits((string) $value);
+                                $en = preg_replace('/[\s\-()]/', '', $en) ?? $en;
+                                if (! preg_match('/^09\d{9}$/', $en)) {
+                                    $fail('شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.');
+                                }
+                            };
+                        })
+                        ->validationMessages([
+                            'required' => 'وارد کردن موبایل الزامی است.',
+                        ]),
                     TextInput::make('phone')
                         ->label('تلفن ثابت')
                         ->tel()
@@ -102,16 +127,28 @@ class QuickCreateOpportunity extends CreateRecord
                         ->columnSpanFull(),
                     Select::make('stage_id')
                         ->label('مرحله قیف')
-                        ->options(fn () => OpportunityStage::query()
-                            ->where('is_active', true)
-                            ->orderBy('sort_order')
-                            ->pluck('name', 'id'))
-                        ->default(fn () => OpportunityStage::query()
-                            ->where('code', 'lead')
-                            ->where('is_active', true)
-                            ->value('id'))
+                        ->options(function () {
+                            OpportunityStage::ensureDefaults();
+
+                            return OpportunityStage::query()
+                                ->where('is_active', true)
+                                ->orderBy('sort_order')
+                                ->pluck('name', 'id');
+                        })
+                        ->default(function () {
+                            OpportunityStage::ensureDefaults();
+
+                            return OpportunityStage::query()
+                                ->where('code', 'lead')
+                                ->where('is_active', true)
+                                ->value('id')
+                                ?? OpportunityStage::query()->where('is_active', true)->orderBy('sort_order')->value('id');
+                        })
                         ->required()
-                        ->native(false),
+                        ->native(false)
+                        ->validationMessages([
+                            'required' => 'انتخاب مرحله قیف الزامی است.',
+                        ]),
                     TextInput::make('title')
                         ->label('عنوان فرصت')
                         ->maxLength(255)
