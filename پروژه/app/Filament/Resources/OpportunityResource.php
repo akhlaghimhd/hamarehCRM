@@ -215,6 +215,7 @@ class OpportunityResource extends Resource
         return [
             'index' => Pages\ListOpportunities::route('/'),
             'create' => Pages\CreateOpportunity::route('/create'),
+            'quick-create' => Pages\QuickCreateOpportunity::route('/quick-create'),
             'edit' => Pages\EditOpportunity::route('/{record}/edit'),
             'view' => Pages\ManageOpportunity::route('/{record}'),
         ];
