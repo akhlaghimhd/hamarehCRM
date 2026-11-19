@@ -97,7 +97,7 @@ class CatalogSeasonResource extends Resource
                     ->url(fn ($record) => static::getUrl('edit', ['record' => $record]))
                     ->color('primary'),
                 Tables\Columns\TextColumn::make('year_label')->label('سال')->placeholder('—'),
-                Tables\Columns\TextColumn::make('starts_on')->label('شروع')->date()->placeholder('—'),
+                Tables\Columns\TextColumn::make('starts_on')->label('شروع')->jalaliDate()->placeholder('—'),
                 Tables\Columns\TextColumn::make('ends_on')->label('پایان')->date()->placeholder('—'),
                 Tables\Columns\TextColumn::make('models_count')
                     ->counts('models')

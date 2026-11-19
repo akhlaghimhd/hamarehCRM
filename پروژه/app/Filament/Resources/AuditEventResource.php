@@ -74,7 +74,7 @@ class AuditEventResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('occurred_at')
                     ->label('زمان')
-                    ->dateTime('Y/m/d H:i:s')
+                    ->jalaliDateTime('Y/m/d H:i:s')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('actor.name')
                     ->label('کاربر')
