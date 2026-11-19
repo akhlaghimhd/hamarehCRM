@@ -47,9 +47,9 @@ class OpportunityResource extends Resource
 
     protected static ?string $navigationLabel = 'فرصت\u200cها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'ارتباط با مشتری';
+    protected static string|UnitEnum|null $navigationGroup = 'بازاریابی';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {
