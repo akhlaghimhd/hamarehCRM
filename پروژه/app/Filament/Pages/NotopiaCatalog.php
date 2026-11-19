@@ -2,46 +2,51 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Concerns\HasNotopiaBreadcrumbs;
-use App\Filament\Resources\ProductLineResource;
-
+use App\Filament\Resources\ProductModelResource;
 use App\Models\ProductLine;
+use App\Models\ProductModel;
 use Filament\Pages\Page;
+use Filament\Support\Enums\MaxWidth;
 use UnitEnum;
 
 class NotopiaCatalog extends Page
 {
-    use HasNotopiaBreadcrumbs;
-
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-home';
-
     protected static ?string $navigationLabel = 'نمای کلی نوتوپیا';
 
-    protected static ?string $title = 'کاتالوگ نوتوپیا';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-2x2';
 
-    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ نوتوپیا';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 5;
 
-    protected static ?string $slug = 'notopia-catalog';
+    protected static ?string $title = 'نمای کلی نوتوپیا';
 
     protected string $view = 'filament.pages.notopia-catalog';
 
     public static function shouldRegisterNavigation(): bool
     {
-        return true;
+        return ProductModelResource::canViewAny();
     }
 
-    public function getBreadcrumbs(): array
+    public function getMaxContentWidth(): MaxWidth|string|null
     {
+        return MaxWidth::Full;
+    }
+
+    protected function getViewData(): array
+    {
+        $line = ProductLine::query()->where('code', 'notopia')->first();
+
+        $models = ProductModel::query()
+            ->when($line, fn ($q) => $q->where('product_line_id', $line->id))
+            ->with(['family', 'season'])
+            ->withCount(['sizes', 'coverSkus', 'options'])
+            ->orderBy('sort')
+            ->get();
+
         return [
-            ProductLineResource::getUrl('index') => 'محصولات',
-            '' => 'نوتوپیا',
+            'line' => $line,
+            'models' => $models,
         ];
-    }
-
-    public function getNotopia(): ?ProductLine
-    {
-        return ProductLine::query()->where('code', 'notopia')->first();
     }
 }
