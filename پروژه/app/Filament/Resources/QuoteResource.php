@@ -143,7 +143,7 @@ class QuoteResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('valid_until')
                     ->label('اعتبار')
-                    ->date('Y/m/d')
+                    ->jalaliDate('Y/m/d')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('owner.name')
                     ->label('مسئول')

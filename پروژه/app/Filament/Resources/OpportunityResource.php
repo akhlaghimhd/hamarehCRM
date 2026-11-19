@@ -200,7 +200,7 @@ class OpportunityResource extends Resource
                     ->formatStateUsing(fn (?string $state) => Opportunity::statusOptions()[$state] ?? $state),
                 TextColumn::make('owner.name')->label('مالک')->toggleable(),
                 TextColumn::make('salesRepresentative.name')->label('نماینده')->toggleable(),
-                TextColumn::make('updated_at')->label('به‌روزرسانی')->since()->sortable(),
+                TextColumn::make('updated_at')->label('به‌روزرسانی')->jalaliDateTime()->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([

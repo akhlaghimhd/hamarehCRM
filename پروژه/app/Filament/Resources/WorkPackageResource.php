@@ -108,7 +108,7 @@ class WorkPackageResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('contractor_name')->label('پیمانکار')->toggleable(),
                 Tables\Columns\TextColumn::make('assignee.name')->label('مسئول')->toggleable(),
-                Tables\Columns\TextColumn::make('due_at')->label('سررسید')->dateTime('Y/m/d')->sortable(),
+                Tables\Columns\TextColumn::make('due_at')->label('سررسید')->jalaliDate('Y/m/d')->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([

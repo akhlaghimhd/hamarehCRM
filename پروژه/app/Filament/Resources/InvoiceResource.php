@@ -93,7 +93,7 @@ class InvoiceResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('total')->label('جمع')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('paid_amount')->label('پرداخت‌شده')->numeric(),
-                Tables\Columns\TextColumn::make('issued_on')->label('تاریخ')->date('Y/m/d')->sortable(),
+                Tables\Columns\TextColumn::make('issued_on')->label('تاریخ')->jalaliDate('Y/m/d')->sortable(),
             ])
             ->defaultSort('id', 'desc')
             ->filters([

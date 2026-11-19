@@ -122,7 +122,7 @@ class TaskResource extends Resource
                     }),
                 Tables\Columns\TextColumn::make('status')->label('وضعیت')
                     ->formatStateUsing(fn (string $state) => Task::statusOptions()[$state] ?? $state)->badge(),
-                Tables\Columns\TextColumn::make('due_at')->label('سررسید')->dateTime('Y/m/d H:i')->sortable()
+                Tables\Columns\TextColumn::make('due_at')->label('سررسید')->jalaliDateTime('Y/m/d H:i')->sortable()
                     ->color(fn (Task $record) => ! in_array($record->status, [Task::STATUS_DONE, Task::STATUS_CANCELLED], true)
                         && $record->due_at?->isPast() ? 'danger' : null),
             ])

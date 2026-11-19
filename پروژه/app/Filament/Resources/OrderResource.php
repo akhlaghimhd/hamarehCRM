@@ -122,7 +122,7 @@ class OrderResource extends Resource
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('confirmed_at')
                     ->label('تأیید')
-                    ->dateTime('Y/m/d')
+                    ->jalaliDate('Y/m/d')
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('به\u200cروزرسانی')

@@ -10,6 +10,9 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
@@ -29,6 +32,40 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        // Use the installed Filament 5 Jalali package for every panel date input.
+        DatePicker::configureUsing(fn (DatePicker $field) => $field->jalali());
+        DateTimePicker::configureUsing(fn (DateTimePicker $field) => $field->jalali());
+
+        // Date-like fields default to Jalali output, including relation managers and infolists.
+        $isDateField = static fn (string $name): bool => (bool) preg_match(
+            '/(?:^|[._])(?:created_at|updated_at|deleted_at|due_at|confirmed_at|occurred_at|issued_on|starts_on|ends_on|valid_until|birth_date|date)$/',
+            $name,
+        );
+
+        TextColumn::configureUsing(static function (TextColumn $column) use ($isDateField): void {
+            $name = $column->getName();
+
+            if (! $isDateField($name)) {
+                return;
+            }
+
+            str_ends_with($name, '_at')
+                ? $column->jalaliDateTime()
+                : $column->jalaliDate();
+        });
+
+        TextEntry::configureUsing(static function (TextEntry $entry) use ($isDateField): void {
+            $name = $entry->getName();
+
+            if (! $isDateField($name)) {
+                return;
+            }
+
+            str_ends_with($name, '_at')
+                ? $entry->jalaliDateTime()
+                : $entry->jalaliDate();
+        });
+
         $panel = $panel
             ->default()
             ->id('admin')
