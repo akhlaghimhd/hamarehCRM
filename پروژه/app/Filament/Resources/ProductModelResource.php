@@ -47,22 +47,29 @@ use Filament\Schemas\Components\Utilities\Set;
 
 class ProductModelResource extends Resource
 {
-public static function shouldRegisterNavigation(): bool
+    public static function shouldRegisterNavigation(): bool
     {
         return true;
     }
 
-
     use ChecksResourcePermission;
-protected static ?string $permissionView = 'products.view';
+
+    protected static ?string $permissionView = 'products.view';
+
     protected static ?string $permissionManage = 'products.manage';
+
     protected static ?string $model = ProductModel::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cube-transparent';
+
     protected static ?string $modelLabel = 'مدل محصول';
+
     protected static ?string $pluralModelLabel = 'مدل‌های محصول';
+
     protected static ?string $navigationLabel = 'مدل‌ها';
 
     protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
+
     protected static ?int $navigationSort = 2;
 
     public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
@@ -158,8 +165,7 @@ protected static ?string $permissionView = 'products.view';
                 ->columns([
                     'default' => 1,
                     'md' => 2,
-                ])
-            ->stackedOnMobile(),
+                ]),
 
             Section::make('ماتریس مجاز')
                 ->description('لیست اجازه برای سفارش — مشتری در هر سفارش فقط یک سایز و یک جلد انتخاب می‌کند')
@@ -297,17 +303,30 @@ protected static ?string $permissionView = 'products.view';
                     ->label('کپی')
                     ->icon('heroicon-o-document-duplicate')
                     ->color('gray')
-                    ->action(function ($record) {
-                        $copy = $record->replicate();
-                        $copy->name = $record->name . ' (کپی)';
-                        $copy->code = $record->code . '-COPY';
+                    ->action(function (ProductModel $record) {
+                        $copy = $record->replicate([
+                            'sizes_count',
+                            'cover_skus_count',
+                            'options_count',
+                        ]);
+                        $copy->name = $record->name.' (کپی)';
+                        $copy->code = $record->code.'-COPY';
                         $copy->status = 'draft';
                         $copy->is_active = true;
+                        $copy->offsetUnset('sizes_count');
+                        $copy->offsetUnset('cover_skus_count');
+                        $copy->offsetUnset('options_count');
                         $copy->save();
 
                         $copy->sizes()->sync($record->sizes()->pluck($record->sizes()->getRelated()->getQualifiedKeyName())->all());
                         $copy->coverSkus()->sync($record->coverSkus()->pluck($record->coverSkus()->getRelated()->getQualifiedKeyName())->all());
                         $copy->options()->sync($record->options()->pluck($record->options()->getRelated()->getQualifiedKeyName())->all());
+
+                        Notification::make()
+                            ->title('کپی مدل ساخته شد')
+                            ->body($copy->name.' — '.$copy->code)
+                            ->success()
+                            ->send();
                     }),
 
                 \Filament\Actions\EditAction::make()->label('ویرایش'),
