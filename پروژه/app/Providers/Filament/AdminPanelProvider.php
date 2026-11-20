@@ -110,8 +110,8 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 'switch-company' => MenuItem::make()
                     ->label('تعویض شرکت')
-                    ->icon('heroicon-o-building-office-2')
                     ->url(fn (): string => SwitchCompany::getUrl())
+                    ->icon('heroicon-o-building-office-2')
                     ->visible(fn (): bool => SwitchCompany::canAccess())
                     ->sort(10),
             ])
@@ -202,6 +202,32 @@ class AdminPanelProvider extends PanelProvider
   width:.95rem!important;height:.95rem!important;
 }
 .fi-sidebar-item-label{line-height:1.2!important}
+
+/* —— Form density (global) —— */
+.fi-sc-form,.fi-fo-form,.fi-form{gap:.55rem!important}
+.fi-section{margin-block:.15rem!important}
+.fi-section-header{padding-block:.45rem!important;padding-inline:.85rem!important}
+.fi-section-header-heading{font-size:.9rem!important;line-height:1.25!important}
+.fi-section-header-description{font-size:.72rem!important;margin-top:.1rem!important;opacity:.85}
+.fi-section-content-ctn,.fi-section-content{padding:.65rem .85rem .75rem!important}
+.fi-section-content{gap:.55rem!important;row-gap:.55rem!important}
+.fi-fo-component-ctn{gap:.55rem!important}
+.fi-fo-field-wrp{gap:.2rem!important}
+.fi-fo-field-wrp-label{margin:0!important;padding:0!important}
+.fi-fo-field-wrp-label .fi-fo-field-wrp-label-text,
+.fi-fo-field-wrp-label span{font-size:.78rem!important;font-weight:600!important}
+.fi-fo-field-wrp-hint,.fi-fo-field-wrp-helper-text,.fi-fo-field-wrp-helper{font-size:.7rem!important;margin-top:.1rem!important;line-height:1.25!important}
+.fi-input,.fi-select-input,.fi-ta-input,.fi-fo-date-time-picker-display-text-input,
+input.fi-input,textarea.fi-input,select.fi-select-input{
+  min-height:2.15rem!important;
+  padding-block:.35rem!important;
+  font-size:.85rem!important;
+}
+textarea.fi-input{min-height:3.4rem!important}
+.fi-btn{padding-block:.4rem!important;font-size:.82rem!important}
+.fi-fo-field-wrp-error-message{font-size:.72rem!important;margin-top:.15rem!important}
+.fi-page-header{padding-block:.65rem!important}
+.fi-page-main{gap:.75rem!important}
 </style>',
             );
     }
