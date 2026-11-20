@@ -44,7 +44,7 @@ class ProductFamilyResource extends Resource
 
     protected static ?string $navigationLabel = 'خانواده مدل';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ نوتوپیا';
 
     protected static ?int $navigationSort = 20;
 
