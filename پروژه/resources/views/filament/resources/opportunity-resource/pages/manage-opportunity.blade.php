@@ -9,43 +9,45 @@
 
     {{-- استایل خودکفا: وابسته به build جداگانه Vite نیست --}}
     <style>
-        .opp-ws { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
-        .opp-ws__stack { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+        .opp-ws { display: flex; flex-direction: column; gap: .75rem; min-width: 0; }
+        .opp-ws__stack { display: flex; flex-direction: column; gap: .65rem; min-width: 0; }
         .opp-ws__main, .opp-ws__side { min-width: 0; }
         .opp-card, .opp-step {
             min-width: 0;
             border: 1px solid rgba(0,0,0,.08);
-            border-radius: .9rem;
+            border-radius: .7rem;
             background: #fff;
             color: #111827;
-            box-shadow: 0 1px 2px rgba(0,0,0,.04);
+            box-shadow: 0 1px 2px rgba(0,0,0,.03);
         }
         .dark .opp-card, .dark .opp-step {
             border-color: rgba(255,255,255,.1);
             background: rgba(255,255,255,.04);
             color: #f3f4f6;
         }
-        .opp-card__pad { padding: 1rem; }
+        .opp-card__pad { padding: .7rem .85rem; }
         .opp-card__label, .opp-prev-head h2 {
-            margin: 0 0 .5rem;
+            margin: 0 0 .35rem;
             color: #0f766e;
-            font-size: .8rem;
+            font-size: .75rem;
             font-weight: 700;
+            letter-spacing: .01em;
         }
-        .opp-contact-name { font-size: 1rem; font-weight: 700; color: #111827; }
+        .opp-contact-name { font-size: .92rem; font-weight: 700; color: #111827; line-height: 1.4; }
         .dark .opp-contact-name { color: #f9fafb; }
-        .opp-contact-sub { margin-top: .25rem; color: #6b7280; font-size: .78rem; }
-        .opp-contact-phones { margin-top: .75rem; color: #374151; font-size: .86rem; line-height: 1.8; }
+        .opp-contact-sub { margin-top: .15rem; color: #6b7280; font-size: .74rem; line-height: 1.4; }
+        .opp-contact-phones { margin-top: .45rem; color: #374151; font-size: .8rem; line-height: 1.55; }
         .dark .opp-contact-phones { color: #d1d5db; }
         .opp-dl { margin: 0; }
         .opp-dl__row {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            gap: .75rem;
-            padding: .7rem 1rem;
+            gap: .5rem;
+            padding: .45rem .85rem;
             border-bottom: 1px solid rgba(0,0,0,.06);
-            font-size: .85rem;
+            font-size: .8rem;
+            line-height: 1.45;
         }
         .dark .opp-dl__row { border-bottom-color: rgba(255,255,255,.08); }
         .opp-dl__row:last-child { border-bottom: 0; }
@@ -59,25 +61,26 @@
             overflow-wrap: anywhere;
         }
         .dark .opp-dl__v { color: #f3f4f6; }
-        .opp-pills { display: flex; flex-wrap: wrap; gap: .5rem; }
+        .opp-pills { display: flex; flex-wrap: wrap; gap: .35rem; }
         .opp-pill {
             display: inline-flex;
             align-items: center;
             max-width: 100%;
-            padding: .2rem .65rem;
+            padding: .12rem .5rem;
             border: 1px solid rgba(0,0,0,.08);
             border-radius: 999px;
             background: #f9fafb;
             color: #374151;
-            font-size: .78rem;
+            font-size: .72rem;
             font-weight: 600;
+            line-height: 1.35;
         }
         .dark .opp-pill { border-color: rgba(255,255,255,.1); background: rgba(255,255,255,.06); color: #e5e7eb; }
         .opp-pill--ok { border-color: rgba(16,185,129,.3); background: rgba(16,185,129,.1); color: #047857; }
         .opp-pill--stage { border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); color: #b45309; }
         .opp-pill--prod { border-color: rgba(59,130,246,.3); background: rgba(59,130,246,.1); color: #1d4ed8; }
         .opp-step {
-            padding: 1.25rem;
+            padding: .85rem 1rem;
             border-color: rgba(16,185,129,.25);
             background: rgba(16,185,129,.05);
         }
@@ -87,42 +90,42 @@
             flex-wrap: wrap;
             align-items: flex-start;
             justify-content: space-between;
-            gap: .75rem;
+            gap: .5rem;
         }
-        .opp-step__title-block { flex: 1 1 12rem; min-width: 0; }
-        .opp-step__close-block { flex: 0 1 14rem; min-width: min(100%, 12rem); }
-        .opp-step__label { margin-bottom: .25rem; color: #047857; font-size: .78rem; font-weight: 650; }
-        .opp-step__title { margin: 0; font-size: 1.1rem; font-weight: 700; line-height: 1.6; overflow-wrap: anywhere; }
+        .opp-step__title-block { flex: 1 1 11rem; min-width: 0; }
+        .opp-step__close-block { flex: 0 1 11rem; min-width: min(100%, 10rem); }
+        .opp-step__label { margin-bottom: .15rem; color: #047857; font-size: .72rem; font-weight: 650; }
+        .opp-step__title { margin: 0; font-size: 1rem; font-weight: 700; line-height: 1.45; overflow-wrap: anywhere; }
         .opp-step__meta {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: .5rem;
-            margin-top: .5rem;
+            gap: .4rem;
+            margin-top: .35rem;
             color: #4b5563;
-            font-size: .82rem;
+            font-size: .78rem;
         }
         .opp-step__meta.is-overdue { color: #dc2626; font-weight: 700; }
-        .opp-step__hint { display: block; margin: .35rem 0 0; color: #6b7280; font-size: .76rem; }
+        .opp-step__hint { display: block; margin: .25rem 0 0; color: #6b7280; font-size: .7rem; line-height: 1.4; }
         .opp-step__divider {
-            margin-block: 1rem;
+            margin-block: .65rem;
             border: 0;
-            border-top: 1px dashed rgba(16,185,129,.35);
+            border-top: 1px dashed rgba(16,185,129,.3);
         }
-        .opp-step__acts-title { color: #374151; font-size: .88rem; font-weight: 650; }
+        .opp-step__acts-title { color: #374151; font-size: .82rem; font-weight: 650; }
         .dark .opp-step__acts-title { color: #e5e7eb; }
         .opp-empty {
-            padding: 1.25rem 1rem;
+            padding: .75rem .85rem;
             border: 1px dashed rgba(0,0,0,.12);
-            border-radius: .75rem;
+            border-radius: .55rem;
             background: #f9fafb;
             color: #6b7280;
-            font-size: .85rem;
-            line-height: 1.8;
+            font-size: .78rem;
+            line-height: 1.55;
             text-align: center;
         }
         .dark .opp-empty { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: #9ca3af; }
-        .opp-prev-head { padding: .75rem 1rem; }
+        .opp-prev-head { padding: .55rem .85rem; }
         .opp-prev-item, .opp-quote { border-top: 1px solid rgba(0,0,0,.06); }
         .dark .opp-prev-item, .dark .opp-quote { border-top-color: rgba(255,255,255,.08); }
         .opp-prev-sum {
@@ -130,20 +133,21 @@
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            gap: .5rem;
-            padding: .75rem 1rem;
+            gap: .4rem;
+            padding: .5rem .85rem;
             background: #f9fafb;
             cursor: pointer;
             list-style: none;
+            font-size: .82rem;
         }
         .dark .opp-prev-sum { background: rgba(255,255,255,.04); }
         .opp-prev-sum::-webkit-details-marker { display: none; }
-        .opp-prev-body { padding: 1rem; color: #4b5563; font-size: .86rem; line-height: 1.8; }
+        .opp-prev-body { padding: .65rem .85rem; color: #4b5563; font-size: .8rem; line-height: 1.55; }
         .opp-act {
-            margin-top: .5rem;
-            padding: .75rem;
+            margin-top: .4rem;
+            padding: .55rem .65rem;
             border: 1px solid rgba(0,0,0,.08);
-            border-radius: .6rem;
+            border-radius: .5rem;
             background: #fff;
         }
         .dark .opp-act { border-color: rgba(255,255,255,.1); background: rgba(255,255,255,.04); }
@@ -151,30 +155,31 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
-            gap: .5rem;
+            gap: .35rem;
             color: #6b7280;
-            font-size: .76rem;
+            font-size: .72rem;
         }
         .opp-quote {
             display: block;
-            padding: .75rem 1rem;
+            padding: .5rem .85rem;
             color: inherit;
             text-decoration: none;
             transition: background-color 140ms ease;
         }
         .opp-quote:hover { background: rgba(15,118,110,.06); }
-        .opp-quote__num, .opp-quote__total { color: #0f766e; font-size: .86rem; font-weight: 700; }
-        .opp-quote__status { color: #6b7280; font-size: .76rem; }
-        .opp-quote__title { margin-top: .25rem; font-size: .86rem; overflow-wrap: anywhere; }
-        .opp-quote__total { margin-top: .5rem; font-size: .8rem; }
+        .opp-quote__num, .opp-quote__total { color: #0f766e; font-size: .8rem; font-weight: 700; }
+        .opp-quote__status { color: #6b7280; font-size: .72rem; }
+        .opp-quote__title { margin-top: .15rem; font-size: .8rem; overflow-wrap: anywhere; line-height: 1.4; }
+        .opp-quote__total { margin-top: .3rem; font-size: .75rem; }
         @media (min-width: 1024px) {
-            .opp-ws { flex-direction: row; align-items: flex-start; }
+            .opp-ws { flex-direction: row; align-items: flex-start; gap: .85rem; }
             .opp-ws__main { flex: 1 1 0%; order: 2; }
-            .opp-ws__side { width: min(20rem, 30%); flex: 0 0 min(20rem, 30%); order: 1; }
+            .opp-ws__side { width: min(17.5rem, 28%); flex: 0 0 min(17.5rem, 28%); order: 1; }
         }
         @media (max-width: 767px) {
-            .opp-step { padding: 1rem; }
+            .opp-step { padding: .75rem; }
             .opp-step__close-block { flex-basis: 100%; max-width: none; }
+            .opp-card__pad, .opp-dl__row, .opp-prev-head, .opp-prev-sum, .opp-quote { padding-inline: .75rem; }
         }
     </style>
 
@@ -206,7 +211,7 @@
                 </div>
 
                 <div class="opp-card">
-                    <div class="opp-card__pad" style="padding-bottom:.35rem">
+                    <div class="opp-card__pad" style="padding-bottom:.25rem">
                         <div class="opp-card__label" style="margin:0">جزئیات فرصت</div>
                     </div>
                     <dl class="opp-dl">
@@ -326,7 +331,7 @@
                                     فعالیتی ثبت نشده. از «+ ثبت فعالیت» برای تماس/جلسه استفاده کنید.
                                 </div>
                             @else
-                                <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.5rem">
+                                <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.4rem">
                                     @foreach ($stepActivities as $activity)
                                         <li class="opp-act">
                                             <div class="opp-act__meta">
@@ -337,9 +342,9 @@
                                                 </span>
                                                 <span>{{ $activity->user?->name ?? $dash }}</span>
                                             </div>
-                                            <p style="margin:.35rem 0 0;font-size:.875rem;font-weight:500">{{ $activity->subject }}</p>
+                                            <p style="margin:.25rem 0 0;font-size:.82rem;font-weight:500">{{ $activity->subject }}</p>
                                             @if (filled($activity->body))
-                                                <p style="margin:.25rem 0 0;font-size:.75rem;color:#6b7280;line-height:1.4">{{ $activity->body }}</p>
+                                                <p style="margin:.2rem 0 0;font-size:.74rem;color:#6b7280;line-height:1.4">{{ $activity->body }}</p>
                                             @endif
                                         </li>
                                     @endforeach
@@ -350,7 +355,7 @@
                         <div class="opp-step__top">
                             <div class="opp-step__title-block">
                                 <div class="opp-step__label">گام جاری</div>
-                                <h2 class="opp-step__title" style="font-size:1rem;color:#374151">گام بعدی تعریف نشده</h2>
+                                <h2 class="opp-step__title" style="font-size:.95rem;color:#374151">گام بعدی تعریف نشده</h2>
                             </div>
                             <div>{{ $this->setStepAction }}</div>
                         </div>
@@ -363,20 +368,17 @@
                     </div>
                     @forelse ($closedSteps as $step)
                         @php $stepActs = $step->activities->sortByDesc('id'); @endphp
-                        <details class="opp-prev-item" open>
+                        <details class="opp-prev-item">
                             <summary class="opp-prev-sum">
                                 <span style="font-weight:500">{{ $step->title }}</span>
-                                <span style="font-size:.75rem;color:#6b7280">
+                                <span style="font-size:.72rem;color:#6b7280">
                                     {{ $step->closed_at ? \App\Support\Fa::dateTime($step->closed_at, 'Y/m/d') : $dash }}
                                     · {{ \App\Support\Fa::digits((string) $stepActs->count()) }} فعالیت
                                 </span>
                             </summary>
                             <div class="opp-prev-body">
                                 @if (filled($step->result))
-                                    <p style="margin:0 0 .5rem;line-height:1.5">
-                                        <strong>نتیجه گام:</strong>
-                                        {{ $step->result }}
-                                    </p>
+                                    <p style="margin:0 0 .5rem"><strong>نتیجه:</strong> {{ $step->result }}</p>
                                 @endif
                                 @foreach ($stepActs as $activity)
                                     <div class="opp-act">
@@ -388,9 +390,9 @@
                                             </span>
                                             <span>{{ $activity->user?->name ?? $dash }}</span>
                                         </div>
-                                        <p style="margin:.35rem 0 0;font-weight:500">{{ $activity->subject }}</p>
+                                        <p style="margin:.25rem 0 0;font-size:.82rem;font-weight:500">{{ $activity->subject }}</p>
                                         @if (filled($activity->body))
-                                            <p style="margin:.2rem 0 0;font-size:.75rem;color:#6b7280">{{ $activity->body }}</p>
+                                            <p style="margin:.2rem 0 0;font-size:.74rem;color:#6b7280">{{ $activity->body }}</p>
                                         @endif
                                     </div>
                                 @endforeach
