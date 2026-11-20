@@ -11,7 +11,7 @@ class NotopiaCluster extends Cluster
 
     protected static ?string $navigationLabel = 'نوتوپیا';
 
-    protected static string|UnitEnum|null $navigationGroup = 'محصولات';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ نوتوپیا';
 
     protected static ?int $navigationSort = 99;
 
