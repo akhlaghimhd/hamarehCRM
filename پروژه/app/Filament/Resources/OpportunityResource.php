@@ -135,7 +135,7 @@ class OpportunityResource extends Resource
             ->filtersLayout(FiltersLayout::AboveContent)
             ->filtersFormColumns(['default' => 1, 'sm' => 2, 'md' => 3, 'lg' => 6])
             ->filters([
-                Filter::make('q')->columnSpan(1)->form([
+                Filter::make('q')->columnSpan(['default' => 1, 'lg' => 2])->form([
                     TextInput::make('q')->hiddenLabel()->placeholder('جستجوی سازمان، کد، مخاطب...'),
                 ])->query(function (Builder $query, array $data): Builder {
                     $q = trim((string) ($data['q'] ?? ''));
