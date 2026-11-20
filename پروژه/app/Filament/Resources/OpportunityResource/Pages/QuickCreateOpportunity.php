@@ -57,11 +57,6 @@ class QuickCreateOpportunity extends CreateRecord
         return $schema
             ->columns(1)
             ->components([
-                TextInput::make('title')
-                    ->label('عنوان فرصت')
-                    ->maxLength(255)
-                    ->placeholder('خالی بماند تا از نام سازمان ساخته شود'),
-
                 Grid::make(['default' => 1, 'lg' => 2])
                     ->schema([
                         Section::make('هویت طرف حساب')
@@ -194,6 +189,11 @@ class QuickCreateOpportunity extends CreateRecord
 
                         Section::make('محصول و مرحله')
                             ->schema([
+                                TextInput::make('title')
+                                    ->label('عنوان فرصت')
+                                    ->maxLength(255)
+                                    ->placeholder('خالی بماند تا از نام سازمان ساخته شود')
+                                    ->columnSpanFull(),
                                 Select::make('product_interest')
                                     ->label('خطوط محصول')
                                     ->multiple()
@@ -205,7 +205,6 @@ class QuickCreateOpportunity extends CreateRecord
                                         ->all())
                                     ->required()
                                     ->native(false)
-                                    ->columnSpanFull()
                                     ->validationMessages([
                                         'required' => 'حداقل یک خط محصول را انتخاب کنید.',
                                     ]),
@@ -223,7 +222,6 @@ class QuickCreateOpportunity extends CreateRecord
                                     ->default(fn () => OpportunityStage::query()->where('is_active', true)->orderBy('sort_order')->value('id'))
                                     ->required()
                                     ->native(false)
-                                    ->columnSpanFull()
                                     ->validationMessages([
                                         'required' => 'انتخاب مرحله قیف الزامی است.',
                                     ]),
