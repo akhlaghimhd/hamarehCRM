@@ -33,7 +33,6 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
@@ -134,103 +133,79 @@ class OpportunityResource extends Resource
             ->paginated([10, 15, 25, 50])
             ->deferFilters(false)
             ->filtersLayout(FiltersLayout::AboveContent)
-            ->filtersFormColumns([
-                'default' => 1,
-                'sm' => 2,
-                'md' => 3,
-                'lg' => 6,
-            ])
+            ->filtersFormColumns(['default' => 1, 'sm' => 2, 'md' => 3, 'lg' => 6])
             ->filters([
-                Filter::make('q')
-                    ->label('')
-                    ->columnSpan(1)
-                    ->form([
-                        TextInput::make('q')
-                            ->label('')
-                            ->placeholder('جستجوی سازمان، کد، مخاطب...'),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        $q = trim((string) ($data['q'] ?? ''));
-                        if ($q === '') {
-                            return $query;
-                        }
-                        $digits = preg_replace('/\D+/', '', Fa::toEnglishDigits($q)) ?? '';
-
-                        return $query->where(function (Builder $inner) use ($q, $digits): void {
-                            $inner->where('organization_name', 'like', '%'.$q.'%')
-                                ->orWhere('contact_name', 'like', '%'.$q.'%')
-                                ->orWhere('title', 'like', '%'.$q.'%')
-                                ->orWhere('mobile', 'like', '%'.$q.'%');
-                            if ($digits !== '') {
-                                $inner->orWhere('id', (int) $digits);
-                            }
-                        });
-                    })
-                    ->indicateUsing(fn (array $data): ?string => filled($data['q'] ?? null) ? 'جستجو: '.$data['q'] : null),
-                SelectFilter::make('status')
-                    ->label('')
-                    ->placeholder('همه وضعیت‌ها')
-                    ->options(Opportunity::statusOptions())
-                    ->native(false),
-                SelectFilter::make('stage_id')
-                    ->label('')
-                    ->placeholder('همه مراحل')
-                    ->options(fn () => OpportunityStage::query()->orderBy('sort_order')->pluck('name', 'id'))
-                    ->native(false),
-                SelectFilter::make('referral')
-                    ->label('')
-                    ->placeholder('همه (ارجاع)')
-                    ->options([
+                Filter::make('q')->columnSpan(1)->form([
+                    TextInput::make('q')->hiddenLabel()->placeholder('جستجوی سازمان، کد، مخاطب...'),
+                ])->query(function (Builder $query, array $data): Builder {
+                    $q = trim((string) ($data['q'] ?? ''));
+                    if ($q === '') { return $query; }
+                    $digits = preg_replace('/\D+/', '', Fa::toEnglishDigits($q)) ?? '';
+                    return $query->where(function (Builder $inner) use ($q, $digits): void {
+                        $inner->where('organization_name', 'like', '%'.$q.'%')
+                            ->orWhere('contact_name', 'like', '%'.$q.'%')
+                            ->orWhere('title', 'like', '%'.$q.'%')
+                            ->orWhere('mobile', 'like', '%'.$q.'%');
+                        if ($digits !== '') { $inner->orWhere('id', (int) $digits); }
+                    });
+                })->indicateUsing(fn (array $data): ?string => filled($data['q'] ?? null) ? 'جستجو: '.$data['q'] : null),
+                Filter::make('status')->form([
+                    Select::make('value')->hiddenLabel()->placeholder('همه وضعیت‌ها')->options(Opportunity::statusOptions())->native(false),
+                ])->query(function (Builder $query, array $data): Builder {
+                    $v = $data['value'] ?? null;
+                    return filled($v) ? $query->where('status', $v) : $query;
+                })->indicateUsing(fn (array $data): ?string => filled($data['value'] ?? null) ? (Opportunity::statusOptions()[$data['value']] ?? (string) $data['value']) : null),
+                Filter::make('stage_id')->form([
+                    Select::make('value')->hiddenLabel()->placeholder('همه مراحل')->options(fn () => OpportunityStage::query()->orderBy('sort_order')->pluck('name', 'id'))->native(false),
+                ])->query(function (Builder $query, array $data): Builder {
+                    $v = $data['value'] ?? null;
+                    return filled($v) ? $query->where('stage_id', $v) : $query;
+                })->indicateUsing(function (array $data): ?string {
+                    if (! filled($data['value'] ?? null)) { return null; }
+                    return OpportunityStage::query()->whereKey($data['value'])->value('name');
+                }),
+                Filter::make('referral')->form([
+                    Select::make('value')->hiddenLabel()->placeholder('همه (ارجاع)')->options([
                         'to_me' => 'ارجاع‌شده به من',
                         'by_me' => 'ارجاع‌داده‌شده توسط من',
                         'open' => 'دارای ارجاع باز',
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        $v = $data['value'] ?? null;
-                        $uid = auth()->id();
-                        if ($v === 'to_me') {
-                            return $query->where('followup_user_id', $uid)->where(function (Builder $q) use ($uid): void {
-                                $q->whereNull('owner_user_id')->orWhere('owner_user_id', '!=', $uid);
-                            });
-                        }
-                        if ($v === 'by_me') {
-                            return $query->where('owner_user_id', $uid)
-                                ->whereNotNull('followup_user_id')
-                                ->where('followup_user_id', '!=', $uid);
-                        }
-                        if ($v === 'open') {
-                            return $query->whereNotNull('followup_user_id')
-                                ->whereColumn('followup_user_id', '!=', 'owner_user_id');
-                        }
-
-                        return $query;
-                    })
-                    ->native(false),
-                SelectFilter::make('user')
-                    ->label('')
-                    ->placeholder('همه کاربران')
-                    ->options(fn () => User::query()->where('is_active', true)->pluck('name', 'id'))
-                    ->query(function (Builder $query, array $data): Builder {
-                        $uid = $data['value'] ?? null;
-                        if (! $uid) {
-                            return $query;
-                        }
-
-                        return $query->where(function (Builder $q) use ($uid): void {
-                            $q->where('owner_user_id', $uid)->orWhere('followup_user_id', $uid);
+                    ])->native(false),
+                ])->query(function (Builder $query, array $data): Builder {
+                    $v = $data['value'] ?? null;
+                    $uid = auth()->id();
+                    if ($v === 'to_me') {
+                        return $query->where('followup_user_id', $uid)->where(function (Builder $q) use ($uid): void {
+                            $q->whereNull('owner_user_id')->orWhere('owner_user_id', '!=', $uid);
                         });
-                    })
-                    ->searchable()
-                    ->native(false),
+                    }
+                    if ($v === 'by_me') {
+                        return $query->where('owner_user_id', $uid)->whereNotNull('followup_user_id')->where('followup_user_id', '!=', $uid);
+                    }
+                    if ($v === 'open') {
+                        return $query->whereNotNull('followup_user_id')->whereColumn('followup_user_id', '!=', 'owner_user_id');
+                    }
+                    return $query;
+                })->indicateUsing(fn (array $data): ?string => match ($data['value'] ?? null) {
+                    'to_me' => 'ارجاع‌شده به من',
+                    'by_me' => 'ارجاع‌داده‌شده توسط من',
+                    'open' => 'دارای ارجاع باز',
+                    default => null,
+                }),
+                Filter::make('user')->form([
+                    Select::make('value')->hiddenLabel()->placeholder('همه کاربران')->options(fn () => User::query()->where('is_active', true)->pluck('name', 'id'))->searchable()->native(false),
+                ])->query(function (Builder $query, array $data): Builder {
+                    $uid = $data['value'] ?? null;
+                    if (! $uid) { return $query; }
+                    return $query->where(function (Builder $q) use ($uid): void {
+                        $q->where('owner_user_id', $uid)->orWhere('followup_user_id', $uid);
+                    });
+                })->indicateUsing(function (array $data): ?string {
+                    if (! filled($data['value'] ?? null)) { return null; }
+                    return User::query()->whereKey($data['value'])->value('name');
+                }),
             ])
             ->filtersTriggerAction(fn (Action $action) => $action->hidden())
-            ->filtersResetAction(
-                fn (Action $action) => $action
-                    ->label('حذف فیلتر')
-                    ->link()
-                    ->size('sm')
-                    ->color('gray')
-            )
+            ->filtersResetAction(fn (Action $action) => $action->label('حذف فیلتر')->link()->size('sm')->color('gray'))
             ->persistFiltersInSession()
             ->searchable(false)
             ->emptyStateHeading('فرصتی ثبت نشده')
