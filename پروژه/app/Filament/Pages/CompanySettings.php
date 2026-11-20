@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Support\CompanyContext;
 use App\Support\CompanySettings as CompanySettingsService;
 use App\Support\CompanyTheme;
-use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -52,7 +51,15 @@ class CompanySettings extends Page
     {
         $user = Auth::user();
 
-        return $user instanceof User && $user->hasPermissionTo('company.settings');
+        if (! $user instanceof User || ! $user->is_active) {
+            return false;
+        }
+
+        // Project permission API (not Spatie). company.settings is not seeded;
+        // companies.manage / company admin / platform owner may open settings.
+        return $user->isPlatformOwner()
+            || $user->isCompanyAdmin()
+            || $user->hasPermission('companies.manage');
     }
 
     public static function shouldRegisterNavigation(): bool
