@@ -77,7 +77,8 @@ class OpportunityResource extends Resource
                                 'required' => 'نام سازمان را وارد کنید.',
                                 'max' => 'نام سازمان نباید بیشتر از ۱۲۰ کاراکتر باشد.',
                             ])
-                            ->columnSpan(['default' => 1, 'md' => 2]),
+                            ->columnSpanFull(),
+
                         Select::make('product_interest')
                             ->label('محصولات مورد علاقه')
                             ->options(Opportunity::productInterestOptions())
@@ -85,26 +86,19 @@ class OpportunityResource extends Resource
                             ->searchable()
                             ->native(false)
                             ->placeholder('انتخاب محصول')
-                            ->columnSpan(['default' => 1, 'md' => 2]),
-                        Select::make('industry')
-                            ->label('صنعت')
-                            ->options(Opportunity::industryOptions())
-                            ->native(false)
-                            ->live()
-                            ->placeholder('— انتخاب —'),
-                        TextInput::make('industry_other')
-                            ->label('توضیح صنعت (سایر)')
-                            ->visible(fn (Get $get) => $get('industry') === 'other')
-                            ->maxLength(80),
+                            ->columnSpanFull(),
+
                         TextInput::make('contact_name')
                             ->label('نام فرد تماس')
                             ->placeholder('نام شخص تماس')
                             ->maxLength(80),
+
                         Select::make('contact_role')
                             ->label('نقش فرد در خرید')
                             ->options(Opportunity::decisionRoleOptions())
                             ->native(false)
                             ->placeholder('— انتخاب —'),
+
                         TextInput::make('mobile')
                             ->label('موبایل')
                             ->placeholder('۰۹۱۲۱۲۳۴۵۶۷')
@@ -136,6 +130,7 @@ class OpportunityResource extends Resource
                             ->dehydrateStateUsing(fn ($state) => $state !== null && $state !== ''
                                 ? preg_replace('/\D+/', '', Fa::toEnglishDigits((string) $state))
                                 : null),
+
                         TextInput::make('phone')
                             ->label('تلفن ثابت')
                             ->placeholder('۰۲۱۱۲۳۴۵۶۷۸')
@@ -167,6 +162,19 @@ class OpportunityResource extends Resource
                             ->dehydrateStateUsing(fn ($state) => $state !== null && $state !== ''
                                 ? preg_replace('/\D+/', '', Fa::toEnglishDigits((string) $state))
                                 : null),
+
+                        Select::make('industry')
+                            ->label('صنعت')
+                            ->options(Opportunity::industryOptions())
+                            ->native(false)
+                            ->live()
+                            ->placeholder('— انتخاب —')
+                            ->columnSpan(fn (Get $get) => $get('industry') === 'other' ? 1 : 2),
+
+                        TextInput::make('industry_other')
+                            ->label('توضیح صنعت (سایر)')
+                            ->visible(fn (Get $get) => $get('industry') === 'other')
+                            ->maxLength(80),
                     ])
                     ->columns(['default' => 1, 'md' => 2])
                     ->columnSpanFull(),
