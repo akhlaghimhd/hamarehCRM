@@ -37,7 +37,7 @@ class WorkPackageResource extends Resource
 
     protected static ?string $navigationLabel = 'بسته‌های کاری';
 
-    protected static string|UnitEnum|null $navigationGroup = 'تولید و برون‌سپاری';
+    protected static string|UnitEnum|null $navigationGroup = 'عملیات';
 
     protected static ?int $navigationSort = 10;
 
