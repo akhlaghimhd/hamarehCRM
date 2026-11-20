@@ -68,7 +68,7 @@ class ProductModelResource extends Resource
 
     protected static ?string $navigationLabel = 'مدل‌ها';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ نوتوپیا';
 
     protected static ?int $navigationSort = 2;
 
