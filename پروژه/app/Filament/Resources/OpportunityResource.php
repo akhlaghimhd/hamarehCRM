@@ -13,6 +13,10 @@ use App\Support\Fa;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -25,6 +29,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
@@ -237,6 +242,8 @@ class OpportunityResource extends Resource
                     ->label('مال من')
                     ->query(fn (Builder $query) => $query->where('owner_user_id', auth()->id()))
                     ->toggle(),
+                TrashedFilter::make()
+                    ->label('حذف‌شده‌ها'),
             ])
             ->emptyStateHeading('فرصتی ثبت نشده')
             ->emptyStateDescription('اولین فرصت را با ثبت سریع یا فرم کامل بسازید.')
@@ -248,10 +255,14 @@ class OpportunityResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()->label('ویرایش'),
+                RestoreAction::make()->label('بازگردانی'),
+                ForceDeleteAction::make()->label('حذف دائم'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    RestoreBulkAction::make()->label('بازگردانی'),
+                    ForceDeleteBulkAction::make()->label('حذف دائم'),
                 ]),
             ]);
     }
