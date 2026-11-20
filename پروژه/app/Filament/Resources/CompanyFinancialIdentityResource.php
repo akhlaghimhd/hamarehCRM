@@ -28,7 +28,7 @@ class CompanyFinancialIdentityResource extends Resource
     protected static ?string $navigationLabel = 'هویت‌های مالی و حساب‌ها';
     protected static ?string $modelLabel = 'هویت مالی';
     protected static ?string $pluralModelLabel = 'هویت‌های مالی';
-    protected static string|UnitEnum|null $navigationGroup = 'مدیریت سازمان';
+    protected static string|UnitEnum|null $navigationGroup = 'سازمان';
     protected static ?int $navigationSort = 3;
 
     public static function canViewAny(): bool
@@ -150,7 +150,7 @@ class CompanyFinancialIdentityResource extends Resource
             ])
             ->defaultSort('company_id')
             ->emptyStateHeading('هویت مالی ثبت‌شده‌ای وجود ندارد')
-            ->emptyStateDescription('برای هر شرکت، هویت رسمی و غیررسمی به‌صورت خودکار ایجاد می‌شود.');
+            ->emptyStateDescription('برای هر شرکت، هویت رسمی و غیررسمی به‌صورت خودکار ایجاد می‌شود.';
     }
 
     public static function getRelations(): array
