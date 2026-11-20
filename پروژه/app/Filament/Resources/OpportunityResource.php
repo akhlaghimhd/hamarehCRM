@@ -133,9 +133,9 @@ class OpportunityResource extends Resource
             ->paginated([10, 15, 25, 50])
             ->deferFilters(false)
             ->filtersLayout(FiltersLayout::AboveContent)
-            ->filtersFormColumns(['default' => 1, 'sm' => 2, 'md' => 3, 'lg' => 6])
+            ->filtersFormColumns(['default' => 1, 'sm' => 2, 'md' => 3, 'lg' => 5])
             ->filters([
-                Filter::make('q')->columnSpan(['default' => 1, 'lg' => 2])->form([
+                Filter::make('q')->form([
                     TextInput::make('q')->hiddenLabel()->placeholder('جستجوی سازمان، کد، مخاطب...'),
                 ])->query(function (Builder $query, array $data): Builder {
                     $q = trim((string) ($data['q'] ?? ''));
