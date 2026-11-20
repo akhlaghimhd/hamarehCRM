@@ -19,7 +19,8 @@
 - [معماری کاتالوگ](./CATALOG_ARCHITECTURE.md)
 - [اسناد ماژول‌ها](./system/modules/)
 
-## UI/UX
+## UI و مهاجرت از Filament
+- [تصمیم معماری مهاجرت رابط کاربری به Vue](./UI_MIGRATION_DECISION.md) — تصمیم تأییدشده مالک و دروازه‌های اجرای مرحله‌ای
 - [استاندارد طراحی صفحه](./PAGE_DESIGN_STANDARDS.md)
 - [استاندارد جدول](./TABLE_STANDARDS.md)
 
