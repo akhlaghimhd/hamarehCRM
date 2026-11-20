@@ -80,10 +80,10 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('سازمان')->icon('heroicon-o-building-office-2')->collapsible(true),
                 NavigationGroup::make('سیستم')->icon('heroicon-o-shield-check')->collapsible(true),
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Pages\\Dashboard::class,
+                Pages\Dashboard::class,
                 SwitchCompany::class,
             ])
             ->userMenuItems([
@@ -96,9 +96,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                Widgets\\AccountWidget::class,
+                Widgets\AccountWidget::class,
                 CrmStatsOverview::class,
                 FollowUpNeededWidget::class,
             ])
