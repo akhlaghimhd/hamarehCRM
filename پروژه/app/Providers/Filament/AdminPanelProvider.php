@@ -177,14 +177,31 @@ select.fi-select-input{
 textarea.fi-input,
 .fi-input-wrp textarea,
 .fi-input-wrp textarea.fi-input{
-  min-height:5.5rem!important;
+  min-height:2.75rem!important;
   height:auto!important;
   max-height:none!important;
-  line-height:1.5!important;
-  padding-block:.55rem!important;
+  line-height:1.45!important;
+  padding-block:.35rem!important;
   padding-inline:.65rem!important;
   overflow:auto!important;
   resize:vertical!important;
+}
+.fi-sc .fi-grid,
+.fi-fo-form .fi-grid,
+.fi-sc-form .fi-grid{
+  align-items:stretch!important;
+}
+.fi-sc .fi-section,
+.fi-fo-form .fi-section,
+.fi-sc-form .fi-section{
+  height:100%!important;
+  display:flex!important;
+  flex-direction:column!important;
+}
+.fi-sc .fi-section-content-ctn,
+.fi-fo-form .fi-section-content-ctn,
+.fi-sc-form .fi-section-content-ctn{
+  flex:1 1 auto!important;
 }
 .fi-btn{min-height:2.25rem!important;padding-block:.35rem!important;font-size:.82rem!important}
 .fi-page-main{gap:.55rem!important}
