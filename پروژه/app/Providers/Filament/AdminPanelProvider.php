@@ -85,7 +85,7 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-shopping-cart')
                     ->collapsible(true),
                 NavigationGroup::make('کاتالوگ نوتوپیا')
-                    ->icon('heroicon-o-swatch')
+                    ->icon('heroicon-o-cube')
                     ->collapsible(true),
                 NavigationGroup::make('عملیات')
                     ->icon('heroicon-o-cog-6-tooth')
@@ -100,10 +100,10 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-shield-check')
                     ->collapsible(true),
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Pages\\Dashboard::class,
                 SwitchCompany::class,
             ])
             ->userMenuItems([
@@ -116,9 +116,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                Widgets\\AccountWidget::class,
                 CrmStatsOverview::class,
                 FollowUpNeededWidget::class,
             ])
@@ -167,11 +167,41 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => '<style>
-.fi-sidebar-nav-groups{row-gap:.35rem!important;gap:.35rem!important}
-.fi-sidebar-group{margin-block:.15rem}
-.fi-sidebar-group-label,.fi-sidebar-group-button{min-height:2.1rem;padding-block:.25rem;font-size:.78rem;font-weight:700}
-.fi-sidebar-group-items{gap:.1rem;row-gap:.1rem}
-.fi-sidebar-item-button{min-height:2.15rem}
+/* Compact sidebar groups — match dense reference layout */
+.fi-sidebar-nav{padding-block:.35rem!important}
+.fi-sidebar-nav-groups{row-gap:.15rem!important;gap:.15rem!important}
+.fi-sidebar-group{margin-block:0!important}
+.fi-sidebar-group-btn,.fi-sidebar-group-button,.fi-sidebar-group-label{
+  min-height:1.85rem!important;
+  padding-block:.2rem!important;
+  padding-inline:.55rem!important;
+  font-size:.8rem!important;
+  font-weight:700!important;
+  gap:.4rem!important;
+}
+.fi-sidebar-group-icon,.fi-sidebar-group-btn .fi-icon,.fi-sidebar-group-button .fi-icon{
+  width:1.05rem!important;height:1.05rem!important;
+}
+.fi-sidebar-group-items{
+  gap:0!important;
+  row-gap:0!important;
+  margin:0!important;
+  padding-inline-start:.35rem!important;
+  border-inline-start:2px solid color-mix(in srgb, var(--gray-300) 70%, transparent);
+  margin-inline-start:.55rem!important;
+}
+.fi-sidebar-item{margin:0!important}
+.fi-sidebar-item-btn,.fi-sidebar-item-button{
+  min-height:1.7rem!important;
+  padding-block:.15rem!important;
+  padding-inline:.45rem .55rem!important;
+  font-size:.78rem!important;
+  gap:.4rem!important;
+}
+.fi-sidebar-item-icon,.fi-sidebar-item-btn .fi-icon,.fi-sidebar-item-button .fi-icon{
+  width:.95rem!important;height:.95rem!important;
+}
+.fi-sidebar-item-label{line-height:1.2!important}
 </style>',
             );
     }
