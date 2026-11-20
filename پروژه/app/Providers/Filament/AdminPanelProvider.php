@@ -78,20 +78,21 @@ class AdminPanelProvider extends PanelProvider
             ->collapsedSidebarWidth('4.5rem')
             ->collapsibleNavigationGroups()
             ->navigationGroups([
+                // Daily workflow: lead → deal → follow-up → catalog → ops → admin
                 NavigationGroup::make('بازاریابی')
                     ->icon('heroicon-o-megaphone')
                     ->collapsible(true),
                 NavigationGroup::make('فروش و سفارش')
                     ->icon('heroicon-o-shopping-cart')
                     ->collapsible(true),
+                NavigationGroup::make('کار تیمی')
+                    ->icon('heroicon-o-user-group')
+                    ->collapsible(true),
                 NavigationGroup::make('کاتالوگ نوتوپیا')
                     ->icon('heroicon-o-cube')
                     ->collapsible(true),
                 NavigationGroup::make('عملیات')
                     ->icon('heroicon-o-cog-6-tooth')
-                    ->collapsible(true),
-                NavigationGroup::make('کار تیمی')
-                    ->icon('heroicon-o-user-group')
                     ->collapsible(true),
                 NavigationGroup::make('سازمان')
                     ->icon('heroicon-o-building-office-2')
