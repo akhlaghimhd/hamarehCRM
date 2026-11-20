@@ -100,10 +100,10 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-shield-check')
                     ->collapsible(true),
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
-                Pages\\Dashboard::class,
+                Pages\Dashboard::class,
                 SwitchCompany::class,
             ])
             ->userMenuItems([
@@ -116,9 +116,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                Widgets\\AccountWidget::class,
+                Widgets\AccountWidget::class,
                 CrmStatsOverview::class,
                 FollowUpNeededWidget::class,
             ])
@@ -167,7 +167,6 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => '<style>
-/* Compact sidebar groups — match dense reference layout */
 .fi-sidebar-nav{padding-block:.35rem!important}
 .fi-sidebar-nav-groups{row-gap:.15rem!important;gap:.15rem!important}
 .fi-sidebar-group{margin-block:0!important}
