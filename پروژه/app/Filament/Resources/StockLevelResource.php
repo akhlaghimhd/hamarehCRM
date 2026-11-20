@@ -36,9 +36,9 @@ class StockLevelResource extends Resource
 
     protected static ?string $navigationLabel = 'موجودی';
 
-    protected static string|UnitEnum|null $navigationGroup = 'موجودی سبک';
+    protected static string|UnitEnum|null $navigationGroup = 'عملیات';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {
