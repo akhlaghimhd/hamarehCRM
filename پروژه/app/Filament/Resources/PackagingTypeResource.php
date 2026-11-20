@@ -44,7 +44,7 @@ protected static ?string $permissionView = 'products.view';
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-gift';
     protected static ?string $navigationLabel = 'بسته‌بندی محصول';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ نوتوپیا';
     protected static ?string $modelLabel = 'نوع بسته‌بندی';
     protected static ?string $pluralModelLabel = 'انواع بسته‌بندی';
     protected static ?int $navigationSort = 6;
