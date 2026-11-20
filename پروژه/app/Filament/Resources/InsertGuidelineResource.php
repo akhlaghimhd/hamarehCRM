@@ -39,7 +39,7 @@ protected static ?string $permissionView = 'products.view';
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = 'راهنمای لت';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ نوتوپیا';
     protected static ?string $modelLabel = 'راهنما';
     protected static ?string $pluralModelLabel = 'راهنماهای لت';
     protected static ?int $navigationSort = 23;
