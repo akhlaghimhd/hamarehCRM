@@ -40,7 +40,7 @@ protected static ?string $permissionView = 'products.view';
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-adjustments-horizontal';
     protected static ?string $navigationLabel = 'قواعد کاتالوگ';
 
-    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
+    protected static string|\UnitEnum|null $navigationGroup = 'کاتالوگ نوتوپیا';
     protected static ?string $modelLabel = 'قاعده';
     protected static ?string $pluralModelLabel = 'قواعد';
     protected static ?int $navigationSort = 22;
