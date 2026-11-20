@@ -45,7 +45,7 @@ class CompanyFinancialIdentityResource extends Resource
 
     public static function canCreate(): bool
     {
-        return false; // Each company receives exactly one official and one unofficial identity at creation.
+        return false;
     }
 
     public static function canView($record): bool
@@ -150,7 +150,7 @@ class CompanyFinancialIdentityResource extends Resource
             ])
             ->defaultSort('company_id')
             ->emptyStateHeading('هویت مالی ثبت‌شده‌ای وجود ندارد')
-            ->emptyStateDescription('برای هر شرکت، هویت رسمی و غیررسمی به‌صورت خودکار ایجاد می‌شود.';
+            ->emptyStateDescription('برای هر شرکت، هویت رسمی و غیررسمی به‌صورت خودکار ایجاد می‌شود.');
     }
 
     public static function getRelations(): array
