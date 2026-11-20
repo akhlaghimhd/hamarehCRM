@@ -19,7 +19,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Carbon;
@@ -434,30 +433,30 @@ class ManageOpportunity extends ViewRecord
                         ->orderBy('sort_order')
                         ->pluck('name', 'id'))
                     ->default(fn () => $this->record->stage_id)
-                    ->visible(fn (Get $get): bool => $get('outcome') === 'continue')
+                    ->visible(fn ($get): bool => $get('outcome') === 'continue')
                     ->native(false),
                 Textarea::make('next_step')
                     ->label('گام بعدی')
                     ->rows(2)
-                    ->required(fn (Get $get): bool => $get('outcome') === 'continue')
-                    ->visible(fn (Get $get): bool => $get('outcome') === 'continue'),
+                    ->required(fn ($get): bool => $get('outcome') === 'continue')
+                    ->visible(fn ($get): bool => $get('outcome') === 'continue'),
                 DatePicker::make('next_step_due')
                     ->label('مهلت گام بعدی')
                     ->native(false)
                     ->default(now()->addDays(3))
-                    ->required(fn (Get $get): bool => $get('outcome') === 'continue')
-                    ->visible(fn (Get $get): bool => $get('outcome') === 'continue'),
+                    ->required(fn ($get): bool => $get('outcome') === 'continue')
+                    ->visible(fn ($get): bool => $get('outcome') === 'continue'),
                 Select::make('lost_reason_code')
                     ->label('دلیل باخت')
                     ->options(Opportunity::lostReasonOptions())
-                    ->required(fn (Get $get): bool => $get('outcome') === 'lost')
-                    ->visible(fn (Get $get): bool => $get('outcome') === 'lost')
+                    ->required(fn ($get): bool => $get('outcome') === 'lost')
+                    ->visible(fn ($get): bool => $get('outcome') === 'lost')
                     ->native(false),
                 Textarea::make('lost_reason')
                     ->label('توضیح باخت (اختیاری)')
                     ->rows(2)
                     ->maxLength(500)
-                    ->visible(fn (Get $get): bool => $get('outcome') === 'lost'),
+                    ->visible(fn ($get): bool => $get('outcome') === 'lost'),
             ])
             ->action(function (array $data): void {
                 $open = $this->currentOpenStep();
