@@ -75,10 +75,10 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make('سازمان')->icon('heroicon-o-building-office-2')->collapsible(true),
                 NavigationGroup::make('سیستم')->icon('heroicon-o-shield-check')->collapsible(true),
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Pages\\Dashboard::class,
                 SwitchCompany::class,
             ])
             ->userMenuItems([
@@ -91,9 +91,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                Widgets\\AccountWidget::class,
                 CrmStatsOverview::class,
                 FollowUpNeededWidget::class,
             ])
@@ -208,7 +208,6 @@ textarea.fi-input,
 .fi-page-main{gap:.55rem!important}
 .fi-main{padding-inline:1rem!important}
 .hm-amount-input{letter-spacing:.02em}
-/* جدول: دکمه‌های آیکن تولبار (فیلتر/ستون) هم‌اندازه و بدون بیرون‌زدگی */
 .fi-ta-header-toolbar .fi-icon-btn,
 .fi-ta-header .fi-icon-btn,
 .fi-ta-filters-dropdown-trigger-btn,
@@ -232,7 +231,6 @@ textarea.fi-input,
   max-width:1.15rem!important;
   max-height:1.15rem!important;
 }
-/* نشانگر فیلتر فعال: داخل دکمه بماند */
 .fi-ta-filters-dropdown-trigger-btn .fi-badge,
 .fi-ta-filters-trigger .fi-badge{
   position:absolute!important;
@@ -243,6 +241,69 @@ textarea.fi-input,
   padding:0 .2rem!important;
   font-size:.65rem!important;
   line-height:1rem!important;
+}
+
+/* فیلتر جدول: بدون عنوان «فیلترها»، حذف‌فیلتر کنار فیلدها */
+.fi-ta-filters > .fi-section{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto!important;
+  align-items:end!important;
+  gap:.5rem!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  border:0!important;
+}
+.fi-ta-filters .fi-section-header{
+  grid-column:2!important;
+  grid-row:1!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  margin:0!important;
+  padding:.25rem .15rem!important;
+  min-height:2.25rem!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.fi-ta-filters .fi-section-header-heading,
+.fi-ta-filters .fi-section-header h2,
+.fi-ta-filters .fi-section-header h3{
+  display:none!important;
+}
+.fi-ta-filters .fi-section-content-ctn,
+.fi-ta-filters .fi-section-content{
+  grid-column:1!important;
+  grid-row:1!important;
+  padding:.35rem .5rem!important;
+  margin:0!important;
+}
+.fi-ta-filters .fi-fo-field-wrp-label,
+.fi-ta-filters label.fi-fo-field-wrp-label{
+  display:none!important;
+}
+.fi-ta-filters-actions .fi-btn,
+.fi-ta-filters-actions a,
+.fi-ta-filters .fi-section-header .fi-btn,
+.fi-ta-filters .fi-section-header a{
+  font-size:.75rem!important;
+  font-weight:500!important;
+  min-height:2rem!important;
+  height:2rem!important;
+  padding:.25rem .5rem!important;
+  white-space:nowrap!important;
+}
+.fi-ta-filters .fi-sc-grid,
+.fi-ta-filters .fi-grid{
+  gap:.5rem!important;
+  align-items:center!important;
+}
+@media (min-width:1024px){
+  .fi-ta-filters .fi-sc-grid,
+  .fi-ta-filters .fi-grid{
+    grid-template-columns:minmax(14rem,2fr) repeat(4,minmax(0,1fr))!important;
+  }
 }
 </style>
 CSS
