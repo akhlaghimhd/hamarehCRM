@@ -235,6 +235,7 @@ class OpportunityResource extends Resource
             ])
             ->defaultSort('updated_at', 'desc')
             ->paginated([10, 15, 25, 50, 100])
+            ->deferFilters(false)
             ->filters([
                 SelectFilter::make('status')->label('وضعیت')->options(Opportunity::statusOptions()),
                 SelectFilter::make('stage_id')->label('مرحله')->options(fn () => OpportunityStage::query()->pluck('name', 'id')),
