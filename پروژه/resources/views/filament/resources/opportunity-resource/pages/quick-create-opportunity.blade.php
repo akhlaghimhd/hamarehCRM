@@ -1,3 +1,34 @@
+<style>
+    .hm-quick-create-panel {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hm-quick-create-panel > .fi-section-content-ctn {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+    }
+
+    .hm-quick-create-panel .fi-section-content {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+    }
+
+    .hm-quick-create-panel .fi-section-content > .fi-sc {
+        flex: 1 1 auto;
+        align-content: space-between;
+        row-gap: 1.25rem;
+    }
+
+    @media (max-width: 1023px) {
+        .hm-quick-create-panel .fi-section-content > .fi-sc {
+            row-gap: 1rem;
+        }
+    }
+</style>
+
 <x-filament-panels::page>
     <div class="fi-sc-form" style="max-width: 52rem; margin-inline: auto;">
         <p style="margin: 0 0 1rem; color: #64748b; font-size: 0.9rem; line-height: 1.7;">
