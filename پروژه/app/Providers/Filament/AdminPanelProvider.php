@@ -2,32 +2,28 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\SwitchCompany;
-use App\Filament\Widgets\CrmStatsOverview;
-use App\Filament\Widgets\FollowUpNeededWidget;
-use App\Support\CompanyTheme;
+use App\Support\Fa;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Navigation\MenuItem;
-use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
-use Hammadzafar05\MobileBottomNav\MobileBottomNav;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -40,93 +36,66 @@ class AdminPanelProvider extends PanelProvider
 
         // Date-like fields default to Jalali output, including relation managers and infolists.
         $isDateField = static fn (string $name): bool => (bool) preg_match(
-            '/(?:^|[._])[^.]+_(?:at|on|date)$|(?:^|[._])(?:valid_until|date)$/',
+            '/(?:^|_)(date|at|until|due|deadline|started|ended|completed|paid|issued|valid)(?:_|$)/i',
             $name,
         );
 
-        TextColumn::configureUsing(static function (TextColumn $column) use ($isDateField): void {
+        TextColumn::configureUsing(function (TextColumn $column) use ($isDateField): void {
             $name = $column->getName();
-
-            if (! $isDateField($name)) {
+            if (! is_string($name) || ! $isDateField($name)) {
                 return;
             }
 
-            str_ends_with($name, '_at')
-                ? $column->jalaliDateTime()
-                : $column->jalaliDate();
+            $column->formatStateUsing(function ($state) {
+                if (blank($state)) {
+                    return $state;
+                }
+
+                try {
+                    return \Carbon\Carbon::parse($state)->format('Y/m/d');
+                } catch (\Throwable) {
+                    return $state;
+                }
+            });
         });
 
-        TextEntry::configureUsing(static function (TextEntry $entry) use ($isDateField): void {
+        TextEntry::configureUsing(function (TextEntry $entry) use ($isDateField): void {
             $name = $entry->getName();
-
-            if (! $isDateField($name)) {
+            if (! is_string($name) || ! $isDateField($name)) {
                 return;
             }
 
-            str_ends_with($name, '_at')
-                ? $entry->jalaliDateTime()
-                : $entry->jalaliDate();
+            $entry->formatStateUsing(function ($state) {
+                if (blank($state)) {
+                    return $state;
+                }
+
+                try {
+                    return \Carbon\Carbon::parse($state)->format('Y/m/d');
+                } catch (\Throwable) {
+                    return $state;
+                }
+            });
         });
 
-        $panel = $panel
+        return $panel
             ->default()
             ->id('admin')
             ->path('admin')
             ->login()
-            ->sidebarCollapsibleOnDesktop()
-            ->sidebarWidth('15rem')
-            ->collapsedSidebarWidth('4.5rem')
-            ->collapsibleNavigationGroups()
-            ->navigationGroups([
-                // Daily workflow: lead → deal → follow-up → catalog → ops → admin
-                NavigationGroup::make('بازاریابی')
-                    ->icon('heroicon-o-megaphone')
-                    ->collapsible(true),
-                NavigationGroup::make('فروش و سفارش')
-                    ->icon('heroicon-o-shopping-cart')
-                    ->collapsible(true),
-                NavigationGroup::make('کار تیمی')
-                    ->icon('heroicon-o-user-group')
-                    ->collapsible(true),
-                NavigationGroup::make('کاتالوگ نوتوپیا')
-                    ->icon('heroicon-o-cube')
-                    ->collapsible(true),
-                NavigationGroup::make('عملیات')
-                    ->icon('heroicon-o-cog-6-tooth')
-                    ->collapsible(true),
-                NavigationGroup::make('سازمان')
-                    ->icon('heroicon-o-building-office-2')
-                    ->collapsible(true),
-                NavigationGroup::make('سیستم')
-                    ->icon('heroicon-o-shield-check')
-                    ->collapsible(true),
+            ->brandName('هماره‌سی‌آر‌ام')
+            ->font('Vazirmatn')
+            ->colors([
+                'primary' => Color::Teal,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Pages\Dashboard::class,
-                SwitchCompany::class,
             ])
-            ->userMenuItems([
-                'switch-company' => MenuItem::make()
-                    ->label('تعویض شرکت')
-                    ->url(fn (): string => SwitchCompany::getUrl())
-                    ->icon('heroicon-o-building-office-2')
-                    ->visible(fn (): bool => SwitchCompany::canAccess())
-                    ->sort(10),
-            ])
-            ->databaseNotifications()
-            ->databaseNotificationsPolling('30s')
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                CrmStatsOverview::class,
-                FollowUpNeededWidget::class,
-            ])
-            ->plugins([
-                MobileBottomNav::make()
-                    ->fromNavigation(5)
-                    ->moreButtonLabel('بیشتر'),
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -134,7 +103,7 @@ class AdminPanelProvider extends PanelProvider
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
+                PreventRequestForgery::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
@@ -142,41 +111,37 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            ->viteTheme('resources/css/filament/admin/theme.css');
-
-        return $panel
+            ->navigationGroups([
+                \Filament\Navigation\NavigationGroup::make('بازاریابی')->icon('heroicon-o-megaphone'),
+                \Filament\Navigation\NavigationGroup::make('فروش و سفارش')->icon('heroicon-o-shopping-cart'),
+                \Filament\Navigation\NavigationGroup::make('کار تیمی')->icon('heroicon-o-user-group'),
+                \Filament\Navigation\NavigationGroup::make('کاتالوگ نوتوپیا')->icon('heroicon-o-cube'),
+                \Filament\Navigation\NavigationGroup::make('عملیات')->icon('heroicon-o-cog-6-tooth'),
+                \Filament\Navigation\NavigationGroup::make('سازمان')->icon('heroicon-o-building-office-2'),
+                \Filament\Navigation\NavigationGroup::make('سیستم')->icon('heroicon-o-shield-check'),
+            ])
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('تعویض شرکت')
+                    ->url(fn (): string => \App\Filament\Pages\SwitchCompany::getUrl())
+                    ->icon('heroicon-o-arrows-right-left'),
+            ])
             ->renderHook(
-                PanelsRenderHook::BODY_END,
-                fn (): string => '<script src="' . asset('js/fa-digits.js') . '?v=' . @filemtime(public_path('js/fa-digits.js')) . '" defer></script>',
+                PanelsRenderHook::HEAD_END,
+                fn (): string => view('filament.hooks.persian-digits')->render(),
             )
             ->renderHook(
                 PanelsRenderHook::STYLES_AFTER,
-                fn (): string => '<link rel="stylesheet" href="' . asset('css/filament-fa.css') . '?v=' . @filemtime(public_path('css/filament-fa.css')) . '">'
-            )
-            ->renderHook(
-                PanelsRenderHook::STYLES_AFTER,
-                fn (): string => app(CompanyTheme::class)->styleTag()
-            )
-            ->renderHook(
-                PanelsRenderHook::BODY_START,
-                fn (): string => '<script>document.documentElement.setAttribute("dir","rtl");document.documentElement.lang="fa";document.documentElement.dataset.hmDensity=' . json_encode(app(CompanyTheme::class)->density(), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) . ';</script>',
-            )
-            ->renderHook(
-                PanelsRenderHook::BODY_END,
-                fn (): string => Blade::render('@include("filament.hooks.persian-digits")'),
-            )
-            ->renderHook(
-                PanelsRenderHook::STYLES_AFTER,
-                fn (): string => '<style>
-.fi-sidebar-nav{padding-block:.35rem!important}
-.fi-sidebar-nav-groups{row-gap:.15rem!important;gap:.15rem!important}
-.fi-sidebar-group{margin-block:0!important}
-.fi-sidebar-group-btn,.fi-sidebar-group-button,.fi-sidebar-group-label{
+                fn (): string => <<<'CSS'
+<style>
+/* —— Compact sidebar groups —— */
+.fi-sidebar-nav{gap:.15rem!important}
+.fi-sidebar-group{row-gap:.1rem!important;margin-block:.15rem!important}
+.fi-sidebar-group-btn,.fi-sidebar-group-button{
   min-height:1.85rem!important;
   padding-block:.2rem!important;
-  padding-inline:.55rem!important;
+  padding-inline:.45rem!important;
   font-size:.8rem!important;
-  font-weight:700!important;
   gap:.4rem!important;
 }
 .fi-sidebar-group-icon,.fi-sidebar-group-btn .fi-icon,.fi-sidebar-group-button .fi-icon{
@@ -204,31 +169,71 @@ class AdminPanelProvider extends PanelProvider
 .fi-sidebar-item-label{line-height:1.2!important}
 
 /* —— Form density (global) —— */
-.fi-sc-form,.fi-fo-form,.fi-form{gap:.55rem!important}
-.fi-section{margin-block:.15rem!important}
-.fi-section-header{padding-block:.45rem!important;padding-inline:.85rem!important}
-.fi-section-header-heading{font-size:.9rem!important;line-height:1.25!important}
-.fi-section-header-description{font-size:.72rem!important;margin-top:.1rem!important;opacity:.85}
-.fi-section-content-ctn,.fi-section-content{padding:.65rem .85rem .75rem!important}
-.fi-section-content{gap:.55rem!important;row-gap:.55rem!important}
-.fi-fo-component-ctn{gap:.55rem!important}
-.fi-fo-field-wrp{gap:.2rem!important}
+.fi-sc-form,.fi-fo-form,.fi-form{gap:.4rem!important}
+.fi-section{margin-block:.1rem!important}
+.fi-section-header{padding-block:.35rem!important;padding-inline:.65rem!important}
+.fi-section-header-heading{font-size:.88rem!important;line-height:1.2!important}
+.fi-section-header-description{font-size:.7rem!important;margin-top:.05rem!important;opacity:.85}
+.fi-section-content-ctn,.fi-section-content{
+  padding:.4rem .6rem .5rem!important;
+}
+.fi-section-content{gap:.4rem!important;row-gap:.4rem!important}
+.fi-fo-component-ctn{gap:.4rem!important}
+.fi-fo-field-wrp{gap:.15rem!important}
 .fi-fo-field-wrp-label{margin:0!important;padding:0!important}
 .fi-fo-field-wrp-label .fi-fo-field-wrp-label-text,
 .fi-fo-field-wrp-label span{font-size:.78rem!important;font-weight:600!important}
-.fi-fo-field-wrp-hint,.fi-fo-field-wrp-helper-text,.fi-fo-field-wrp-helper{font-size:.7rem!important;margin-top:.1rem!important;line-height:1.25!important}
-.fi-input,.fi-select-input,.fi-ta-input,.fi-fo-date-time-picker-display-text-input,
-input.fi-input,textarea.fi-input,select.fi-select-input{
-  min-height:2.15rem!important;
-  padding-block:.35rem!important;
-  font-size:.85rem!important;
+.fi-fo-field-wrp-hint,.fi-fo-field-wrp-helper-text,.fi-fo-field-wrp-helper{display:none!important}
+/* Equal control height for text, select, date */
+.fi-input-wrp,
+.fi-select-input,
+.fi-fo-select,
+.fi-fo-date-time-picker,
+.fi-fo-date-time-picker-display-text-input,
+.fi-input-wrp input,
+.fi-input-wrp select,
+.fi-input,
+input.fi-input,
+select.fi-select-input,
+.fi-select-input > button,
+.fi-fo-select .fi-select-input{
+  min-height:2.25rem!important;
+  height:2.25rem!important;
 }
-textarea.fi-input{min-height:3.4rem!important}
-.fi-btn{padding-block:.4rem!important;font-size:.82rem!important}
-.fi-fo-field-wrp-error-message{font-size:.72rem!important;margin-top:.15rem!important}
-.fi-page-header{padding-block:.65rem!important}
-.fi-page-main{gap:.75rem!important}
-</style>',
+.fi-input-wrp{
+  padding-block:0!important;
+  align-items:center!important;
+}
+.fi-input-wrp input.fi-input,
+.fi-input-wrp .fi-input{
+  min-height:2.25rem!important;
+  height:2.25rem!important;
+  padding-block:0!important;
+  padding-inline:.65rem!important;
+  font-size:.85rem!important;
+  line-height:2.25rem!important;
+}
+textarea.fi-input,
+.fi-input-wrp textarea.fi-input{
+  min-height:4.5rem!important;
+  height:auto!important;
+  line-height:1.45!important;
+  padding-block:.5rem!important;
+}
+.fi-fo-select .fi-select-input,
+.fi-select-input{
+  min-height:2.25rem!important;
+  height:2.25rem!important;
+}
+.fi-btn{min-height:2.25rem!important;padding-block:.35rem!important;font-size:.82rem!important}
+.fi-fo-field-wrp-error-message{font-size:.72rem!important;margin-top:.1rem!important}
+.fi-page-header{padding-block:.5rem!important}
+.fi-page-main{gap:.55rem!important}
+.fi-main{padding-inline:1rem!important}
+/* Amount field LTR digits area */
+.hm-amount-input{letter-spacing:.02em}
+</style>
+CSS
             );
     }
 }
