@@ -19,8 +19,8 @@ class TeamWorkspace extends Page
     protected static ?string $navigationLabel = 'نمای کلی تیم';
     protected static ?string $title = 'نمای کلی فعالیت‌های تیم';
     protected static ?string $slug = 'team-workspace';
-    protected static string|UnitEnum|null $navigationGroup = 'کارها و تیم';
-    protected static ?int $navigationSort = 0;
+    protected static string|UnitEnum|null $navigationGroup = 'کار تیمی';
+    protected static ?int $navigationSort = 10;
 
     protected string $view = 'filament.pages.team-workspace';
 
