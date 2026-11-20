@@ -14,6 +14,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -77,13 +78,27 @@ class AdminPanelProvider extends PanelProvider
             ->collapsedSidebarWidth('4.5rem')
             ->collapsibleNavigationGroups()
             ->navigationGroups([
-                'بازاریابی',
-                'فروش و سفارش',
-                'کاتالوگ نوتوپیا',
-                'عملیات',
-                'کار تیمی',
-                'سازمان',
-                'سیستم',
+                NavigationGroup::make('بازاریابی')
+                    ->icon('heroicon-o-megaphone')
+                    ->collapsible(true),
+                NavigationGroup::make('فروش و سفارش')
+                    ->icon('heroicon-o-shopping-cart')
+                    ->collapsible(true),
+                NavigationGroup::make('کاتالوگ نوتوپیا')
+                    ->icon('heroicon-o-swatch')
+                    ->collapsible(true),
+                NavigationGroup::make('عملیات')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->collapsible(true),
+                NavigationGroup::make('کار تیمی')
+                    ->icon('heroicon-o-user-group')
+                    ->collapsible(true),
+                NavigationGroup::make('سازمان')
+                    ->icon('heroicon-o-building-office-2')
+                    ->collapsible(true),
+                NavigationGroup::make('سیستم')
+                    ->icon('heroicon-o-shield-check')
+                    ->collapsible(true),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -148,6 +163,16 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn (): string => Blade::render('@include("filament.hooks.persian-digits")'),
+            )
+            ->renderHook(
+                PanelsRenderHook::STYLES_AFTER,
+                fn (): string => '<style>
+.fi-sidebar-nav-groups{row-gap:.35rem!important;gap:.35rem!important}
+.fi-sidebar-group{margin-block:.15rem}
+.fi-sidebar-group-label,.fi-sidebar-group-button{min-height:2.1rem;padding-block:.25rem;font-size:.78rem;font-weight:700}
+.fi-sidebar-group-items{gap:.1rem;row-gap:.1rem}
+.fi-sidebar-item-button{min-height:2.15rem}
+</style>',
             );
     }
 }
