@@ -43,9 +43,9 @@ class OpportunityResource extends Resource
 
     protected static ?string $modelLabel = 'فرصت';
 
-    protected static ?string $pluralModelLabel = 'فرصت\u200cها';
+    protected static ?string $pluralModelLabel = 'فرصت‌ها';
 
-    protected static ?string $navigationLabel = 'فرصت\u200cها';
+    protected static ?string $navigationLabel = 'فرصت‌ها';
 
     protected static string|UnitEnum|null $navigationGroup = 'بازاریابی';
 
