@@ -139,11 +139,12 @@ class AdminPanelProvider extends PanelProvider
 .fi-sidebar-group-btn,.fi-sidebar-group-button{min-height:1.85rem!important;padding-block:.2rem!important;font-size:.8rem!important}
 .fi-sidebar-group-items{gap:0!important;padding-inline-start:.35rem!important;border-inline-start:2px solid color-mix(in srgb, var(--gray-300) 70%, transparent);margin-inline-start:.55rem!important}
 .fi-sidebar-item-btn,.fi-sidebar-item-button{min-height:1.7rem!important;padding-block:.15rem!important;font-size:.78rem!important}
-.fi-sc-form,.fi-fo-form,.fi-form{gap:.4rem!important}
+.fi-sc-form,.fi-fo-form,.fi-form{gap:.65rem!important}
 .fi-section-header{padding-block:.35rem!important;padding-inline:.65rem!important}
-.fi-section-content-ctn,.fi-section-content{padding:.4rem .6rem .5rem!important}
-.fi-section-content,.fi-fo-component-ctn{gap:.4rem!important}
-.fi-fo-field-wrp{gap:.15rem!important}
+.fi-section-content-ctn,.fi-section-content{padding:.55rem .7rem .65rem!important}
+.fi-section-content,.fi-fo-component-ctn{gap:.7rem!important}
+.fi-fo-field-wrp{gap:.28rem!important}
+.fi-fo-field-wrp-label,.fi-fo-field-wrp > label{margin-top:.15rem!important;margin-bottom:0!important;font-size:.8rem!important;line-height:1.3!important}
 .fi-fo-field-wrp-hint,.fi-fo-field-wrp-helper-text,.fi-fo-field-wrp-helper{display:none!important}
 .fi-input-wrp:not(:has(textarea)),
 .fi-select-input,
