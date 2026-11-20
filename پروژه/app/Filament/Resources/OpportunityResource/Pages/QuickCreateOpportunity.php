@@ -60,37 +60,43 @@ class QuickCreateOpportunity extends CreateRecord
                 Grid::make(['default' => 1, 'lg' => 2])
                     ->schema([
                         Section::make('هویت طرف حساب')
-                            ->description('با نام سازمان یا موبایل، مشتری پیدا یا ساخته می‌شود.')
                             ->schema([
                                 TextInput::make('organization_name')
                                     ->label('نام سازمان / شرکت')
                                     ->placeholder('مثال: صنایع غذایی آفتاب')
                                     ->required()
                                     ->maxLength(255)
+                                    ->columnSpanFull()
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                         if (blank($get('title')) && filled($state)) {
                                             $set('title', 'فرصت '.$state);
                                         }
-                                    }),
+                                    })
+                                    ->validationMessages([
+                                        'required' => 'وارد کردن نام سازمان الزامی است.',
+                                        'max' => 'نام سازمان نباید بیش از ۲۵۵ نویسه باشد.',
+                                    ]),
                                 TextInput::make('contact_name')
                                     ->label('نام فرد تماس')
                                     ->placeholder('مثلاً خانم رضایی')
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
                                 TextInput::make('mobile')
                                     ->label('موبایل')
                                     ->placeholder('۰۹۱۲۱۲۳۴۵۶۷')
                                     ->tel()
                                     ->required()
                                     ->maxLength(15)
+                                    ->extraInputAttributes(['dir' => 'ltr', 'inputmode' => 'tel', 'lang' => 'fa'])
+                                    ->formatStateUsing(fn ($state) => filled($state) ? Fa::digits($state) : $state)
                                     ->dehydrateStateUsing(function ($state) {
                                         if ($state === null || $state === '') {
                                             return $state;
                                         }
                                         $en = Fa::toEnglishDigits((string) $state);
-                                        $en = preg_replace('/[\s\-()]/', '', $en) ?? $en;
 
-                                        return $en;
+                                        return preg_replace('/[\s\-()]/', '', $en) ?? $en;
                                     })
                                     ->rule(function () {
                                         return function (string $attribute, mixed $value, \Closure $fail): void {
@@ -110,11 +116,24 @@ class QuickCreateOpportunity extends CreateRecord
                                 TextInput::make('phone')
                                     ->label('تلفن ثابت')
                                     ->tel()
-                                    ->maxLength(30),
+                                    ->maxLength(30)
+                                    ->extraInputAttributes(['dir' => 'ltr', 'inputmode' => 'tel', 'lang' => 'fa'])
+                                    ->formatStateUsing(fn ($state) => filled($state) ? Fa::digits($state) : $state)
+                                    ->dehydrateStateUsing(function ($state) {
+                                        if ($state === null || $state === '') {
+                                            return $state;
+                                        }
+
+                                        return Fa::toEnglishDigits((string) $state);
+                                    }),
                                 TextInput::make('email')
                                     ->label('ایمیل')
                                     ->email()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->extraInputAttributes(['dir' => 'ltr', 'inputmode' => 'email'])
+                                    ->validationMessages([
+                                        'email' => 'قالب ایمیل معتبر نیست.',
+                                    ]),
                                 Select::make('contact_role')
                                     ->label('نقش تصمیم')
                                     ->options(Opportunity::decisionRoleOptions())
@@ -125,7 +144,6 @@ class QuickCreateOpportunity extends CreateRecord
                             ->columnSpan(1),
 
                         Section::make('محصول و مرحله')
-                            ->description('می‌توانید چند خط محصول انتخاب کنید (مثلاً نوتوپیا و چلیوا).')
                             ->schema([
                                 Select::make('product_interest')
                                     ->label('خطوط محصول')
@@ -135,8 +153,10 @@ class QuickCreateOpportunity extends CreateRecord
                                     ->native(false)
                                     ->required()
                                     ->default(['notopia'])
-                                    ->helperText('از فهرست محصولات اصلی شرکت — چندتایی مجاز است')
-                                    ->columnSpanFull(),
+                                    ->columnSpanFull()
+                                    ->validationMessages([
+                                        'required' => 'انتخاب حداقل یک خط محصول الزامی است.',
+                                    ]),
                                 Select::make('stage_id')
                                     ->label('مرحله قیف')
                                     ->options(function () {
@@ -164,14 +184,47 @@ class QuickCreateOpportunity extends CreateRecord
                                 TextInput::make('title')
                                     ->label('عنوان فرصت')
                                     ->maxLength(255)
-                                    ->helperText('خالی = خودکار از نام سازمان'),
+                                    ->placeholder('خالی بماند تا از نام سازمان ساخته شود')
+                                    ->columnSpanFull(),
                                 TextInput::make('amount')
                                     ->label('مبلغ تخمینی (ریال)')
-                                    ->numeric()
-                                    ->minValue(0),
+                                    ->extraInputAttributes([
+                                        'dir' => 'ltr',
+                                        'inputmode' => 'numeric',
+                                        'lang' => 'fa',
+                                        'class' => 'hm-amount-input',
+                                    ])
+                                    ->formatStateUsing(function ($state) {
+                                        if ($state === null || $state === '') {
+                                            return null;
+                                        }
+
+                                        return Fa::number($state, 0);
+                                    })
+                                    ->dehydrateStateUsing(function ($state) {
+                                        if ($state === null || $state === '') {
+                                            return null;
+                                        }
+                                        $en = Fa::toEnglishDigits((string) $state);
+                                        $digits = preg_replace('/\D+/', '', $en) ?? '';
+
+                                        return $digits === '' ? null : (int) $digits;
+                                    })
+                                    ->rule(function () {
+                                        return function (string $attribute, mixed $value, \Closure $fail): void {
+                                            if ($value === null || $value === '') {
+                                                return;
+                                            }
+                                            $en = Fa::toEnglishDigits((string) $value);
+                                            $digits = preg_replace('/\D+/', '', $en) ?? '';
+                                            if ($digits === '' || ! ctype_digit($digits)) {
+                                                $fail('مبلغ باید عدد معتبر باشد.');
+                                            }
+                                        };
+                                    }),
                                 TextInput::make('source')
                                     ->label('منبع')
-                                    ->placeholder('تماس ورودی / نمایشگاه / معرفی')
+                                    ->placeholder('تماس / نمایشگاه / معرفی')
                                     ->default('ثبت سریع')
                                     ->maxLength(255),
                             ])
@@ -180,22 +233,24 @@ class QuickCreateOpportunity extends CreateRecord
                     ]),
 
                 Section::make('گام اول پیگیری')
-                    ->description('اگر خالی باشد، سیستم پیشنهاد می‌دهد.')
                     ->schema([
                         Textarea::make('next_step')
                             ->label('گام بعدی')
-                            ->placeholder('خالی = پیشنهاد خودکار بر اساس تماس و محصول')
-                            ->rows(2)
+                            ->placeholder('خالی = پیشنهاد خودکار سیستم')
+                            ->rows(3)
                             ->columnSpanFull(),
                         DatePicker::make('next_step_due')
                             ->label('مهلت')
                             ->native(false)
                             ->displayFormat('Y/m/d')
                             ->default(now()->addDays(3))
-                            ->required(),
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'تعیین مهلت پیگیری الزامی است.',
+                            ]),
                         Textarea::make('notes')
                             ->label('یادداشت کوتاه')
-                            ->rows(2)
+                            ->rows(3)
                             ->columnSpan(1),
                     ])
                     ->columns(2),
