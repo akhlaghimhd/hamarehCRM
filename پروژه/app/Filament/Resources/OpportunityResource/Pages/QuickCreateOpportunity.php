@@ -296,9 +296,10 @@ class QuickCreateOpportunity extends CreateRecord
                         Textarea::make('next_step')
                             ->label('گام بعدی')
                             ->placeholder('خالی = پیشنهاد خودکار سیستم')
-                            ->rows(3)
-                            ->autosize()
-                            ->extraInputAttributes(['style' => 'resize: vertical; min-height: 5rem; overflow: auto; height: auto;'])
+                            ->rows(4)
+                            ->extraInputAttributes([
+                                'style' => 'resize:vertical;min-height:6rem;height:auto;overflow:auto;line-height:1.5;',
+                            ])
                             ->columnSpanFull(),
                         DatePicker::make('next_step_due')
                             ->label('مهلت')
@@ -312,9 +313,10 @@ class QuickCreateOpportunity extends CreateRecord
                             ]),
                         Textarea::make('notes')
                             ->label('یادداشت کوتاه')
-                            ->rows(3)
-                            ->autosize()
-                            ->extraInputAttributes(['style' => 'resize: vertical; min-height: 5rem; overflow: auto; height: auto;'])
+                            ->rows(4)
+                            ->extraInputAttributes([
+                                'style' => 'resize:vertical;min-height:6rem;height:auto;overflow:auto;line-height:1.5;',
+                            ])
                             ->columnSpan(1),
                     ])
                     ->columns(2),
