@@ -67,6 +67,7 @@ class QuickCreateOpportunity extends CreateRecord
                                     ->placeholder('مثال: صنایع غذایی آفتاب')
                                     ->required()
                                     ->maxLength(255)
+                                    ->columnSpanFull()
                                     ->live(onBlur: true)
                                     ->afterStateUpdated(function ($state, Set $set, Get $get) {
                                         if (blank($get('title')) && filled($state)) {
@@ -80,7 +81,8 @@ class QuickCreateOpportunity extends CreateRecord
                                 TextInput::make('contact_name')
                                     ->label('نام فرد تماس')
                                     ->placeholder('مثلاً خانم رضایی')
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->columnSpanFull(),
                                 TextInput::make('mobile')
                                     ->label('موبایل')
                                     ->placeholder('۰۹۱۲۱۲۳۴۵۶۷')
