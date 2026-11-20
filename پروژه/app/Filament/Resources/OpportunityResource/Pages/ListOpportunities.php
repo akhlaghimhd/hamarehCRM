@@ -12,6 +12,8 @@ use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -24,6 +26,17 @@ class ListOpportunities extends ListRecords
     protected static string $resource = OpportunityResource::class;
 
     protected static ?string $title = 'فرصت‌ها';
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_END,
+            fn (): string => view('filament.resources.opportunity-resource.pages.list-opportunities-filter-styles')->render(),
+            scopes: static::class,
+        );
+    }
 
     public function getSubheading(): ?string
     {
@@ -46,7 +59,7 @@ class ListOpportunities extends ListRecords
                 ->color('gray')
                 ->visible(fn () => OpportunityResource::canCreate())
                 ->modalHeading('ورود فرصت از اکسل')
-                ->modalDescription('ستون‌ها مطابق فرم ثبت سریع: organization_name, contact_name, mobile, phone, email, product_interest, stage_code, amount, source, next_step, next_step_due, notes')
+                ->modalDescription('ستون‌ها مطابق فرم ثبت سریع')
                 ->form([
                     FileUpload::make('file')
                         ->label('فایل Excel')
@@ -69,7 +82,6 @@ class ListOpportunities extends ListRecords
 
                         return;
                     }
-
                     $header = array_shift($rows);
                     $map = [];
                     foreach ($header as $col => $name) {
@@ -78,12 +90,10 @@ class ListOpportunities extends ListRecords
                             $map[$key] = $col;
                         }
                     }
-
                     $created = 0;
                     $failed = 0;
                     $service = app(OpportunityQuickCreate::class);
                     $defaultStage = OpportunityStage::query()->where('is_active', true)->orderBy('sort_order')->value('id');
-
                     foreach ($rows as $row) {
                         $get = function (string $key) use ($map, $row) {
                             $col = $map[$key] ?? null;
@@ -94,7 +104,6 @@ class ListOpportunities extends ListRecords
 
                             return is_string($v) ? trim($v) : $v;
                         };
-
                         $org = $get('organization_name') ?? $get('سازمان') ?? null;
                         $mobile = $get('mobile') ?? $get('موبایل') ?? null;
                         if (blank($org) || blank($mobile)) {
@@ -102,7 +111,6 @@ class ListOpportunities extends ListRecords
 
                             continue;
                         }
-
                         $stageCode = $get('stage_code') ?? $get('stage') ?? null;
                         $stageId = $defaultStage;
                         if (filled($stageCode)) {
@@ -111,13 +119,11 @@ class ListOpportunities extends ListRecords
                                 ->orWhere('name', $stageCode)
                                 ->value('id') ?: $defaultStage;
                         }
-
                         $products = $get('product_interest') ?? $get('محصول') ?? null;
                         $productList = [];
                         if (filled($products)) {
                             $productList = array_values(array_filter(array_map('trim', preg_split('/[,|،]/', (string) $products) ?: [])));
                         }
-
                         try {
                             $service->create([
                                 'organization_name' => (string) $org,
@@ -141,26 +147,22 @@ class ListOpportunities extends ListRecords
                             $failed++;
                         }
                     }
-
                     Notification::make()
                         ->title('ورود اکسل انجام شد')
                         ->body('موفق: '.Fa::digits((string) $created).' · ناموفق: '.Fa::digits((string) $failed))
                         ->success()
                         ->send();
                 }),
-
             Action::make('quickCreate')
                 ->label('ثبت سریع')
                 ->icon('heroicon-o-bolt')
                 ->color('gray')
                 ->url(OpportunityResource::getUrl('quick-create'))
                 ->visible(fn () => OpportunityResource::canCreate()),
-
             CreateAction::make()
                 ->label('فرصت')
                 ->icon('heroicon-o-plus')
                 ->visible(fn () => OpportunityResource::canCreate()),
-
             Action::make('exportExcel')
                 ->label('')
                 ->icon('heroicon-o-arrow-down-tray')
@@ -168,24 +170,15 @@ class ListOpportunities extends ListRecords
                 ->tooltip('خروجی اکسل از نتایج فیلترشده')
                 ->action(function (): StreamedResponse {
                     $query = $this->getFilteredTableQuery();
-                    $rows = $query
-                        ->with(['stage', 'owner', 'followupUser'])
-                        ->orderByDesc('updated_at')
-                        ->get();
-
+                    $rows = $query->with(['stage', 'owner', 'followupUser'])->orderByDesc('updated_at')->get();
                     $spreadsheet = new Spreadsheet();
                     $sheet = $spreadsheet->getActiveSheet();
-                    $headers = [
-                        'code', 'organization_name', 'contact_name', 'mobile', 'product', 'status',
-                        'stage', 'next_step', 'next_step_due', 'owner', 'followup', 'amount', 'source',
-                    ];
+                    $headers = ['code', 'organization_name', 'contact_name', 'mobile', 'product', 'status', 'stage', 'next_step', 'next_step_due', 'owner', 'followup', 'amount', 'source'];
                     foreach ($headers as $i => $h) {
                         $sheet->setCellValue([$i + 1, 1], $h);
                     }
-
                     $r = 2;
                     foreach ($rows as $opp) {
-                        /** @var Opportunity $opp */
                         $sheet->setCellValue([1, $r], 'OPP-'.str_pad((string) $opp->id, 3, '0', STR_PAD_LEFT));
                         $sheet->setCellValue([2, $r], $opp->organization_name);
                         $sheet->setCellValue([3, $r], $opp->contact_name);
@@ -201,7 +194,6 @@ class ListOpportunities extends ListRecords
                         $sheet->setCellValue([13, $r], $opp->source);
                         $r++;
                     }
-
                     $writer = new Xlsx($spreadsheet);
 
                     return response()->streamDownload(function () use ($writer): void {
