@@ -5,41 +5,31 @@ namespace App\Filament\Resources;
 use App\Filament\Concerns\ChecksResourcePermission;
 use App\Filament\Resources\CoverStructureResource\Pages;
 use App\Models\CoverStructure;
-use App\Models\ProductLine;
-use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class CoverStructureResource extends Resource
 {
     use ChecksResourcePermission;
+
     protected static ?string $permissionView = 'products.view';
     protected static ?string $permissionManage = 'products.manage';
     protected static ?string $model = CoverStructure::class;
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-group';
-    protected static ?string $navigationLabel = 'مدل ساخت جلد';
-    protected static ?string $modelLabel = 'مدل ساخت';
-    protected static ?string $pluralModelLabel = 'مدل‌های ساخت جلد';
-    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ و محصولات';
-    protected static ?int $navigationSort = 21;
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-plus';
+    protected static ?string $modelLabel = 'ساختار جلد';
+    protected static ?string $pluralModelLabel = 'ساختارهای جلد';
+    protected static ?string $navigationLabel = 'ساختار جلد';
+    protected static string|UnitEnum|null $navigationGroup = 'کاتالوگ نوتوپیا';
+    protected static ?int $navigationSort = 23;
 
     public static function shouldRegisterNavigation(): bool
     {
         return false;
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        $q = parent::getEloquentQuery();
-        $id = ProductLine::query()->where('code', 'notopia')->value('id');
-        if ($id) $q->where('product_line_id', $id);
-        return $q;
     }
 
     public static function form(Schema $schema): Schema
@@ -47,7 +37,6 @@ class CoverStructureResource extends Resource
         return $schema->components([
             TextInput::make('code')->label('کد')->required()->maxLength(50),
             TextInput::make('name')->label('نام')->required()->maxLength(100),
-            TextInput::make('color_slots')->label('تعداد رنگ (۱ یا ۲)')->numeric()->default(1)->minValue(1)->maxValue(2),
             Toggle::make('is_active')->label('فعال')->default(true),
             TextInput::make('sort')->label('ترتیب')->numeric()->default(0),
         ]);
@@ -56,13 +45,10 @@ class CoverStructureResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            Tables\Columns\TextColumn::make('name')->label('نام')->searchable(),
-            Tables\Columns\TextColumn::make('code')->label('کد')->badge(),
-            Tables\Columns\TextColumn::make('color_slots')->label('تعداد رنگ'),
+            Tables\Columns\TextColumn::make('name')->label('نام')->searchable()->sortable(),
+            Tables\Columns\TextColumn::make('code')->label('کد')->searchable(),
             Tables\Columns\IconColumn::make('is_active')->label('فعال')->boolean(),
-        ])
-            ->stackedOnMobile()->defaultSort('sort')
-        ->recordActions([EditAction::make()->label('ویرایش')->visible(fn ($r) => static::canEdit($r))]);
+        ])->defaultSort('sort');
     }
 
     public static function getPages(): array
