@@ -60,7 +60,7 @@ class QuickCreateOpportunity extends CreateRecord
                 Grid::make(['default' => 1, 'lg' => 2])
                     ->schema([
                         Section::make('هویت طرف حساب')
-                            ->extraAttributes(['style' => 'height: 100%;'])
+                            ->extraAttributes(['class' => 'hm-quick-create-panel', 'style' => 'height: 100%;'])
                             ->schema([
                                 TextInput::make('organization_name')
                                     ->label('نام سازمان / شرکت')
@@ -189,7 +189,7 @@ class QuickCreateOpportunity extends CreateRecord
                             ->columnSpan(1),
 
                         Section::make('محصول و مرحله')
-                            ->extraAttributes(['style' => 'height: 100%;'])
+                            ->extraAttributes(['class' => 'hm-quick-create-panel', 'style' => 'height: 100%;'])
                             ->schema([
                                 TextInput::make('title')
                                     ->label('عنوان فرصت')
