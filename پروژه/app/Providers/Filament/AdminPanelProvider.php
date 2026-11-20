@@ -204,10 +204,46 @@ textarea.fi-input,
 .fi-sc-form .fi-section-content-ctn{
   flex:1 1 auto!important;
 }
-.fi-btn{min-height:2.25rem!important;padding-block:.35rem!important;font-size:.82rem!important}
+.fi-btn:not(.fi-icon-btn){min-height:2.25rem!important;padding-block:.35rem!important;font-size:.82rem!important}
 .fi-page-main{gap:.55rem!important}
 .fi-main{padding-inline:1rem!important}
 .hm-amount-input{letter-spacing:.02em}
+/* جدول: دکمه‌های آیکن تولبار (فیلتر/ستون) هم‌اندازه و بدون بیرون‌زدگی */
+.fi-ta-header-toolbar .fi-icon-btn,
+.fi-ta-header .fi-icon-btn,
+.fi-ta-filters-dropdown-trigger-btn,
+.fi-ta-col-toggle > .fi-icon-btn,
+.fi-dropdown-trigger.fi-icon-btn{
+  min-height:2rem!important;
+  height:2rem!important;
+  width:2rem!important;
+  max-height:2rem!important;
+  padding:0!important;
+  overflow:hidden!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.fi-ta-header-toolbar .fi-icon-btn svg,
+.fi-ta-header .fi-icon-btn svg,
+.fi-dropdown-trigger.fi-icon-btn svg{
+  width:1.15rem!important;
+  height:1.15rem!important;
+  max-width:1.15rem!important;
+  max-height:1.15rem!important;
+}
+/* نشانگر فیلتر فعال: داخل دکمه بماند */
+.fi-ta-filters-dropdown-trigger-btn .fi-badge,
+.fi-ta-filters-trigger .fi-badge{
+  position:absolute!important;
+  inset-inline-end:-.15rem!important;
+  inset-block-start:-.15rem!important;
+  min-width:1rem!important;
+  height:1rem!important;
+  padding:0 .2rem!important;
+  font-size:.65rem!important;
+  line-height:1rem!important;
+}
 </style>
 CSS
             );
