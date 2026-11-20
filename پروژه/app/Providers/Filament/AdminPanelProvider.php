@@ -145,10 +145,47 @@ class AdminPanelProvider extends PanelProvider
 .fi-section-content,.fi-fo-component-ctn{gap:.4rem!important}
 .fi-fo-field-wrp{gap:.15rem!important}
 .fi-fo-field-wrp-hint,.fi-fo-field-wrp-helper-text,.fi-fo-field-wrp-helper{display:none!important}
-.fi-input-wrp,.fi-select-input,.fi-fo-select,.fi-input,input.fi-input,select.fi-select-input{min-height:2.25rem!important;height:2.25rem!important}
-.fi-input-wrp{padding-block:0!important;align-items:center!important}
-.fi-input-wrp input.fi-input,.fi-input-wrp .fi-input{min-height:2.25rem!important;height:2.25rem!important;padding-block:0!important;padding-inline:.65rem!important;font-size:.85rem!important;line-height:2.25rem!important}
-textarea.fi-input,.fi-input-wrp textarea.fi-input{min-height:5rem!important;height:auto!important;max-height:none!important;line-height:1.45!important;padding-block:.5rem!important;overflow:auto!important;resize:vertical!important}
+.fi-input-wrp:not(:has(textarea)),
+.fi-select-input,
+.fi-fo-select,
+input.fi-input:not(textarea),
+select.fi-select-input{
+  min-height:2.25rem!important;
+  height:2.25rem!important;
+}
+.fi-input-wrp:not(:has(textarea)){
+  padding-block:0!important;
+  align-items:center!important;
+}
+.fi-input-wrp:not(:has(textarea)) input.fi-input,
+.fi-input-wrp:not(:has(textarea)) .fi-input:not(textarea){
+  min-height:2.25rem!important;
+  height:2.25rem!important;
+  padding-block:0!important;
+  padding-inline:.65rem!important;
+  font-size:.85rem!important;
+  line-height:2.25rem!important;
+}
+.fi-input-wrp:has(textarea),
+.fi-fo-textarea,
+.fi-fo-field-wrp:has(textarea) .fi-input-wrp{
+  height:auto!important;
+  min-height:0!important;
+  align-items:stretch!important;
+  padding-block:0!important;
+}
+textarea.fi-input,
+.fi-input-wrp textarea,
+.fi-input-wrp textarea.fi-input{
+  min-height:5.5rem!important;
+  height:auto!important;
+  max-height:none!important;
+  line-height:1.5!important;
+  padding-block:.55rem!important;
+  padding-inline:.65rem!important;
+  overflow:auto!important;
+  resize:vertical!important;
+}
 .fi-btn{min-height:2.25rem!important;padding-block:.35rem!important;font-size:.82rem!important}
 .fi-page-main{gap:.55rem!important}
 .fi-main{padding-inline:1rem!important}
