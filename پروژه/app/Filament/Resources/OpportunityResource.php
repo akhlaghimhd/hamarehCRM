@@ -285,4 +285,68 @@ class OpportunityResource extends Resource
             'view' => Pages\ManageOpportunity::route('/{record}'),
         ];
     }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $user = auth()->user();
+
+        if (! $user) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // ادمین شرکت: همه فرصت‌های شرکت جاری (اسکوپ company از مدل)
+        if (method_exists($user, 'isCompanyAdmin') && $user->isCompanyAdmin()) {
+            return $query;
+        }
+
+        // فروشنده: فقط مالک یا مسئول پیگیری خودش + زیرمجموعه‌اش (اگر مدیر باشد)
+        $visibleIds = method_exists($user, 'managedUserIds')
+            ? $user->managedUserIds(includeSelf: true)->all()
+            : [(int) $user->id];
+
+        if ($visibleIds === []) {
+            $visibleIds = [(int) $user->id];
+        }
+
+        return $query->where(function (Builder $q) use ($visibleIds): void {
+            $q->whereIn('owner_user_id', $visibleIds)
+                ->orWhereIn('followup_user_id', $visibleIds);
+        });
+    }
+
+    public static function canView($record): bool
+    {
+        if (! parent::canView($record)) {
+            return false;
+        }
+
+        $user = auth()->user();
+        if (! $user) {
+            return false;
+        }
+
+        if (method_exists($user, 'isCompanyAdmin') && $user->isCompanyAdmin()) {
+            return true;
+        }
+
+        $visibleIds = method_exists($user, 'managedUserIds')
+            ? $user->managedUserIds(includeSelf: true)
+            : collect([(int) $user->id]);
+
+        $ownerId = (int) ($record->owner_user_id ?? 0);
+        $followupId = (int) ($record->followup_user_id ?? 0);
+
+        return $visibleIds->contains($ownerId) || $visibleIds->contains($followupId);
+    }
+
+    public static function canEdit($record): bool
+    {
+        if (! parent::canEdit($record)) {
+            return false;
+        }
+
+        return static::canView($record);
+    }
 }
