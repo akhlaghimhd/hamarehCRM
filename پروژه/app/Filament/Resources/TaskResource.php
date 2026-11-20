@@ -32,8 +32,8 @@ class TaskResource extends Resource
     protected static ?string $modelLabel = 'کار';
     protected static ?string $pluralModelLabel = 'کارها';
     protected static ?string $navigationLabel = 'کارهای تیم';
-    protected static string|UnitEnum|null $navigationGroup = 'کارها و تیم';
-    protected static ?int $navigationSort = 1;
+    protected static string|UnitEnum|null $navigationGroup = 'کار تیمی';
+    protected static ?int $navigationSort = 20;
 
     public static function canViewAny(): bool
     {
