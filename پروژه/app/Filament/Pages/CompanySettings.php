@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Support\CompanyContext;
 use App\Support\CompanySettings as CompanySettingsService;
 use App\Support\CompanyTheme;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -35,6 +36,18 @@ class CompanySettings extends Page
     /** @var array<string, mixed> */
     public array $data = [];
 
+    public string $themePalette = 'ocean';
+
+    public string $themePrimary = '#0f766e';
+
+    public string $themeSecondary = '#0369a1';
+
+    public ?int $editingSettingId = null;
+
+    public string $editorKey = '';
+
+    public string $editorValue = '';
+
     public static function canAccess(): bool
     {
         $user = Auth::user();
@@ -42,14 +55,24 @@ class CompanySettings extends Page
         return $user instanceof User && $user->hasPermissionTo('company.settings');
     }
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return static::canAccess();
+    }
+
     public function mount(): void
     {
-        abort_unless(static::canAccess(), 403);
+        $this->authorizeAdmin();
 
         $companyId = app(CompanyContext::class)->id();
         abort_if($companyId === null, 403);
 
         $settings = CompanySettingsService::forCompany($companyId);
+        $theme = app(CompanyTheme::class);
+
+        $this->themePalette = (string) ($settings['theme_palette'] ?? 'ocean');
+        $this->themePrimary = (string) ($settings['theme_primary'] ?? $theme->primary());
+        $this->themeSecondary = (string) ($settings['theme_secondary'] ?? $theme->secondary());
 
         $this->form->fill([
             'timezone' => $settings['timezone'] ?? config('app.timezone'),
@@ -122,7 +145,7 @@ class CompanySettings extends Page
 
     public function save(): void
     {
-        abort_unless(static::canAccess(), 403);
+        $this->authorizeAdmin();
 
         $companyId = app(CompanyContext::class)->id();
         abort_if($companyId === null, 403);
@@ -149,8 +172,8 @@ class CompanySettings extends Page
             ->send();
     }
 
-    protected function getFormActions(): array
+    protected function authorizeAdmin(): void
     {
-        return [];
+        abort_unless(static::canAccess(), 403);
     }
 }
