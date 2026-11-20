@@ -57,6 +57,11 @@ class QuickCreateOpportunity extends CreateRecord
         return $schema
             ->columns(1)
             ->components([
+                TextInput::make('title')
+                    ->label('عنوان فرصت')
+                    ->maxLength(255)
+                    ->placeholder('خالی بماند تا از نام سازمان ساخته شود'),
+
                 Grid::make(['default' => 1, 'lg' => 2])
                     ->schema([
                         Section::make('هویت طرف حساب')
@@ -173,12 +178,12 @@ class QuickCreateOpportunity extends CreateRecord
                                         'email' => 'ایمیل واردشده معتبر نیست.',
                                     ]),
                                 Select::make('decision_role')
-                                    ->label('نقش تصمیم')
+                                    ->label('نقش طرف تماس در خرید')
                                     ->options([
-                                        'decision_maker' => 'تصمیم‌گیرنده',
-                                        'influencer' => 'تأثیرگذار',
-                                        'user' => 'کاربر',
-                                        'gatekeeper' => 'دروازه‌بان',
+                                        'decision_maker' => 'تصمیم‌گیرنده نهایی',
+                                        'influencer' => 'تأثیرگذار روی خرید',
+                                        'user' => 'مصرف‌کننده / کاربر',
+                                        'gatekeeper' => 'رابط سازمانی',
                                         'other' => 'سایر',
                                     ])
                                     ->placeholder('— اختیاری —')
@@ -200,6 +205,7 @@ class QuickCreateOpportunity extends CreateRecord
                                         ->all())
                                     ->required()
                                     ->native(false)
+                                    ->columnSpanFull()
                                     ->validationMessages([
                                         'required' => 'حداقل یک خط محصول را انتخاب کنید.',
                                     ]),
@@ -217,14 +223,10 @@ class QuickCreateOpportunity extends CreateRecord
                                     ->default(fn () => OpportunityStage::query()->where('is_active', true)->orderBy('sort_order')->value('id'))
                                     ->required()
                                     ->native(false)
+                                    ->columnSpanFull()
                                     ->validationMessages([
                                         'required' => 'انتخاب مرحله قیف الزامی است.',
                                     ]),
-                                TextInput::make('title')
-                                    ->label('عنوان فرصت')
-                                    ->maxLength(255)
-                                    ->placeholder('خالی بماند تا از نام سازمان ساخته شود')
-                                    ->columnSpanFull(),
                                 TextInput::make('amount')
                                     ->label('مبلغ تخمینی (ریال)')
                                     ->extraInputAttributes([
