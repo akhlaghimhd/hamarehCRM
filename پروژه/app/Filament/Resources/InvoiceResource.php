@@ -35,9 +35,9 @@ class InvoiceResource extends Resource
 
     protected static ?string $navigationLabel = 'فاکتورها';
 
-    protected static string|UnitEnum|null $navigationGroup = 'مالی عملیاتی';
+    protected static string|UnitEnum|null $navigationGroup = 'عملیات';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 30;
 
     public static function form(Schema $schema): Schema
     {
