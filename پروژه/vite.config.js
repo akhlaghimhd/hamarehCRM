@@ -3,6 +3,12 @@ import laravel from 'laravel-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+    resolve: {
+        // The prototype uses an inline Vue template, which requires the compiler build.
+        alias: {
+            vue: 'vue/dist/vue.esm-bundler.js',
+        },
+    },
     plugins: [
         laravel({
             input: [
