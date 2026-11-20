@@ -187,23 +187,6 @@ textarea.fi-input,
   overflow:auto!important;
   resize:vertical!important;
 }
-.fi-sc .fi-grid,
-.fi-fo-form .fi-grid,
-.fi-sc-form .fi-grid{
-  align-items:stretch!important;
-}
-.fi-sc .fi-section,
-.fi-fo-form .fi-section,
-.fi-sc-form .fi-section{
-  height:100%!important;
-  display:flex!important;
-  flex-direction:column!important;
-}
-.fi-sc .fi-section-content-ctn,
-.fi-fo-form .fi-section-content-ctn,
-.fi-sc-form .fi-section-content-ctn{
-  flex:1 1 auto!important;
-}
 .fi-btn:not(.fi-icon-btn){min-height:2.25rem!important;padding-block:.35rem!important;font-size:.82rem!important}
 .fi-page-main{gap:.55rem!important}
 .fi-main{padding-inline:1rem!important}
@@ -228,85 +211,71 @@ textarea.fi-input,
 .fi-dropdown-trigger.fi-icon-btn svg{
   width:1.15rem!important;
   height:1.15rem!important;
-  max-width:1.15rem!important;
-  max-height:1.15rem!important;
-}
-.fi-ta-filters-dropdown-trigger-btn .fi-badge,
-.fi-ta-filters-trigger .fi-badge{
-  position:absolute!important;
-  inset-inline-end:-.15rem!important;
-  inset-block-start:-.15rem!important;
-  min-width:1rem!important;
-  height:1rem!important;
-  padding:0 .2rem!important;
-  font-size:.65rem!important;
-  line-height:1rem!important;
 }
 
-/* فیلتر جدول: بدون عنوان فیلترها، حذف‌فیلتر کنار فیلدها */
-.fi-ta-filters > .fi-section{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) auto!important;
-  grid-template-rows:auto!important;
-  align-items:end!important;
-  gap:.5rem!important;
-  box-shadow:none!important;
-  background:transparent!important;
-  border:0!important;
-}
-.fi-ta-filters .fi-section-header{
-  grid-column:2!important;
-  grid-row:1!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
-  margin:0!important;
-  padding:.25rem .15rem!important;
-  min-height:2.25rem!important;
-  border:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
-}
+/* فقط مخفی‌کردن عنوان فیلترها + لیبل فیلدها — بدون دست‌کاری گرید */
 .fi-ta-filters .fi-section-header-heading,
-.fi-ta-filters .fi-section-header h2,
-.fi-ta-filters .fi-section-header h3{
+.fi-ta-filters [class*="section-header-heading"],
+.fi-ta-filters header h2,
+.fi-ta-filters header h3{
   display:none!important;
-}
-.fi-ta-filters .fi-section-content-ctn,
-.fi-ta-filters .fi-section-content{
-  grid-column:1!important;
-  grid-row:1!important;
-  padding:.35rem .5rem!important;
-  margin:0!important;
+  visibility:hidden!important;
+  width:0!important;
+  height:0!important;
+  overflow:hidden!important;
+  position:absolute!important;
 }
 .fi-ta-filters .fi-fo-field-wrp-label,
 .fi-ta-filters label.fi-fo-field-wrp-label{
   display:none!important;
 }
-.fi-ta-filters-actions .fi-btn,
-.fi-ta-filters-actions a,
+.fi-ta-filters .fi-section-header{
+  border:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  min-height:0!important;
+  padding-block:.15rem!important;
+}
 .fi-ta-filters .fi-section-header .fi-btn,
-.fi-ta-filters .fi-section-header a{
+.fi-ta-filters .fi-section-header a,
+.fi-ta-filters-actions .fi-btn,
+.fi-ta-filters-actions a{
   font-size:.75rem!important;
   font-weight:500!important;
   min-height:2rem!important;
   height:2rem!important;
-  padding:.25rem .5rem!important;
-  white-space:nowrap!important;
-}
-.fi-ta-filters .fi-sc-grid,
-.fi-ta-filters .fi-grid{
-  gap:.5rem!important;
-  align-items:center!important;
-}
-@media (min-width:1024px){
-  .fi-ta-filters .fi-sc-grid,
-  .fi-ta-filters .fi-grid{
-    grid-template-columns:minmax(14rem,2fr) repeat(4,minmax(0,1fr))!important;
-  }
+  padding:.25rem .45rem!important;
 }
 </style>
 CSS
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => <<<'JS'
+<script>
+(function () {
+  function hideFilterHeadings() {
+    document.querySelectorAll('.fi-ta-filters').forEach(function (root) {
+      root.querySelectorAll('h1,h2,h3,h4,.fi-section-header-heading,[class*="heading"]').forEach(function (el) {
+        var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (t === 'فیلترها' || t === 'Filters') {
+          el.style.setProperty('display', 'none', 'important');
+        }
+      });
+    });
+  }
+  document.addEventListener('DOMContentLoaded', hideFilterHeadings);
+  document.addEventListener('livewire:navigated', hideFilterHeadings);
+  document.addEventListener('livewire:init', function () {
+    if (window.Livewire && Livewire.hook) {
+      Livewire.hook('morph.updated', hideFilterHeadings);
+    }
+  });
+  setTimeout(hideFilterHeadings, 50);
+  setTimeout(hideFilterHeadings, 300);
+})();
+</script>
+JS
             );
     }
 }
