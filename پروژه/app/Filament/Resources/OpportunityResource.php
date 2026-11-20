@@ -192,20 +192,59 @@ class OpportunityResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(fn ($record) => static::getUrl('view', ['record' => $record]))
             ->columns([
-                TextColumn::make('title')->label('عنوان')->searchable()->limit(40),
-                TextColumn::make('organization_name')->label('سازمان')->searchable()->toggleable(),
-                TextColumn::make('stage.name')->label('مرحله')->badge(),
-                TextColumn::make('status')->label('وضعیت')->badge()
-                    ->formatStateUsing(fn (?string $state) => Opportunity::statusOptions()[$state] ?? $state),
-                TextColumn::make('owner.name')->label('مالک')->toggleable(),
-                TextColumn::make('salesRepresentative.name')->label('نماینده')->toggleable(),
-                TextColumn::make('updated_at')->label('به‌روزرسانی')->jalaliDateTime()->sortable(),
+                TextColumn::make('title')
+                    ->label('عنوان')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(32)
+                    ->tooltip(fn ($state) => $state)
+                    ->toggleable(),
+                TextColumn::make('organization_name')
+                    ->label('سازمان')
+                    ->searchable()
+                    ->limit(24)
+                    ->tooltip(fn ($state) => $state)
+                    ->toggleable(),
+                TextColumn::make('stage.name')
+                    ->label('مرحله')
+                    ->badge()
+                    ->toggleable(),
+                TextColumn::make('status')
+                    ->label('وضعیت')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state) => Opportunity::statusOptions()[$state] ?? $state)
+                    ->toggleable(),
+                TextColumn::make('owner.name')
+                    ->label('مالک')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('salesRepresentative.name')
+                    ->label('نماینده')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->label('به‌روزرسانی')
+                    ->jalaliDateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('updated_at', 'desc')
+            ->paginated([10, 15, 25, 50, 100])
             ->filters([
                 SelectFilter::make('status')->label('وضعیت')->options(Opportunity::statusOptions()),
                 SelectFilter::make('stage_id')->label('مرحله')->options(fn () => OpportunityStage::query()->pluck('name', 'id')),
+                Filter::make('mine')
+                    ->label('مال من')
+                    ->query(fn (Builder $query) => $query->where('owner_user_id', auth()->id()))
+                    ->toggle(),
+            ])
+            ->emptyStateHeading('فرصتی ثبت نشده')
+            ->emptyStateDescription('اولین فرصت را با ثبت سریع یا فرم کامل بسازید.')
+            ->emptyStateActions([
+                \Filament\Actions\Action::make('quick')
+                    ->label('ثبت سریع')
+                    ->url(static::getUrl('quick-create'))
+                    ->icon('heroicon-o-bolt'),
             ])
             ->recordActions([
                 EditAction::make()->label('ویرایش'),
