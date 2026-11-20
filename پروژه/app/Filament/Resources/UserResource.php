@@ -41,7 +41,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationLabel = 'کاربران';
 
-    protected static string|UnitEnum|null $navigationGroup = 'مدیریت سازمان';
+    protected static string|UnitEnum|null $navigationGroup = 'سازمان';
 
     protected static ?int $navigationSort = 1;
 
