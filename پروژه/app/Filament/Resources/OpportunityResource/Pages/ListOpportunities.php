@@ -12,6 +12,7 @@ use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -29,6 +30,11 @@ class ListOpportunities extends ListRecords
         $count = $this->getFilteredTableQuery()?->count() ?? 0;
 
         return 'همه فرصت‌ها · '.Fa::digits((string) $count).' مورد';
+    }
+
+    public function getFooter(): ?View
+    {
+        return view('filament.resources.opportunity-resource.pages.list-opportunities-filter-styles');
     }
 
     protected function getHeaderActions(): array
