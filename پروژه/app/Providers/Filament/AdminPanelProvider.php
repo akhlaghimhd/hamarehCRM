@@ -17,6 +17,7 @@ use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Tables\Columns\TextColumn;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
 use Hammadzafar05\MobileBottomNav\MobileBottomNav;
@@ -35,6 +36,36 @@ class AdminPanelProvider extends PanelProvider
         // Use the installed Filament 5 Jalali package for every panel date input.
         DatePicker::configureUsing(fn (DatePicker $field) => $field->jalali());
         DateTimePicker::configureUsing(fn (DateTimePicker $field) => $field->jalali());
+
+        // Date-like fields default to Jalali output, including relation managers and infolists.
+        $isDateField = static fn (string $name): bool => (bool) preg_match(
+            '/(?:^|[._])[^.]+_(?:at|on|date)$|(?:^|[._])(?:valid_until|date)$/',
+            $name,
+        );
+
+        TextColumn::configureUsing(static function (TextColumn $column) use ($isDateField): void {
+            $name = $column->getName();
+
+            if (! $isDateField($name)) {
+                return;
+            }
+
+            str_ends_with($name, '_at')
+                ? $column->jalaliDateTime()
+                : $column->jalaliDate();
+        });
+
+        TextEntry::configureUsing(static function (TextEntry $entry) use ($isDateField): void {
+            $name = $entry->getName();
+
+            if (! $isDateField($name)) {
+                return;
+            }
+
+            str_ends_with($name, '_at')
+                ? $entry->jalaliDateTime()
+                : $entry->jalaliDate();
+        });
 
         $panel = $panel
             ->default()
